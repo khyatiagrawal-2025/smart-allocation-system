@@ -1,9 +1,864 @@
-<h2>Request Submitted Successfully!</h2>
-<h2>{{ volunteer.name }}</h2>
-<p>{{ volunteer.skills }}</p>
-<p>{{ volunteer.location }}</p>
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Match Found — Smart Resource Allocation System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07080f;
+  --surface:rgba(255,255,255,0.04);
+  --surface-hi:rgba(255,255,255,0.07);
+  --border:rgba(255,255,255,0.08);
+  --border-hi:rgba(139,92,246,0.45);
+  --violet:#8b5cf6;
+  --violet-light:#a78bfa;
+  --blue:#3b82f6;
+  --cyan:#06b6d4;
+  --green:#10b981;
+  --green-light:#34d399;
+  --amber:#f59e0b;
+  --red:#ef4444;
+  --text:#e2e8f0;
+  --text-dim:#94a3b8;
+  --muted:#64748b;
+}
 
-<p>Score: {{ score }}</p>
-<p>Matched at: {{ level }} level</p>
-<p>Request Type: {{ request.request_type }}</p>
-<a href="/request/">Create another request</a>
+html{scroll-behavior:smooth}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── AMBIENT ── */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(130px);opacity:.15;animation:drift 20s ease-in-out infinite alternate}
+.blob-1{width:700px;height:700px;background:var(--violet);top:-200px;left:-200px;animation-delay:0s}
+.blob-2{width:500px;height:500px;background:var(--blue);bottom:-150px;right:-100px;animation-delay:-7s}
+.blob-3{width:350px;height:350px;background:var(--cyan);top:45%;left:55%;animation-delay:-13s}
+.blob-4{width:280px;height:280px;background:var(--green);bottom:20%;left:10%;animation-delay:-4s;opacity:.1}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(50px,35px) scale(1.1)}}
+
+.grid-overlay{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(139,92,246,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(139,92,246,.04) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+
+/* ── PAGE ── */
+.page{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:0 20px 80px}
+
+/* ── TOP NAV BAR ── */
+.topbar{
+  width:100%;max-width:800px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:22px 0 0;
+  animation:fadeDown .5s ease both;
+}
+.logo{display:flex;align-items:center;gap:9px;text-decoration:none}
+.logo-mark{
+  width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(135deg,var(--violet),var(--blue));
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;color:#fff;
+  box-shadow:0 4px 16px rgba(139,92,246,.35);
+}
+.logo-text{font-family:'Syne',sans-serif;font-size:.92rem;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.nav-btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:7px 16px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:100px;
+  font-family:'DM Sans',sans-serif;
+  font-size:.8rem;font-weight:500;
+  color:var(--text-dim);
+  cursor:pointer;text-decoration:none;
+  transition:all .2s;
+}
+.nav-btn:hover{background:var(--surface-hi);border-color:rgba(255,255,255,.14);color:var(--text)}
+.nav-btn i{font-size:.75rem}
+
+/* ── SUCCESS BURST ── */
+.burst-wrap{
+  margin-top:54px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:0;
+  animation:fadeDown .7s .1s ease both;
+}
+.burst-ring-outer{
+  position:relative;
+  width:110px;height:110px;
+  display:flex;align-items:center;justify-content:center;
+}
+.burst-ring-outer::before{
+  content:'';
+  position:absolute;inset:-8px;
+  border-radius:50%;
+  border:1.5px dashed rgba(16,185,129,.3);
+  animation:spin-slow 12s linear infinite;
+}
+.burst-ring-outer::after{
+  content:'';
+  position:absolute;inset:-20px;
+  border-radius:50%;
+  border:1px dashed rgba(139,92,246,.18);
+  animation:spin-slow 20s linear infinite reverse;
+}
+@keyframes spin-slow{to{transform:rotate(360deg)}}
+
+.burst-icon{
+  width:90px;height:90px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(6,182,212,.15));
+  border:1.5px solid rgba(16,185,129,.45);
+  display:flex;align-items:center;justify-content:center;
+  font-size:2.2rem;
+  position:relative;
+  box-shadow:0 0 40px rgba(16,185,129,.18),0 0 0 0 rgba(16,185,129,.2);
+  animation:success-glow 2.5s ease-in-out infinite;
+}
+@keyframes success-glow{
+  0%,100%{box-shadow:0 0 30px rgba(16,185,129,.15),0 0 0 0 rgba(16,185,129,.12)}
+  50%{box-shadow:0 0 55px rgba(16,185,129,.28),0 0 20px rgba(16,185,129,.08)}
+}
+
+/* burst particles */
+.particles{position:absolute;inset:0;pointer-events:none}
+.particle{
+  position:absolute;top:50%;left:50%;
+  width:6px;height:6px;border-radius:50%;
+  transform-origin:center center;
+  animation:burst-out 1.2s .3s cubic-bezier(.22,1,.36,1) both;
+}
+@keyframes burst-out{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(0)}
+  40%{opacity:1}
+  100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(.5)}
+}
+.p1{background:var(--green);--tx:-52px;--ty:-52px}
+.p2{background:var(--cyan);--tx:0px;--ty:-68px}
+.p3{background:var(--violet);--tx:52px;--ty:-52px}
+.p4{background:var(--blue);--tx:68px;--ty:0px}
+.p5{background:var(--green);--tx:52px;--ty:52px}
+.p6{background:var(--amber);--tx:0px;--ty:68px}
+.p7{background:var(--violet-light);--tx:-52px;--ty:52px}
+.p8{background:var(--cyan);--tx:-68px;--ty:0px}
+
+.burst-headline{
+  margin-top:28px;
+  font-family:'Syne',sans-serif;
+  font-size:clamp(1.5rem,4vw,2rem);
+  font-weight:800;
+  letter-spacing:-.025em;
+  text-align:center;
+  background:linear-gradient(135deg,#e2e8f0 20%,#6ee7b7 55%,#67e8f9 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.burst-sub{
+  margin-top:8px;
+  font-size:.9rem;color:var(--muted);text-align:center;
+  font-weight:300;
+}
+.burst-sub span{color:var(--green-light);font-style:normal;font-weight:500}
+
+.status-chips{
+  display:flex;align-items:center;gap:8px;margin-top:16px;flex-wrap:wrap;justify-content:center;
+}
+.s-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 13px;border-radius:100px;font-size:11px;font-weight:600;
+  border:1px solid;
+}
+.s-chip-green{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:var(--green-light)}
+.s-chip-violet{background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.3);color:var(--violet-light)}
+.s-chip-cyan{background:rgba(6,182,212,.1);border-color:rgba(6,182,212,.3);color:#67e8f9}
+
+/* ── GLASS UTIL ── */
+.glass{
+  background:var(--surface);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--border);
+  border-radius:20px;
+}
+
+/* ── MAIN GRID ── */
+.main-grid{
+  width:100%;max-width:800px;
+  margin-top:36px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:auto auto;
+  gap:14px;
+}
+
+/* ── VOLUNTEER CARD ── */
+.vol-card{
+  grid-column:1 / -1;
+  padding:28px 30px 26px;
+  position:relative;overflow:hidden;
+  animation:slideUp .6s .2s ease both;
+}
+.vol-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--green),var(--cyan),var(--violet));
+}
+.vol-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:radial-gradient(ellipse at top right,rgba(16,185,129,.07) 0%,transparent 55%);
+  pointer-events:none;
+}
+
+.card-eyebrow{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:22px;flex-wrap:wrap;gap:10px;
+}
+.card-label{
+  font-size:10px;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--muted);font-weight:600;
+  display:flex;align-items:center;gap:7px;
+}
+.card-label i{color:var(--violet-light)}
+.match-badge{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);
+  border-radius:100px;padding:5px 12px;
+  font-size:11px;font-weight:700;color:var(--green-light);
+}
+.match-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.8s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.vol-main{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.vol-avatar{
+  width:64px;height:64px;border-radius:50%;flex-shrink:0;
+  background:conic-gradient(var(--violet),var(--cyan),var(--green),var(--violet));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:1.15rem;font-weight:800;color:#fff;
+  position:relative;
+}
+.vol-avatar::before{content:'';position:absolute;inset:2px;border-radius:50%;background:#131525}
+.vol-avatar span{position:relative;z-index:1}
+.vol-avatar .verified{
+  position:absolute;bottom:-2px;right:-2px;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--green);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;color:#fff;
+  border:2px solid #07080f;
+  z-index:2;
+}
+
+.vol-info{flex:1;min-width:0}
+.vol-name{font-family:'Syne',sans-serif;font-size:1.18rem;font-weight:700;margin-bottom:4px}
+.vol-role{color:var(--muted);font-size:.82rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.score-block{margin-left:auto;display:flex;flex-direction:column;align-items:center;gap:4px;flex-shrink:0}
+.score-ring-wrap{width:72px;height:72px;position:relative;display:flex;align-items:center;justify-content:center}
+.score-ring-wrap svg{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.score-ring-wrap circle{fill:none;stroke-width:5;stroke-linecap:round}
+.ring-bg{stroke:rgba(255,255,255,.06)}
+.ring-fill{stroke:url(#sg2);stroke-dasharray:201;stroke-dashoffset:201;transition:stroke-dashoffset 1.6s cubic-bezier(.4,0,.2,1) .5s}
+.sc-num{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:#fff;line-height:1}
+.sc-sub-text{font-size:9px;color:var(--muted);text-align:center;letter-spacing:.04em}
+.sc-label{font-size:10px;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.06em}
+
+.vol-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}
+.v-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:100px;
+  font-size:11.5px;font-weight:500;
+  background:rgba(255,255,255,.04);border:1px solid var(--border);
+  transition:all .2s;
+}
+.v-chip:hover{background:rgba(139,92,246,.1);border-color:rgba(139,92,246,.35)}
+.v-chip i{font-size:.7rem;color:var(--violet-light)}
+
+/* ── REQUEST SUMMARY CARD ── */
+.req-card{
+  grid-column:1 / -1;
+  padding:24px 28px 22px;
+  animation:slideUp .6s .3s ease both;
+  position:relative;overflow:hidden;
+}
+.req-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--violet),var(--blue));
+}
+.req-card::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at bottom left,rgba(59,130,246,.06) 0%,transparent 60%);
+  pointer-events:none;
+}
+
+.req-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.req-type-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);
+  border-radius:100px;padding:7px 16px;
+  font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--violet-light);
+}
+
+.urg-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:100px;font-size:11px;font-weight:700;
+  border:1px solid;
+}
+.urg-high{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#f87171}
+.urg-medium{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fbbf24}
+.urg-low{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:var(--green-light)}
+
+.req-body{display:grid;grid-template-columns:1fr;gap:12px}
+.req-field{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 16px;
+  background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);
+  border-radius:12px;transition:border-color .2s,background .2s;
+}
+.req-field:hover{background:rgba(139,92,246,.06);border-color:rgba(139,92,246,.2)}
+.req-field-icon{
+  width:34px;height:34px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:.8rem;
+}
+.ico-violet{background:rgba(139,92,246,.12);color:var(--violet-light)}
+.ico-cyan{background:rgba(6,182,212,.12);color:#67e8f9}
+.ico-amber{background:rgba(245,158,11,.12);color:#fbbf24}
+.req-field-body{}
+.rf-label{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:3px;font-weight:600}
+.rf-val{font-size:.88rem;font-weight:500;color:var(--text);line-height:1.45}
+.rf-val.muted{color:var(--text-dim);font-weight:400;font-style:italic}
+
+/* ── STAT MINI CARDS ── */
+.mini-cards{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:14px;
+  animation:slideUp .6s .35s ease both;
+}
+.mini-card{
+  padding:16px 14px 14px;
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  text-align:center;transition:all .25s;
+  cursor:default;
+}
+.mini-card:hover{background:var(--surface-hi);border-color:var(--border-hi);transform:translateY(-3px);box-shadow:0 8px 30px rgba(139,92,246,.12)}
+.mc-icon{font-size:.95rem;margin-bottom:7px}
+.mc-val{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;margin-bottom:3px}
+.mc-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.mc-green{color:var(--green-light)}
+.mc-violet{color:var(--violet-light)}
+.mc-cyan{color:#67e8f9}
+.mc-amber{color:#fbbf24}
+
+/* ── ECOSYSTEM CARD ── */
+.eco-card{
+  grid-column:1 / -1;
+  padding:18px 20px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  animation:slideUp .6s .4s ease both;
+}
+.eco-bar{display:flex;align-items:center;gap:8px;flex:1;min-width:200px}
+.eco-step{
+  display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;flex:1;
+}
+.eco-step:not(:last-child)::after{
+  content:'';
+  position:absolute;top:14px;left:calc(50% + 14px);
+  width:calc(100% - 28px);height:1px;
+  background:var(--border);
+}
+.eco-step.active-step:not(:last-child)::after{background:linear-gradient(90deg,var(--green),var(--cyan))}
+.eco-dot{
+  width:28px;height:28px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;border:1.5px solid var(--border);
+  background:rgba(255,255,255,.04);
+  color:var(--muted);transition:all .4s;position:relative;z-index:1;
+}
+.eco-step.active-step .eco-dot{
+  background:linear-gradient(135deg,var(--green),var(--cyan));
+  border-color:var(--green);color:#fff;
+  box-shadow:0 0 16px rgba(16,185,129,.35);
+}
+.eco-step.done-step .eco-dot{
+  background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.4);color:var(--green-light);
+}
+.eco-step-lbl{font-size:10px;color:var(--muted);text-align:center;text-transform:uppercase;letter-spacing:.05em}
+.eco-step.active-step .eco-step-lbl{color:var(--green-light);font-weight:600}
+
+.eco-label-right{
+  display:flex;align-items:center;gap:8px;
+  font-size:.82rem;font-weight:500;color:var(--text-dim);flex-shrink:0;
+}
+.eco-label-right strong{color:var(--text)}
+
+/* ── CTA BUTTONS ── */
+.cta-section{
+  width:100%;max-width:800px;
+  display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  margin-top:16px;
+  animation:slideUp .6s .45s ease both;
+}
+.btn-primary{
+  padding:14px 24px;
+  background:linear-gradient(135deg,var(--violet),var(--blue));
+  border:none;border-radius:13px;
+  font-family:'Syne',sans-serif;font-size:.93rem;font-weight:700;color:#fff;
+  cursor:pointer;text-decoration:none;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  position:relative;overflow:hidden;
+  transition:transform .2s,box-shadow .2s;
+  box-shadow:0 4px 24px rgba(139,92,246,.35);
+}
+.btn-primary::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+  transform:translateX(-100%);transition:transform .55s;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(139,92,246,.5)}
+.btn-primary:hover::before{transform:translateX(100%)}
+.btn-primary:active{transform:translateY(0)}
+
+.btn-secondary{
+  padding:14px 24px;
+  background:var(--surface);
+  border:1px solid var(--border);border-radius:13px;
+  font-family:'Syne',sans-serif;font-size:.93rem;font-weight:700;color:var(--text-dim);
+  cursor:pointer;text-decoration:none;
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  transition:all .2s;
+}
+.btn-secondary:hover{background:var(--surface-hi);border-color:rgba(255,255,255,.15);color:var(--text);transform:translateY(-2px)}
+
+/* ── TIMELINE / STEPS ── */
+.timeline-card{
+  width:100%;max-width:800px;
+  margin-top:14px;
+  padding:22px 26px 20px;
+  animation:slideUp .6s .5s ease both;
+}
+.tl-title{
+  font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);
+  margin-bottom:18px;font-weight:600;
+  display:flex;align-items:center;gap:8px;
+}
+.tl-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.tl-title i{color:var(--violet-light)}
+
+.tl-items{display:flex;flex-direction:column;gap:0}
+.tl-item{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:0 0 20px 0;
+  position:relative;
+}
+.tl-item:not(:last-child)::after{
+  content:'';position:absolute;
+  left:15px;top:32px;bottom:0;
+  width:1.5px;background:linear-gradient(180deg,rgba(139,92,246,.4),rgba(139,92,246,.08));
+}
+.tl-item:last-child{padding-bottom:0}
+.tl-dot{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:.72rem;
+  position:relative;z-index:1;
+  transition:all .3s;
+}
+.tl-done{background:rgba(16,185,129,.15);border:1.5px solid rgba(16,185,129,.4);color:var(--green-light)}
+.tl-active{background:rgba(139,92,246,.15);border:1.5px solid rgba(139,92,246,.5);color:var(--violet-light);animation:pulse-dot 2s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,.3)}50%{box-shadow:0 0 0 6px rgba(139,92,246,0)}}
+.tl-pending{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);color:var(--muted)}
+.tl-body{flex:1;padding-top:4px}
+.tl-head{font-weight:600;font-size:.88rem;margin-bottom:2px}
+.tl-desc{font-size:.76rem;color:var(--muted)}
+.tl-time{font-size:.73rem;color:var(--muted);margin-left:auto;padding-top:4px;flex-shrink:0;font-style:italic}
+
+/* ── FOOTER NOTE ── */
+.footer-note{
+  margin-top:44px;text-align:center;
+  font-size:.78rem;color:var(--muted);
+  animation:fadeDown .6s .6s ease both;
+}
+.footer-note a{color:var(--violet-light);text-decoration:none}
+.footer-note a:hover{text-decoration:underline}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .main-grid{grid-template-columns:1fr}
+  .vol-card,.req-card{grid-column:1}
+  .mini-cards{grid-template-columns:1fr 1fr}
+  .cta-section{grid-template-columns:1fr}
+  .score-block{display:none}
+  .vol-avatar{width:52px;height:52px;font-size:1rem}
+  .burst-icon{width:76px;height:76px;font-size:1.9rem}
+  .burst-ring-outer{width:94px;height:94px}
+  .vol-card,.req-card,.eco-card,.timeline-card{padding:18px 16px}
+}
+@media(max-width:420px){.mini-cards{grid-template-columns:1fr}}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(139,92,246,.3);border-radius:99px}
+</style>
+</head>
+<body>
+
+<div class="ambient">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="blob blob-4"></div>
+</div>
+<div class="grid-overlay"></div>
+
+<div class="page">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <a href="/" class="logo">
+      <div class="logo-mark"><i class="fa-solid fa-microchip"></i></div>
+      <div class="logo-text">Smart Allocation</div>
+    </a>
+    <div class="topbar-right">
+      <a href="{% url 'dashboard' %}" class="nav-btn"><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+      <a href="{% url 'create_request' %}" class="nav-btn"><i class="fa-solid fa-plus"></i> New Request</a>
+    </div>
+  </div>
+
+  <!-- SUCCESS BURST -->
+  <div class="burst-wrap">
+    <div class="burst-ring-outer">
+      <div class="burst-icon">
+        ✅
+        <div class="particles">
+          <div class="particle p1"></div>
+          <div class="particle p2"></div>
+          <div class="particle p3"></div>
+          <div class="particle p4"></div>
+          <div class="particle p5"></div>
+          <div class="particle p6"></div>
+          <div class="particle p7"></div>
+          <div class="particle p8"></div>
+        </div>
+      </div>
+    </div>
+    <h1 class="burst-headline">Request Successfully Matched!</h1>
+    <p class="burst-sub">We found the <span>perfect volunteer</span> for your request using AI-powered matching.</p>
+    <div class="status-chips">
+      <div class="s-chip s-chip-green"><i class="fa-solid fa-circle-check"></i> Match Confirmed</div>
+      <div class="s-chip s-chip-violet"><i class="fa-solid fa-brain"></i> AI Scored</div>
+      <div class="s-chip s-chip-cyan"><i class="fa-solid fa-bolt"></i> Notified</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- VOLUNTEER CARD -->
+    <div class="glass vol-card">
+      <svg width="0" height="0" style="position:absolute">
+        <defs>
+          <linearGradient id="sg2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#10b981"/>
+            <stop offset="100%" stop-color="#06b6d4"/>
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div class="card-eyebrow">
+        <div class="card-label"><i class="fa-solid fa-user-check"></i> Matched Volunteer</div>
+        <div class="match-badge"><div class="dot"></div> Best Match · Live</div>
+      </div>
+
+      <div class="vol-main">
+        <div class="vol-avatar">
+          <!-- initials rendered by JS -->
+          <span id="vol-init">SK</span>
+          <div class="verified"><i class="fa-solid fa-check"></i></div>
+        </div>
+        <div class="vol-info">
+          <div class="vol-name" id="vol-name">Sanjana Kapoor</div>
+          <div class="vol-role" id="vol-role">Emergency Medical Coordinator · Red Cross Volunteer</div>
+        </div>
+        <div class="score-block">
+          <div class="score-ring-wrap">
+            <svg width="72" height="72" viewBox="0 0 72 72">
+              <circle class="ring-bg" cx="36" cy="36" r="32"/>
+              <circle class="ring-fill" cx="36" cy="36" r="32" id="ring-el"/>
+            </svg>
+            <div>
+              <div class="sc-num" id="sc-num">94%</div>
+              <div class="sc-sub-text">MATCH</div>
+            </div>
+          </div>
+          <div class="sc-label">Score</div>
+        </div>
+      </div>
+
+      <div class="vol-chips" id="vol-chips">
+        <div class="v-chip"><i class="fa-solid fa-star"></i> Emergency Care</div>
+        <div class="v-chip"><i class="fa-solid fa-location-dot"></i> New Delhi</div>
+        <div class="v-chip"><i class="fa-solid fa-chart-line"></i> 98% Response</div>
+        <div class="v-chip"><i class="fa-solid fa-handshake"></i> 214 Cases</div>
+        <div class="v-chip"><i class="fa-solid fa-house"></i> Local Network</div>
+      </div>
+    </div>
+
+    <!-- REQUEST SUMMARY CARD -->
+    <div class="glass req-card">
+      <div class="req-header">
+        <div class="req-type-pill" id="req-type-pill">
+          <i class="fa-solid fa-tag"></i>
+          <span id="req-type-text">Blood Requirement</span>
+        </div>
+        <div class="urg-tag urg-high" id="urg-tag">
+          <i class="fa-solid fa-bolt"></i> High Priority
+        </div>
+      </div>
+
+      <div class="req-body">
+        <div class="req-field">
+          <div class="req-field-icon ico-violet"><i class="fa-solid fa-align-left"></i></div>
+          <div class="req-field-body">
+            <div class="rf-label">Request Description</div>
+            <div class="rf-val" id="req-desc">Urgent need for O+ blood donor at the college medical centre. Patient requires immediate transfusion.</div>
+          </div>
+        </div>
+        <div class="req-field">
+          <div class="req-field-icon ico-cyan"><i class="fa-solid fa-location-dot"></i></div>
+          <div class="req-field-body">
+            <div class="rf-label">Location</div>
+            <div class="rf-val" id="req-loc">AIIMS New Delhi</div>
+          </div>
+        </div>
+        <div class="req-field">
+          <div class="req-field-icon ico-amber"><i class="fa-solid fa-clock"></i></div>
+          <div class="req-field-body">
+            <div class="rf-label">Submitted</div>
+            <div class="rf-val muted" id="req-time">Just now · April 27, 2026</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-grid -->
+
+  <!-- MINI STAT CARDS -->
+  <div class="mini-cards" style="max-width:800px;width:100%">
+    <div class="mini-card">
+      <div class="mc-icon">🏆</div>
+      <div class="mc-val mc-green" id="mc-score">94%</div>
+      <div class="mc-lbl">Match Score</div>
+    </div>
+    <div class="mini-card">
+      <div class="mc-icon">⚡</div>
+      <div class="mc-val mc-violet" id="mc-resp">~8 min</div>
+      <div class="mc-lbl">Est. Response</div>
+    </div>
+    <div class="mini-card">
+      <div class="mc-icon">🌐</div>
+      <div class="mc-val mc-cyan" id="mc-eco">Local</div>
+      <div class="mc-lbl">Ecosystem</div>
+    </div>
+  </div>
+
+  <!-- ECOSYSTEM PROGRESS -->
+  <div class="glass eco-card" style="max-width:800px;width:100%;margin-top:14px;animation:slideUp .6s .42s ease both">
+    <div class="eco-bar">
+      <div class="eco-step done-step">
+        <div class="eco-dot"><i class="fa-solid fa-check"></i></div>
+        <div class="eco-step-lbl">Local</div>
+      </div>
+      <div class="eco-step active-step" id="eco-active">
+        <div class="eco-dot"><i class="fa-solid fa-location-dot"></i></div>
+        <div class="eco-step-lbl">City</div>
+      </div>
+      <div class="eco-step" id="eco-global">
+        <div class="eco-dot"><i class="fa-solid fa-globe"></i></div>
+        <div class="eco-step-lbl">Global</div>
+      </div>
+    </div>
+    <div class="eco-label-right">
+      <i class="fa-solid fa-circle-info" style="color:var(--muted)"></i>
+      Match found at <strong id="eco-found-label">Local</strong> level
+    </div>
+  </div>
+
+  <!-- CTA BUTTONS -->
+  <div class="cta-section">
+    <a href="{% url 'create_request' %}" class="btn-primary">
+      <i class="fa-solid fa-plus-circle"></i> Create New Request
+    </a>
+    <a href="{% url 'dashboard' %}" class="btn-secondary">
+      <i class="fa-solid fa-gauge-high"></i> View Dashboard
+    </a>
+  </div>
+
+  <!-- WHAT HAPPENS NEXT -->
+  <div class="glass timeline-card">
+    <div class="tl-title"><i class="fa-solid fa-timeline"></i> What Happens Next</div>
+    <div class="tl-items">
+      <div class="tl-item">
+        <div class="tl-dot tl-done"><i class="fa-solid fa-check"></i></div>
+        <div class="tl-body">
+          <div class="tl-head">Request Submitted</div>
+          <div class="tl-desc">Your request was received and queued for AI analysis</div>
+        </div>
+        <div class="tl-time">Now</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot tl-done"><i class="fa-solid fa-check"></i></div>
+        <div class="tl-body">
+          <div class="tl-head">AI Match Completed</div>
+          <div class="tl-desc">Best volunteer identified using skill + proximity scoring</div>
+        </div>
+        <div class="tl-time">Now</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot tl-active"><i class="fa-solid fa-paper-plane"></i></div>
+        <div class="tl-body">
+          <div class="tl-head">Volunteer Notified</div>
+          <div class="tl-desc">Volunteer has been alerted and is reviewing the request</div>
+        </div>
+        <div class="tl-time">In progress</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot tl-pending"><i class="fa-solid fa-handshake"></i></div>
+        <div class="tl-body">
+          <div class="tl-head">Volunteer Accepts & Connects</div>
+          <div class="tl-desc">You will receive contact details once they confirm</div>
+        </div>
+        <div class="tl-time">~8 min</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot tl-pending"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="tl-body">
+          <div class="tl-head">Request Resolved</div>
+          <div class="tl-desc">Mark the request as resolved after help is received</div>
+        </div>
+        <div class="tl-time">Soon</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="footer-note">
+    Need help? <a href="#">Contact Support</a> &nbsp;·&nbsp; <a href="#">View All Requests</a> &nbsp;·&nbsp;
+    Powered by <span style="color:var(--violet-light)">Smart Allocation AI</span>
+  </p>
+
+</div><!-- /page -->
+
+<script>
+// ══════════════════════════════════════════════════
+// Read Django template variables or use defaults
+// Replace these with actual Django context vars:
+//   {{ volunteer.name }}, {{ match.score }}, etc.
+// ══════════════════════════════════════════════════
+const DATA = {
+  volName:    "{{ volunteer.name|default:'Sanjana Kapoor' }}",
+  volRole:    "{{ volunteer.role|default:'Emergency Medical Coordinator · Red Cross Volunteer' }}",
+  volSkill:   "{{ volunteer.skill|default:'Emergency Care' }}",
+  volLoc:     "{{ volunteer.location|default:'New Delhi' }}",
+  volResp:    "{{ volunteer.response_rate|default:'98%' }}",
+  volCases:   "{{ volunteer.cases|default:'214' }}",
+  matchScore: parseInt("{{ match.score|default:'94' }}") || 94,
+  ecosystem:  "{{ match.ecosystem|default:'local' }}",
+  reqType:    "{{ request.request_type|default:'Blood Requirement' }}",
+  reqDesc:    "{{ request.description|default:'Urgent need for O+ blood donor at the college medical centre. Patient requires immediate transfusion.' }}",
+  reqLoc:     "{{ request.location|default:'AIIMS New Delhi' }}",
+  urgency:    "{{ request.urgency|default:'high' }}",
+};
+
+// Initials
+function initials(name) {
+  return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+// Urgency
+const urgMap = {
+  high:   {cls:'urg-high',   icon:'fa-bolt',     label:'High Priority'},
+  medium: {cls:'urg-medium', icon:'fa-clock',    label:'Medium Priority'},
+  low:    {cls:'urg-low',    icon:'fa-leaf',     label:'Low Priority'},
+};
+const urgResp = {high:'~5 min', medium:'~15 min', low:'~1 hour'};
+
+// Ecosystem steps
+const ecoOrder = ['local','city','global'];
+function applyEco(eco) {
+  const idx = ecoOrder.indexOf(eco);
+  document.querySelectorAll('.eco-step').forEach((el, i) => {
+    el.classList.remove('done-step','active-step');
+    if (i < idx) el.classList.add('done-step');
+    else if (i === idx) el.classList.add('active-step');
+  });
+  document.getElementById('eco-found-label').textContent = eco.charAt(0).toUpperCase()+eco.slice(1);
+  document.getElementById('mc-eco').textContent = eco.charAt(0).toUpperCase()+eco.slice(1);
+}
+
+// Apply data
+function applyData() {
+  const d = DATA;
+
+  document.getElementById('vol-init').textContent = initials(d.volName);
+  document.getElementById('vol-name').textContent = d.volName;
+  document.getElementById('vol-role').textContent = d.volRole;
+  document.getElementById('req-desc').textContent = d.reqDesc.length > 120 ? d.reqDesc.slice(0,120)+'…' : d.reqDesc;
+  document.getElementById('req-loc').textContent  = d.reqLoc;
+  document.getElementById('req-type-text').textContent = d.reqType;
+
+  // Time
+  const now = new Date();
+  document.getElementById('req-time').textContent = `Just now · ${now.toLocaleDateString('en-IN',{year:'numeric',month:'long',day:'numeric'})}`;
+
+  // Score
+  const score = Math.min(Math.max(d.matchScore,0),100);
+  document.getElementById('sc-num').textContent = score+'%';
+  document.getElementById('mc-score').textContent = score+'%';
+
+  // Ring animate
+  const C = 2*Math.PI*32;
+  const ring = document.getElementById('ring-el');
+  ring.style.strokeDasharray  = C;
+  ring.style.strokeDashoffset = C;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    ring.style.strokeDashoffset = C - (score/100)*C;
+  }));
+
+  // Urgency
+  const urg = urgMap[d.urgency] || urgMap.medium;
+  const urgEl = document.getElementById('urg-tag');
+  urgEl.className = 'urg-tag ' + urg.cls;
+  urgEl.innerHTML = `<i class="fa-solid ${urg.icon}"></i> ${urg.label}`;
+
+  // Est. response
+  document.getElementById('mc-resp').textContent = urgResp[d.urgency] || '~10 min';
+
+  // Volunteer chips
+  document.getElementById('vol-chips').innerHTML = `
+    <div class="v-chip"><i class="fa-solid fa-star"></i> ${d.volSkill}</div>
+    <div class="v-chip"><i class="fa-solid fa-location-dot"></i> ${d.volLoc}</div>
+    <div class="v-chip"><i class="fa-solid fa-chart-line"></i> ${d.volResp} Response</div>
+    <div class="v-chip"><i class="fa-solid fa-handshake"></i> ${d.volCases} Cases</div>
+    <div class="v-chip"><i class="fa-solid fa-house"></i> ${d.ecosystem.charAt(0).toUpperCase()+d.ecosystem.slice(1)} Network</div>
+  `;
+
+  applyEco(d.ecosystem);
+}
+
+document.addEventListener('DOMContentLoaded', applyData);
+</script>
+
+</body>
+</html>

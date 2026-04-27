@@ -15,9 +15,9 @@ class Volunteer(models.Model):
 # Request Model
 class Request(models.Model):
     URGENCY_CHOICES = [
-        ('High', 'High'),
-        ('Medium', 'Medium'),
-        ('Low', 'Low'),
+        ('high', 'High'),
+        ('medium', 'Medium'),
+        ('low', 'Low'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
