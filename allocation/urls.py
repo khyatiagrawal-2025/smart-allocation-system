@@ -1,9 +1,15 @@
 from django.urls import path
 from . import views
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('request/', views.create_request, name='create_request'),
     path('success/', views.success, name='success'),
     path('match/', views.create_request, name='match_volunteer'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    #path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('register/', views.register, name='register'), # Name sahi hona chahiye
+    path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
+
 ]
