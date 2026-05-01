@@ -1,251 +1,1279 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Intelligent Allocation Matrix</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Orbitron:wght@700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
-    
-    <style>
-        :root {
-            --bg-deep: #050b14;
-            --neon-cyan: #00f3ff;
-            --neon-blue: #0066ff;
-            --text-main: #ffffff;
-            --text-muted: #a0aec0;
-        }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smart Allocation — Right Help, Right Now</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+/* ─────────────────────────────────────────
+   DESIGN TOKENS
+───────────────────────────────────────── */
+:root {
+  /* backgrounds */
+  --bg:       #040b18;
+  --bg-2:     #060e20;
+  --bg-card:  rgba(8, 18, 40, 0.85);
+  --bg-glass: rgba(10, 22, 50, 0.6);
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-            background-image: 
-                radial-gradient(circle at 50% 0%, rgba(0, 102, 255, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 50% 100%, rgba(0, 243, 255, 0.1) 0%, transparent 50%);
-        }
+  /* neon palette */
+  --neon:     #00c2ff;
+  --neon-dim: rgba(0, 194, 255, 0.18);
+  --neon-glow:rgba(0, 194, 255, 0.5);
+  --blue:     #0066ff;
+  --blue-l:   #3d8bff;
+  --indigo:   #4338ca;
+  --violet:   #7c3aed;
+  --cyan-s:   #06b6d4;
+  --teal:     #0d9488;
+  --green:    #10b981;
 
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-image: 
-                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            z-index: -1;
-        }
+  /* text */
+  --text:     #eef2ff;
+  --text-2:   #a8b8d8;
+  --text-3:   #5a718a;
 
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 5%;
-            background: rgba(5, 11, 20, 0.5);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0, 243, 255, 0.1);
-        }
+  /* borders */
+  --border:   rgba(0, 194, 255, 0.1);
+  --border-2: rgba(0, 194, 255, 0.22);
+  --border-3: rgba(0, 194, 255, 0.4);
 
-        .logo {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-main);
-            text-decoration: none;
-            letter-spacing: 1px;
-        }
+  /* radii */
+  --r:  14px;
+  --r2: 20px;
+  --r3: 28px;
+}
 
-        .logo span {
-            color: var(--neon-cyan);
-        }
+/* ─────────────────────────────────────────
+   RESET
+───────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+a { text-decoration: none; }
+img { max-width: 100%; }
 
-        .nav-links {
-            display: flex;
-            align-items: center;
-        }
+/* ─────────────────────────────────────────
+   SCROLLBAR
+───────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(0,194,255,.3); border-radius: 99px; }
 
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            margin-left: 30px;
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s ease;
-        }
+/* ─────────────────────────────────────────
+   BACKGROUND LAYERS
+───────────────────────────────────────── */
+.bg-fixed {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 90% 60% at 15% 0%, rgba(0,102,255,.22) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 55% at 85% 100%, rgba(0,194,255,.14) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 45% at 50% 50%, rgba(76,56,237,.1) 0%, transparent 60%),
+    var(--bg);
+}
+.grid-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 40%, transparent 100%);
+}
+.page { position: relative; z-index: 1; }
 
-        .nav-links a:hover {
-            color: var(--neon-cyan);
-        }
+/* ─────────────────────────────────────────
+   LAYOUT
+───────────────────────────────────────── */
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+section { padding: 100px 0; }
 
-        /* 🔥 Auth Buttons CSS 🔥 */
-        .nav-auth-btn {
-            border: 1px solid var(--neon-cyan);
-            padding: 8px 18px;
-            border-radius: 4px;
-            color: var(--neon-cyan) !important;
-        }
+/* ─────────────────────────────────────────
+   TYPOGRAPHY
+───────────────────────────────────────── */
+.heading-xl {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.6rem, 6.5vw, 5.4rem);
+  font-weight: 700;
+  line-height: 1.0;
+  letter-spacing: -0.035em;
+}
+.heading-lg {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.85rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+.heading-md {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(1.15rem, 2.5vw, 1.5rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.neon-text {
+  background: linear-gradient(135deg, #00c2ff 0%, #3d8bff 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.body-text { font-size: 1rem; line-height: 1.75; color: var(--text-2); font-weight: 400; }
+.body-sm   { font-size: .875rem; line-height: 1.65; color: var(--text-2); }
 
-        .nav-auth-btn:hover {
-            background: rgba(0, 243, 255, 0.1);
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.3);
-        }
+/* ─────────────────────────────────────────
+   CHIP / BADGE
+───────────────────────────────────────── */
+.chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 16px; border-radius: 100px;
+  font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  background: rgba(0,194,255,.1); border: 1px solid var(--border-2); color: var(--neon);
+}
+.chip.green  { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.3); color: #34d399; }
+.chip.violet { background: rgba(124,58,237,.12); border-color: rgba(124,58,237,.3); color: #a78bfa; }
+.chip.amber  { background: rgba(251,191,36,.1);  border-color: rgba(251,191,36,.3); color: #fcd34d; }
 
-        /* 🔥 Fix for Logout Button Styling 🔥 */
-        .nav-logout-btn {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            cursor: pointer;
-            margin-left: 30px;
-            padding: 0;
-            transition: all 0.3s ease;
-        }
+/* ─────────────────────────────────────────
+   GLASS CARD
+───────────────────────────────────────── */
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+}
+.glass-bright {
+  background: rgba(10, 24, 56, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-2);
+  border-radius: var(--r2);
+}
 
-        .nav-logout-btn:hover {
-            color: #ff4757 !important;
-            text-shadow: 0 0 8px rgba(255, 71, 87, 0.5);
-        }
+/* ─────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 13px 26px; border-radius: var(--r); border: none; cursor: pointer;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: .95rem;
+  text-decoration: none; transition: all .22s; position: relative; overflow: hidden;
+  white-space: nowrap;
+}
+.btn-neon {
+  background: linear-gradient(135deg, #0055dd, #00a8e8);
+  color: #fff;
+  box-shadow: 0 0 20px rgba(0,170,232,.4), 0 4px 20px rgba(0,85,221,.3);
+}
+.btn-neon:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 36px rgba(0,194,255,.55), 0 8px 28px rgba(0,85,221,.4);
+  color: #fff;
+}
+.btn-neon:active { transform: translateY(0); }
+.btn-neon::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.12) 0%, transparent 100%);
+  border-radius: inherit;
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border-2);
+}
+.btn-ghost:hover {
+  background: rgba(0,194,255,.07);
+  border-color: var(--border-3);
+  color: var(--text);
+  transform: translateY(-2px);
+  box-shadow: 0 0 18px rgba(0,194,255,.12);
+}
+.btn-teal {
+  background: linear-gradient(135deg, #0d9488, #059669);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(13,148,136,.3);
+}
+.btn-teal:hover { transform: translateY(-2px); box-shadow: 0 0 28px rgba(13,148,136,.5); color: #fff; }
+.btn-lg { padding: 15px 32px; font-size: 1rem; border-radius: 15px; }
+.btn-sm { padding: 9px 18px; font-size: .83rem; border-radius: 10px; }
 
-        .hero {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 20px;
-            position: relative;
-        }
+/* ─────────────────────────────────────────
+   NAVBAR
+───────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 5%;
+  background: rgba(4, 11, 24, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  transition: background .3s;
+}
+.navbar.scrolled { background: rgba(4, 11, 24, 0.96); }
 
-        .hero h1 {
-            font-family: 'Orbitron', sans-serif; 
-            font-size: 4rem;
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 25px;
-            color: #ffffff;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 20px rgba(0, 243, 255, 0.5), 0 0 40px rgba(0, 102, 255, 0.3);
-        }
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1.1rem; font-weight: 700; color: var(--text);
+}
+.logo-mark {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #0055dd, #00c2ff);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; color: #fff;
+  box-shadow: 0 0 16px rgba(0,194,255,.45);
+}
+.nav-logo em { color: var(--neon); font-style: normal; }
 
-        .hero p {
-            font-family: 'Inter', sans-serif;
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            max-width: 800px;
-            line-height: 1.6;
-            margin-bottom: 50px;
-            font-weight: 400;
-        }
+.nav-links { display: flex; align-items: center; gap: 2px; }
+.nav-link {
+  font-size: .875rem; font-weight: 500;
+  color: var(--text-2); padding: 7px 14px; border-radius: 9px;
+  transition: all .2s;
+}
+.nav-link:hover { color: var(--text); background: rgba(0,194,255,.07); }
+.nav-link.active { color: var(--neon); }
 
-        .btn-container {
-            display: flex;
-            gap: 25px;
-        }
+.nav-right { display: flex; align-items: center; gap: 10px; }
 
-        .cyber-btn {
-            font-family: 'Rajdhani', sans-serif;
-            font-size: 16px;
-            font-weight: 700;
-            text-decoration: none;
-            padding: 16px 40px;
-            border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
+/* hamburger */
+.hamburger {
+  display: none;
+  background: none; border: 1px solid var(--border-2);
+  color: var(--text); width: 40px; height: 40px; border-radius: 10px;
+  font-size: 1rem; cursor: pointer; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.hamburger:hover { border-color: var(--border-3); background: var(--neon-dim); }
 
-        .primary-btn {
-            background: transparent;
-            color: var(--neon-cyan);
-            border: 1px solid var(--neon-cyan);
-            box-shadow: inset 0 0 10px rgba(0, 243, 255, 0.2), 0 0 15px rgba(0, 243, 255, 0.2);
-        }
+/* mobile drawer */
+.mobile-nav {
+  display: none; /* hidden by default via JS controlled class */
+  position: fixed; top: 64px; left: 0; right: 0; z-index: 199;
+  background: rgba(4,11,24,.98); backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px 20px;
+}
+.mobile-nav.open { display: block; }
+.mobile-nav a {
+  display: block; padding: 13px 8px;
+  color: var(--text-2); font-weight: 500; font-size: .95rem;
+  border-bottom: 1px solid var(--border);
+  transition: color .2s;
+}
+.mobile-nav a:last-child { border-bottom: none; }
+.mobile-nav a:hover { color: var(--neon); }
+.mobile-nav-btns { display: flex; gap: 10px; margin-top: 16px; }
+.mobile-nav-btns .btn { flex: 1; justify-content: center; }
 
-        .primary-btn:hover {
-            background: rgba(0, 243, 255, 0.1);
-            box-shadow: inset 0 0 20px rgba(0, 243, 255, 0.5), 0 0 30px rgba(0, 243, 255, 0.4);
-            text-shadow: 0 0 8px rgba(0, 243, 255, 0.8);
-        }
+/* ─────────────────────────────────────────
+   HERO
+───────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  padding-top: 120px; padding-bottom: 80px;
+  display: flex; align-items: center;
+  overflow: hidden; /* CRITICAL — prevents floating elements from extending page */
+}
 
-        .secondary-btn {
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-main);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+/* Animated glow orbs — contained within hero */
+.hero-orb {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  filter: blur(70px); opacity: .55;
+}
+.orb-1 {
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(0,102,255,.4), transparent 70%);
+  top: -120px; left: -80px;
+  animation: orbFloat 22s ease-in-out infinite alternate;
+}
+.orb-2 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(0,194,255,.3), transparent 70%);
+  bottom: -80px; right: -60px;
+  animation: orbFloat 18s ease-in-out infinite alternate-reverse;
+}
+@keyframes orbFloat {
+  from { transform: translate(0,0) scale(1); }
+  to   { transform: translate(30px,20px) scale(1.08); }
+}
 
-        .secondary-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-        }
+.hero-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+}
 
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5rem; }
-            .hero p { font-size: 1rem; }
-            .btn-container { flex-direction: column; gap: 15px; }
-            .nav-links { display: none; }
-        }
-    </style>
+/* Hero text side */
+.hero-eyebrow {
+  margin-bottom: 22px;
+  animation: fadeUp .6s ease both;
+}
+.live-dot {
+  display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+  background: #34d399; box-shadow: 0 0 8px #34d399;
+  animation: pulse 1.6s ease-in-out infinite;
+  margin-right: 4px;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+.hero-h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.8rem, 7vw, 5.6rem);
+  font-weight: 700;
+  line-height: .98;
+  letter-spacing: -0.04em;
+  margin-bottom: 24px;
+  animation: fadeUp .7s .1s ease both;
+}
+.hero-sub {
+  font-size: 1.08rem; line-height: 1.72;
+  color: var(--text-2); max-width: 480px;
+  margin-bottom: 38px; font-weight: 400;
+  animation: fadeUp .7s .2s ease both;
+}
+.hero-actions {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  animation: fadeUp .7s .3s ease both;
+}
+.hero-trust {
+  margin-top: 32px; display: flex; align-items: center; gap: 20px;
+  animation: fadeUp .7s .4s ease both; flex-wrap: wrap;
+}
+.trust-item {
+  display: flex; align-items: center; gap: 7px;
+  font-size: .82rem; color: var(--text-3); font-weight: 500;
+}
+.trust-item i { color: var(--neon); font-size: .75rem; }
+
+/* Hero card side — NO absolute badges outside box */
+.hero-card-wrap {
+  position: relative;
+  animation: fadeUp .9s .15s ease both;
+}
+
+/* Neon ring glow behind card */
+.card-glow {
+  position: absolute; inset: -30px;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(0,102,255,.18), transparent 70%);
+  border-radius: 50%; pointer-events: none; z-index: 0;
+}
+
+.match-card {
+  position: relative; z-index: 1;
+  padding: 24px;
+  background: rgba(6, 16, 38, 0.92);
+  border: 1px solid var(--border-2);
+  border-radius: 22px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 0 1px rgba(0,194,255,.07), 0 32px 64px rgba(0,0,0,.5);
+  overflow: hidden; /* clip top line pseudo */
+}
+.match-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--neon), var(--blue-l), transparent);
+}
+
+/* Status header */
+.card-status-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 18px; flex-wrap: wrap; gap: 8px;
+}
+.card-status-lbl {
+  font-size: .75rem; font-weight: 600; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-3);
+  display: flex; align-items: center; gap: 7px;
+}
+.card-status-lbl i { color: var(--neon); }
+.card-live-badge {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  color: #34d399; background: rgba(16,185,129,.14); border: 1px solid rgba(16,185,129,.3);
+  border-radius: 100px; padding: 4px 11px;
+  display: flex; align-items: center; gap: 5px;
+}
+
+/* Match rows */
+.match-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 11px 0; border-bottom: 1px solid var(--border);
+}
+.match-row:last-of-type { border-bottom: none; }
+.m-av {
+  width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .88rem;
+  color: #fff; position: relative;
+}
+.m-av::after {
+  content: ''; position: absolute; inset: -2px; border-radius: 50%;
+  background: inherit; filter: blur(8px); opacity: .4; z-index: -1;
+}
+.av-1 { background: linear-gradient(135deg, #0055dd, #00c2ff); }
+.av-2 { background: linear-gradient(135deg, #0d9488, #059669); }
+.av-3 { background: linear-gradient(135deg, #7c3aed, #ec4899); }
+.m-info { flex: 1; min-width: 0; }
+.m-name { font-weight: 600; font-size: .9rem; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.m-skill { font-size: .74rem; color: var(--text-3); }
+.m-score {
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.05rem;
+  white-space: nowrap;
+}
+.sc-hi { color: #34d399; text-shadow: 0 0 10px rgba(52,211,153,.4); }
+.sc-md { color: var(--neon); text-shadow: 0 0 10px rgba(0,194,255,.4); }
+.sc-lo { color: #fbbf24; }
+
+/* Mini stat chips INSIDE card */
+.card-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 16px;
+}
+.c-stat {
+  background: rgba(0,194,255,.06); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 10px; text-align: center;
+}
+.c-stat-num {
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+  font-size: 1.2rem; color: var(--neon);
+  text-shadow: 0 0 12px rgba(0,194,255,.4);
+  display: block;
+}
+.c-stat-lbl { font-size: .7rem; color: var(--text-3); margin-top: 3px; }
+
+/* Floating info tags — INSIDE card wrap, positioned safely */
+.info-tag {
+  position: absolute;
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 14px; border-radius: 12px;
+  font-size: .78rem; font-weight: 600;
+  white-space: nowrap;
+  animation: floatY 4s ease-in-out infinite;
+  pointer-events: none; /* avoid hover issues */
+}
+.tag-top-right {
+  top: -16px; right: 12px;
+  background: rgba(16,185,129,.18); border: 1px solid rgba(16,185,129,.35); color: #34d399;
+  animation-delay: 0s;
+}
+.tag-bottom-left {
+  bottom: -16px; left: 12px;
+  background: rgba(0,102,255,.18); border: 1px solid rgba(0,194,255,.35); color: var(--neon);
+  animation-delay: -2s;
+}
+@keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+
+/* Extra padding on card wrap to contain floating tags */
+.hero-card-wrap { padding: 24px 8px; }
+
+/* ─────────────────────────────────────────
+   SECTION HEADERS
+───────────────────────────────────────── */
+.sec-header { text-align: center; margin-bottom: 64px; }
+.sec-header .heading-lg { margin-bottom: 16px; }
+.sec-header .body-text { max-width: 500px; margin: 0 auto; }
+
+/* ─────────────────────────────────────────
+   HOW IT WORKS
+───────────────────────────────────────── */
+.how-section { background: rgba(0,194,255,.02); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+.steps-wrap {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  position: relative;
+}
+@media(max-width:768px) { .steps-wrap { grid-template-columns: 1fr; } }
+
+/* connector line — desktop only */
+.steps-wrap::before {
+  content: '';
+  position: absolute; top: 52px; left: calc(16.66% + 16px); right: calc(16.66% + 16px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,194,255,.4), transparent);
+  pointer-events: none;
+}
+@media(max-width:768px) { .steps-wrap::before { display: none; } }
+
+.step-card {
+  text-align: center; padding: 40px 28px;
+  border-radius: var(--r2); border: 1px solid var(--border);
+  background: rgba(4,12,30,.6);
+  transition: all .3s;
+}
+.step-card:hover {
+  border-color: var(--border-3);
+  background: rgba(0,194,255,.04);
+  box-shadow: 0 0 32px rgba(0,194,255,.08);
+  transform: translateY(-4px);
+}
+.step-icon-wrap {
+  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 22px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,194,255,.08); border: 1px solid var(--border-2);
+  font-size: 1.6rem; position: relative;
+  transition: all .3s;
+}
+.step-card:hover .step-icon-wrap {
+  background: rgba(0,194,255,.14);
+  box-shadow: 0 0 24px rgba(0,194,255,.2);
+}
+.step-num {
+  position: absolute; top: -5px; right: -5px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: linear-gradient(135deg, #0055dd, #00c2ff);
+  font-size: .68rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif;
+  display: flex; align-items: center; justify-content: center; color: #fff;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 8px rgba(0,194,255,.5);
+}
+.step-title { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 1.05rem; margin-bottom: 10px; }
+.step-desc  { font-size: .875rem; color: var(--text-2); line-height: 1.65; }
+
+/* ─────────────────────────────────────────
+   FEATURES
+───────────────────────────────────────── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+@media(max-width:960px)  { .features-grid { grid-template-columns: repeat(2,1fr); } }
+@media(max-width:560px)  { .features-grid { grid-template-columns: 1fr; } }
+
+.feat-card {
+  padding: 28px 22px;
+  border: 1px solid var(--border);
+  border-radius: var(--r2);
+  background: rgba(4,12,30,.7);
+  transition: all .28s;
+  cursor: default;
+}
+.feat-card:hover {
+  border-color: var(--border-3);
+  background: rgba(0,194,255,.05);
+  transform: translateY(-5px);
+  box-shadow: 0 0 36px rgba(0,194,255,.1), 0 20px 40px rgba(0,0,0,.3);
+}
+.feat-icon {
+  width: 52px; height: 52px; border-radius: 14px; margin-bottom: 18px;
+  display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+}
+.fi-blue   { background: rgba(0,194,255,.14); color: var(--neon); box-shadow: 0 0 16px rgba(0,194,255,.18); }
+.fi-green  { background: rgba(16,185,129,.14); color: #34d399; }
+.fi-violet { background: rgba(124,58,237,.14); color: #a78bfa; }
+.fi-amber  { background: rgba(251,191,36,.14); color: #fcd34d; }
+.feat-title { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 1rem; margin-bottom: 10px; }
+.feat-desc  { font-size: .85rem; color: var(--text-2); line-height: 1.65; }
+
+/* ─────────────────────────────────────────
+   STATS
+───────────────────────────────────────── */
+.stats-section {
+  background: rgba(0,60,140,.05);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+}
+.stats-grid {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  gap: 0; background: var(--border);
+  border-radius: var(--r2); overflow: hidden;
+  border: 1px solid var(--border);
+}
+@media(max-width:600px) { .stats-grid { grid-template-columns: 1fr; } }
+
+.stat-box {
+  background: var(--bg-2); padding: 56px 40px; text-align: center;
+}
+.stat-n {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2.8rem,5vw,4.2rem); font-weight: 700;
+  line-height: 1; display: block; margin-bottom: 10px;
+  background: linear-gradient(135deg, #00c2ff, #3d8bff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  text-shadow: none; /* gradient handles glow perception */
+}
+.stat-label { font-size: .95rem; color: var(--text-2); font-weight: 500; }
+.stat-sub   { font-size: .78rem; color: var(--text-3); margin-top: 5px; }
+
+/* ─────────────────────────────────────────
+   WHY CHOOSE US
+───────────────────────────────────────── */
+.why-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+}
+@media(max-width:860px) { .why-grid { grid-template-columns: 1fr; gap: 48px; } }
+
+.why-bullets { margin-top: 32px; }
+.why-bullet {
+  display: flex; align-items: flex-start; gap: 16px;
+  padding: 18px 0; border-bottom: 1px solid var(--border);
+}
+.why-bullet:last-child { border-bottom: none; }
+.wb-icon {
+  width: 42px; height: 42px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: .95rem;
+}
+.wb-t strong { font-weight: 600; font-size: .95rem; display: block; margin-bottom: 4px; color: var(--text); }
+.wb-t span   { font-size: .84rem; color: var(--text-2); line-height: 1.6; }
+
+/* Terminal */
+.terminal {
+  background: #020c1b; border: 1px solid var(--border-2);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(0,194,255,.05), 0 32px 64px rgba(0,0,0,.6);
+}
+.term-titlebar {
+  background: #061428; padding: 13px 18px;
+  display: flex; align-items: center; gap: 7px;
+  border-bottom: 1px solid var(--border);
+}
+.dot { width: 11px; height: 11px; border-radius: 50%; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+.term-label { font-size: .78rem; color: var(--text-3); margin-left: auto; font-family: monospace; }
+.term-body  { padding: 24px 20px; font-family: 'Courier New', monospace; font-size: .82rem; line-height: 2.1; }
+.tc-g   { color: var(--text-3); }
+.tc-b   { color: var(--neon); }
+.tc-v   { color: #a78bfa; }
+.tc-gr  { color: #34d399; }
+.tc-y   { color: #fcd34d; }
+.tc-w   { color: #e2e8f0; }
+.tc-dim { color: #2a4a6a; }
+.cursor { display: inline-block; width: 8px; height: 14px; background: var(--neon); animation: blink .9s step-end infinite; vertical-align: middle; border-radius: 1px; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* ─────────────────────────────────────────
+   CTA
+───────────────────────────────────────── */
+.cta-section {
+  position: relative; overflow: hidden;
+  border-top: 1px solid var(--border);
+}
+.cta-glow-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 80% at 20% 50%, rgba(0,102,255,.15), transparent 60%),
+    radial-gradient(ellipse 60% 60% at 80% 50%, rgba(0,194,255,.1), transparent 60%);
+}
+.cta-inner { text-align: center; max-width: 680px; margin: 0 auto; position: relative; z-index: 1; }
+.cta-badge { color: var(--neon); font-size: .8rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 20px; display: block; }
+.cta-h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.6rem); font-weight: 700;
+  letter-spacing: -.03em; line-height: 1.05; margin-bottom: 18px;
+}
+.cta-sub { font-size: 1rem; color: var(--text-2); line-height: 1.7; margin-bottom: 40px; }
+.cta-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; }
+
+/* ─────────────────────────────────────────
+   FOOTER
+───────────────────────────────────────── */
+footer {
+  background: rgba(2,8,20,.97); border-top: 1px solid var(--border);
+  padding: 64px 0 28px;
+}
+.footer-grid {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; margin-bottom: 48px;
+}
+@media(max-width:860px)  { .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
+@media(max-width:480px)  { .footer-grid { grid-template-columns: 1fr; gap: 24px; } }
+
+.footer-brand p { font-size: .875rem; color: var(--text-2); line-height: 1.65; margin-top: 14px; max-width: 260px; }
+.footer-col h6 {
+  font-family: 'Space Grotesk', sans-serif; font-size: .78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em; color: var(--text-3); margin-bottom: 16px;
+}
+.footer-col a {
+  display: block; color: var(--text-2); font-size: .875rem; margin-bottom: 11px; transition: color .2s;
+}
+.footer-col a:hover { color: var(--neon); }
+
+.footer-bottom {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  padding-top: 24px; border-top: 1px solid var(--border);
+}
+.footer-copy { font-size: .82rem; color: var(--text-3); }
+.social-row { display: flex; gap: 9px; }
+.social-btn {
+  width: 36px; height: 36px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,194,255,.06); border: 1px solid var(--border);
+  color: var(--text-3); font-size: .85rem; transition: all .2s;
+}
+.social-btn:hover {
+  background: rgba(0,194,255,.14); border-color: var(--border-3);
+  color: var(--neon); box-shadow: 0 0 12px rgba(0,194,255,.25);
+}
+
+/* ─────────────────────────────────────────
+   SCROLL ANIMATIONS
+───────────────────────────────────────── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(26px)} to{opacity:1;transform:translateY(0)} }
+
+.anim { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+.anim.show { opacity: 1; transform: translateY(0); }
+
+/* ─────────────────────────────────────────
+   NEON DIVIDER
+───────────────────────────────────────── */
+.neon-divider {
+  height: 1px; width: 100%;
+  background: linear-gradient(90deg, transparent, var(--neon), var(--blue-l), transparent);
+  opacity: .4;
+}
+
+/* ─────────────────────────────────────────
+   RESPONSIVE UTILITIES
+───────────────────────────────────────── */
+@media(max-width:900px) {
+  .hide-mobile { display: none !important; }
+  .hamburger   { display: flex !important; }
+  section      { padding: 70px 0; }
+}
+@media(max-width:480px) {
+  section { padding: 56px 0; }
+  .btn-lg { padding: 13px 22px; font-size: .93rem; }
+  .stat-box { padding: 40px 20px; }
+}
+</style>
 </head>
 <body>
 
-    <nav>
-        <a href="/" class="logo">Smart<span>System</span></a>
-        
-        <div class="nav-links">
-            {% if user.is_authenticated %}
-                <a href="{% url 'create_request' %}">New Request</a>
-                <a href="{% url 'dashboard' %}">Dashboard</a>
-                
-                <form method="POST" action="{% url 'logout' %}" style="display: inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="nav-logout-btn">
-                        LOGOUT ({{ user.username }})
-                    </button>
-                </form>
-                
-            {% else %}
-                <a href="{% url 'register' %}">Register Node</a>
-                <a href="{% url 'login' %}" class="nav-auth-btn">SYSTEM LOGIN</a>
-            {% endif %}
-        </div>
-    </nav>
+<div class="bg-fixed"></div>
+<div class="grid-bg"></div>
 
-    <section class="hero">
-        <h1>INTELLIGENT <br> ALLOCATION MATRIX</h1>
-        
-        <p>A next-generation platform designed to dynamically match high-priority requests with the perfect skills across local, city, and global networks in real-time.</p>
-        
-        <div class="btn-container">
-            {% if user.is_authenticated %}
-                <a href="{% url 'create_request' %}" class="cyber-btn primary-btn">INITIALIZE REQUEST</a>
-                <a href="{% url 'dashboard' %}" class="cyber-btn secondary-btn">ACCESS DASHBOARD</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="cyber-btn primary-btn">AUTHENTICATE TO START</a>
-            {% endif %}
+<div class="page">
+
+<!-- ══════════════════════════════════════
+     NAVBAR
+══════════════════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <a href="/" class="nav-logo">
+    <div class="logo-mark"><i class="fa-solid fa-bolt"></i></div>
+    Smart<em>Allocation</em>
+  </a>
+
+  <div class="nav-links hide-mobile">
+    <a href="/" class="nav-link active">Home</a>
+    <a href="{% url 'dashboard' %}" class="nav-link">Dashboard</a>
+    <a href="{% url 'create_request' %}" class="nav-link">Create Request</a>
+    <a href="#about" class="nav-link">About</a>
+  </div>
+
+  <div class="nav-right">
+    <a href="{% url 'create_request' %}" class="btn btn-neon btn-sm hide-mobile">
+      <i class="fa-solid fa-hand-holding-heart"></i> Get Help
+    </a>
+    <button class="hamburger" id="menuBtn" aria-label="Toggle menu">
+      <i class="fa-solid fa-bars" id="menuIcon"></i>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile nav -->
+<div class="mobile-nav" id="mobileNav">
+  <a href="/">Home</a>
+  <a href="{% url 'dashboard' %}">Dashboard</a>
+  <a href="{% url 'create_request' %}">Create Request</a>
+  <a href="#about">About</a>
+  <div class="mobile-nav-btns">
+    <a href="{% url 'create_request' %}" class="btn btn-neon">
+      <i class="fa-solid fa-hand-holding-heart"></i> Get Help
+    </a>
+    <a href="{% url 'dashboard' %}" class="btn btn-ghost">
+      <i class="fa-solid fa-users"></i> Volunteer
+    </a>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section class="hero" style="position:relative;overflow:hidden;">
+  <div class="hero-orb orb-1"></div>
+  <div class="hero-orb orb-2"></div>
+
+  <div class="wrap" style="width:100%">
+    <div class="hero-inner">
+
+      <!-- Text -->
+      <div>
+        <div class="hero-eyebrow">
+          <span class="chip"><span class="live-dot"></span> AI-Powered Matching System</span>
         </div>
-    </section>
+
+        <h1 class="hero-h1">
+          Connecting<br>
+          <span class="neon-text">Needs</span> with the<br>
+          Right Volunteers
+        </h1>
+
+        <p class="hero-sub">
+          Our smart matching engine scans local → city → global networks to find the most suitable volunteer in seconds — ranked by skill, urgency, and proximity.
+        </p>
+
+        <div class="hero-actions">
+          <a href="{% url 'create_request' %}" class="btn btn-neon btn-lg">
+            <i class="fa-solid fa-hand-holding-heart"></i> Request Help
+          </a>
+          <a href="{% url 'dashboard' %}" class="btn btn-ghost btn-lg">
+            <i class="fa-solid fa-users"></i> Become a Volunteer
+          </a>
+        </div>
+
+        <div class="hero-trust">
+          <div class="trust-item"><i class="fa-solid fa-circle-check"></i> Free to use</div>
+          <div class="trust-item"><i class="fa-solid fa-shield-halved"></i> Verified volunteers</div>
+          <div class="trust-item"><i class="fa-solid fa-bolt"></i> &lt;60s match time</div>
+        </div>
+      </div>
+
+      <!-- Card with floating tags INSIDE the wrapper -->
+      <div class="hero-card-wrap">
+        <div class="card-glow"></div>
+
+        <!-- FLOATING TAGS — positioned relative to hero-card-wrap, not outside -->
+        <div class="info-tag tag-top-right">
+          <i class="fa-solid fa-circle-check"></i> 94% Success Rate
+        </div>
+
+        <div class="match-card">
+          <div class="card-status-row">
+            <div class="card-status-lbl">
+              <i class="fa-solid fa-brain"></i> AI Match Engine
+            </div>
+            <div class="card-live-badge">
+              <span class="live-dot" style="width:5px;height:5px;margin-right:0"></span>
+              Live
+            </div>
+          </div>
+
+          <div class="match-row">
+            <div class="m-av av-1">AS</div>
+            <div class="m-info">
+              <div class="m-name">Dr. Ananya Sharma</div>
+              <div class="m-skill">Emergency Medicine · Delhi NCR</div>
+            </div>
+            <div class="m-score sc-hi">97%</div>
+          </div>
+
+          <div class="match-row">
+            <div class="m-av av-2">RV</div>
+            <div class="m-info">
+              <div class="m-name">Rohan Verma</div>
+              <div class="m-skill">Food Distribution · Mumbai</div>
+            </div>
+            <div class="m-score sc-md">89%</div>
+          </div>
+
+          <div class="match-row">
+            <div class="m-av av-3">PK</div>
+            <div class="m-info">
+              <div class="m-name">Priya Kumar</div>
+              <div class="m-skill">Academic Tutoring · Bangalore</div>
+            </div>
+            <div class="m-score sc-lo">82%</div>
+          </div>
+
+          <div class="card-stats">
+            <div class="c-stat">
+              <span class="c-stat-num">12k+</span>
+              <div class="c-stat-lbl">Requests Solved</div>
+            </div>
+            <div class="c-stat">
+              <span class="c-stat-num">3.4k</span>
+              <div class="c-stat-lbl">Volunteers</div>
+            </div>
+            <div class="c-stat">
+              <span class="c-stat-num">98%</span>
+              <div class="c-stat-lbl">Satisfaction</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-tag tag-bottom-left">
+          <i class="fa-solid fa-bolt"></i> &lt;60s Avg Match
+        </div>
+      </div>
+
+    </div><!-- /hero-inner -->
+  </div>
+</section>
+
+<div class="neon-divider"></div>
+
+
+<!-- ══════════════════════════════════════
+     HOW IT WORKS
+══════════════════════════════════════ -->
+<section class="how-section" id="how">
+  <div class="wrap">
+    <div class="sec-header anim">
+      <div class="chip" style="margin-bottom:20px"><i class="fa-solid fa-gear"></i> How It Works</div>
+      <h2 class="heading-lg">Three steps to the <span class="neon-text">right help</span></h2>
+      <p class="body-text" style="margin-top:14px">Our intelligent pipeline connects you to the most suitable volunteer in under a minute.</p>
+    </div>
+
+    <div class="steps-wrap">
+      <div class="step-card anim" style="transition-delay:.05s">
+        <div class="step-icon-wrap">
+          <span style="font-size:1.5rem">📋</span>
+          <span class="step-num">1</span>
+        </div>
+        <h3 class="step-title">Submit Request</h3>
+        <p class="step-desc">Describe your need — type of help, urgency level, and your location. Takes under 60 seconds.</p>
+      </div>
+
+      <div class="step-card anim" style="transition-delay:.14s">
+        <div class="step-icon-wrap">
+          <span style="font-size:1.5rem">🧠</span>
+          <span class="step-num">2</span>
+        </div>
+        <h3 class="step-title">Smart Matching Engine</h3>
+        <p class="step-desc">Our AI scans local → city → global networks and scores volunteers by skill, proximity, and availability.</p>
+      </div>
+
+      <div class="step-card anim" style="transition-delay:.23s">
+        <div class="step-icon-wrap">
+          <span style="font-size:1.5rem">✅</span>
+          <span class="step-num">3</span>
+        </div>
+        <h3 class="step-title">Get Help Instantly</h3>
+        <p class="step-desc">The best-matched volunteer is notified immediately. Receive their profile and connect directly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     FEATURES
+══════════════════════════════════════ -->
+<section id="features">
+  <div class="wrap">
+    <div class="sec-header anim">
+      <div class="chip violet" style="margin-bottom:20px"><i class="fa-solid fa-sparkles"></i> Features</div>
+      <h2 class="heading-lg">Everything you need to<br><span class="neon-text">get help at scale</span></h2>
+    </div>
+
+    <div class="features-grid">
+      <div class="feat-card anim" style="transition-delay:.04s">
+        <div class="feat-icon fi-blue"><i class="fa-solid fa-brain"></i></div>
+        <h3 class="feat-title">Smart Matching Algorithm</h3>
+        <p class="feat-desc">Multi-factor scoring weighs skills, experience, location, urgency, and past performance to surface the perfect volunteer.</p>
+      </div>
+
+      <div class="feat-card anim" style="transition-delay:.1s">
+        <div class="feat-icon fi-green"><i class="fa-solid fa-satellite-dish"></i></div>
+        <h3 class="feat-title">Real-Time Availability</h3>
+        <p class="feat-desc">Volunteer status is tracked live. Only available, online volunteers appear in results — no wasted time on unavailable contacts.</p>
+      </div>
+
+      <div class="feat-card anim" style="transition-delay:.16s">
+        <div class="feat-icon fi-violet"><i class="fa-solid fa-layer-group"></i></div>
+        <h3 class="feat-title">Multi-Level Allocation</h3>
+        <p class="feat-desc">Searches expand intelligently: Local → City → Global. If no local volunteer is found, the system widens the net automatically.</p>
+      </div>
+
+      <div class="feat-card anim" style="transition-delay:.22s">
+        <div class="feat-icon fi-amber"><i class="fa-solid fa-bolt"></i></div>
+        <h3 class="feat-title">Urgency Prioritization</h3>
+        <p class="feat-desc">High-urgency requests jump the queue. Critical needs are always met first with priority routing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     STATS
+══════════════════════════════════════ -->
+<section class="stats-section" id="impact">
+  <div class="wrap">
+    <div class="sec-header anim">
+      <div class="chip green" style="margin-bottom:20px"><i class="fa-solid fa-chart-line"></i> Our Impact</div>
+      <h2 class="heading-lg">Real results, <span class="neon-text">real people</span></h2>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box anim">
+        <span class="stat-n" data-count="12400">0</span>
+        <div class="stat-label">Requests Resolved</div>
+        <div class="stat-sub">Across all categories and regions</div>
+      </div>
+      <div class="stat-box anim" style="transition-delay:.1s">
+        <span class="stat-n" data-count="3400">0</span>
+        <div class="stat-label">Volunteers Active</div>
+        <div class="stat-sub">Ready to help right now</div>
+      </div>
+      <div class="stat-box anim" style="transition-delay:.2s">
+        <span class="stat-n" data-count="94" data-suffix="%">0</span>
+        <div class="stat-label">Success Rate</div>
+        <div class="stat-sub">Requests matched and resolved</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     WHY CHOOSE US
+══════════════════════════════════════ -->
+<section id="about">
+  <div class="wrap">
+    <div class="why-grid">
+
+      <!-- Left -->
+      <div>
+        <div class="chip" style="margin-bottom:20px"><i class="fa-solid fa-shield-halved"></i> Why Choose Us</div>
+        <h2 class="heading-lg" style="margin-bottom:16px">
+          Built for scale,<br><span class="neon-text">designed for impact</span>
+        </h2>
+        <p class="body-text">
+          Unlike generic directories, Smart Allocation uses intelligent scoring to rank and surface the most relevant volunteer — not just any volunteer. Every match is backed by data.
+        </p>
+
+        <div class="why-bullets">
+          <div class="why-bullet anim" style="transition-delay:.05s">
+            <div class="wb-icon fi-blue"><i class="fa-solid fa-rocket"></i></div>
+            <div class="wb-t">
+              <strong>Fast Response</strong>
+              <span>Average match time under 60 seconds. High-urgency requests get priority routing.</span>
+            </div>
+          </div>
+          <div class="why-bullet anim" style="transition-delay:.12s">
+            <div class="wb-icon fi-green"><i class="fa-solid fa-microchip"></i></div>
+            <div class="wb-t">
+              <strong>Intelligent System</strong>
+              <span>Multi-factor algorithm considers 8+ signals per match — not just distance or availability.</span>
+            </div>
+          </div>
+          <div class="why-bullet anim" style="transition-delay:.19s">
+            <div class="wb-icon fi-violet"><i class="fa-solid fa-network-wired"></i></div>
+            <div class="wb-t">
+              <strong>Scalable Platform</strong>
+              <span>Designed to grow from a college campus to a national network without friction.</span>
+            </div>
+          </div>
+          <div class="why-bullet anim" style="transition-delay:.26s">
+            <div class="wb-icon fi-amber"><i class="fa-solid fa-shield-check"></i></div>
+            <div class="wb-t">
+              <strong>Verified Volunteers</strong>
+              <span>Every volunteer goes through a skill-verification step before appearing in results.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: terminal -->
+      <div class="anim" style="transition-delay:.1s">
+        <div class="terminal">
+          <div class="term-titlebar">
+            <div class="dot dot-r"></div>
+            <div class="dot dot-y"></div>
+            <div class="dot dot-g"></div>
+            <span class="term-label">smart-match · v2.4.1</span>
+          </div>
+          <div class="term-body">
+            <div><span class="tc-dim">$</span> <span class="tc-b">allocation</span> <span class="tc-v">run</span> <span class="tc-g">--req</span> <span class="tc-y">"blood_req_high"</span></div>
+            <div><span class="tc-g">→ Scanning local radius (10km)…</span></div>
+            <div><span class="tc-gr">✓ Found 3 local volunteers</span></div>
+            <div><span class="tc-g">→ Scoring by skill alignment…</span></div>
+            <div><span class="tc-gr">✓ Top: Dr. Ananya [97.4%]</span></div>
+            <div><span class="tc-g">→ Urgency weight (HIGH) applied…</span></div>
+            <div><span class="tc-gr">✓ Priority boosted +12 pts</span></div>
+            <div><span class="tc-g">→ Notifying volunteer…</span></div>
+            <div><span class="tc-gr">✓ Accepted in 14s</span></div>
+            <div><span class="tc-b">→ Match complete.</span> <span class="tc-gr">Score: 97.4 / 100</span></div>
+            <div>&nbsp;</div>
+            <div><span class="tc-dim">$</span> <span class="cursor"></span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="neon-divider"></div>
+
+
+<!-- ══════════════════════════════════════
+     CTA
+══════════════════════════════════════ -->
+<section class="cta-section">
+  <div class="cta-glow-bg"></div>
+  <div class="wrap">
+    <div class="cta-inner anim">
+      <span class="cta-badge"><i class="fa-solid fa-hands-holding-circle"></i> &nbsp;Join the network today</span>
+      <h2 class="cta-h2">
+        Need Help or<br>
+        <span class="neon-text">Want to Help?</span>
+      </h2>
+      <p class="cta-sub">
+        Whether you're in need of urgent assistance or you want to offer your skills to those who need them — Smart Allocation connects you in seconds.
+      </p>
+      <div class="cta-actions">
+        <a href="{% url 'create_request' %}" class="btn btn-neon btn-lg">
+          <i class="fa-solid fa-hand-holding-heart"></i> Create a Request
+        </a>
+        <a href="{% url 'dashboard' %}" class="btn btn-teal btn-lg">
+          <i class="fa-solid fa-users"></i> Join as Volunteer
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════
+     FOOTER
+══════════════════════════════════════ -->
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="/" class="nav-logo" style="font-size:1rem">
+          <div class="logo-mark" style="width:30px;height:30px;font-size:.78rem">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          Smart<em>Allocation</em>
+        </a>
+        <p>An AI-powered volunteer matching platform connecting people in need with the right helpers — fast, intelligently, at any scale.</p>
+      </div>
+
+      <div class="footer-col">
+        <h6>Platform</h6>
+        <a href="{% url 'dashboard' %}">Dashboard</a>
+        <a href="{% url 'create_request' %}">Create Request</a>
+        <a href="{% url 'dashboard' %}">Volunteer Signup</a>
+        <a href="#how">How It Works</a>
+      </div>
+
+      <div class="footer-col">
+        <h6>Resources</h6>
+        <a href="#">Documentation</a>
+        <a href="#">API Reference</a>
+        <a href="#">Community</a>
+        <a href="#">Blog</a>
+      </div>
+
+      <div class="footer-col">
+        <h6>Company</h6>
+        <a href="#about">About</a>
+        <a href="#">Contact Us</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 Smart Allocation System. Built to make help smarter.</p>
+      <div class="social-row">
+        <a href="#" class="social-btn"><i class="fa-brands fa-github"></i></a>
+        <a href="#" class="social-btn"><i class="fa-brands fa-twitter"></i></a>
+        <a href="#" class="social-btn"><i class="fa-brands fa-linkedin-in"></i></a>
+        <a href="#" class="social-btn"><i class="fa-brands fa-instagram"></i></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</div><!-- /page -->
+
+
+<script>
+/* ── NAVBAR scroll effect ── */
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
+
+/* ── MOBILE MENU ── */
+const menuBtn  = document.getElementById('menuBtn');
+const menuIcon = document.getElementById('menuIcon');
+const mobileNav= document.getElementById('mobileNav');
+let menuOpen = false;
+
+menuBtn.addEventListener('click', () => {
+  menuOpen = !menuOpen;
+  mobileNav.classList.toggle('open', menuOpen);
+  menuIcon.className = menuOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+});
+
+// close on link click
+mobileNav.querySelectorAll('a').forEach(a => {
+  a.addEventListener('click', () => {
+    menuOpen = false;
+    mobileNav.classList.remove('open');
+    menuIcon.className = 'fa-solid fa-bars';
+  });
+});
+
+/* ── INTERSECTION OBSERVER — reveal animations ── */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('show');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.14 });
+
+document.querySelectorAll('.anim').forEach(el => observer.observe(el));
+
+/* ── ANIMATED COUNTERS ── */
+function countUp(el) {
+  const target = parseInt(el.dataset.count, 10);
+  const suffix = el.dataset.suffix || '';
+  const dur    = 2200;
+  const start  = performance.now();
+  function frame(now) {
+    const p = Math.min((now - start) / dur, 1);
+    const ease = 1 - Math.pow(1 - p, 3); // cubic-out
+    el.textContent = Math.round(ease * target).toLocaleString() + suffix;
+    if (p < 1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+const statObs = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      countUp(entry.target);
+      statObs.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.4 });
+
+document.querySelectorAll('.stat-n[data-count]').forEach(el => statObs.observe(el));
+
+/* ── SMOOTH SCROLL for anchor links ── */
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id  = a.getAttribute('href');
+    const el  = document.querySelector(id);
+    if (el) {
+      e.preventDefault();
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+</script>
 
 </body>
 </html>
