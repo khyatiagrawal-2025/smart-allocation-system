@@ -11,5 +11,4 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path('register/', views.register, name='register'), # Name sahi hona chahiye
     path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
-
 ]
