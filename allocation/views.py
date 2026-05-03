@@ -175,3 +175,6 @@ def dashboard(request):
         'total_allocations': total_allocations,
         'recent_allocations': recent_allocations
     })
+
+def role_selection(request):
+    return render(request, 'accounts/role_selection.html')
