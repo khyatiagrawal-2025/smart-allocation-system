@@ -1,6 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
-from .forms import RequestForm, UserRegistrationForm
+from .forms import RequestForm, UserRegistrationForm, VolunteerForm
 from .models import UserProfile, Volunteer, Allocation, Request
 import google.generativeai as genai
 import json
@@ -9,17 +8,17 @@ from dotenv import load_dotenv
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 
-# 🔒 Load environment variables from .env file
+# 🔒 Load environment variables
 load_dotenv()
 
-# 🔑 Fetch API Key securely
+# 🔑 API Key
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Configure GenAI with the fetched key
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('gemini-2.5-flash')
 
 
+# 🔷 CREATE REQUEST
 @login_required
 def create_request(request):
     if request.method == 'POST':
@@ -27,13 +26,7 @@ def create_request(request):
 
         if form.is_valid():
             req = form.save(commit=False)
-
-            # 🔐 Safe user assignment
-            if request.user.is_authenticated:
-                req.user = request.user
-            else:
-                return redirect('login')
-
+            req.user = request.user
             req.save()
 
             # 🧠 AI Matching Function
@@ -41,11 +34,14 @@ def create_request(request):
                 if not volunteers.exists():
                     return None, 0, level_name
 
-                vol_data = [{"id": v.id, "skills": v.skills, "location": v.location} for v in volunteers]
+                vol_data = [
+                    {"id": v.id, "skills": v.skills, "location": v.location}
+                    for v in volunteers
+                ]
 
                 prompt = f"""
-                You are the brain of a Smart Allocation System.
-                Analyze the following Emergency Request and find the BEST matching volunteer.
+                You are a Smart Allocation System.
+                Find the BEST volunteer.
 
                 REQUEST:
                 Type: {req.request_type}
@@ -56,45 +52,44 @@ def create_request(request):
                 VOLUNTEERS:
                 {json.dumps(vol_data)}
 
-                Return JSON only:
+                Return JSON:
                 {{"best_volunteer_id": ID, "score": 0-100}}
                 """
 
                 try:
                     response = model.generate_content(prompt)
                     clean_text = response.text.replace("```json", "").replace("```", "").strip()
-                    ai_result = json.loads(clean_text)
+                    result = json.loads(clean_text)
 
-                    best_id = ai_result.get("best_volunteer_id")
-                    score = ai_result.get("score", 0)
+                    best_id = result.get("best_volunteer_id")
+                    score = result.get("score", 0)
 
                     if best_id:
                         return volunteers.get(id=best_id), score, level_name
 
-                    return None, 0, level_name
-
                 except Exception as e:
-                    print(f"AI Error: {e}")
-                    return None, 0, level_name
+                    print("AI Error:", e)
 
-            # Matching Levels
-            local_volunteers = Volunteer.objects.filter(is_available=True, location=req.location)
-            best_volunteer, best_score, level = get_ai_best(local_volunteers, req, "local")
+                return None, 0, level_name
 
-            if not best_volunteer or best_score < 50:
-                city_volunteers = Volunteer.objects.filter(is_available=True).exclude(location=req.location)
-                best_volunteer, best_score, level = get_ai_best(city_volunteers, req, "city")
+            # 🔁 Matching Levels
+            local = Volunteer.objects.filter(is_available=True, location=req.location)
+            best, score, level = get_ai_best(local, req, "local")
 
-            if not best_volunteer or best_score < 50:
-                global_volunteers = Volunteer.objects.filter(is_available=True)
-                best_volunteer, best_score, level = get_ai_best(global_volunteers, req, "global")
+            if not best or score < 50:
+                city = Volunteer.objects.filter(is_available=True).exclude(location=req.location)
+                best, score, level = get_ai_best(city, req, "city")
 
-            # Save allocation
-            if best_volunteer:
+            if not best or score < 50:
+                global_vol = Volunteer.objects.filter(is_available=True)
+                best, score, level = get_ai_best(global_vol, req, "global")
+
+            # 💾 Save Allocation
+            if best:
                 Allocation.objects.create(
                     request=req,
-                    volunteer=best_volunteer,
-                    score=best_score,
+                    volunteer=best,
+                    score=score,
                     ecosystem_level=level
                 )
 
@@ -103,23 +98,24 @@ def create_request(request):
     else:
         form = RequestForm()
 
-    # ✅ UPDATED TEMPLATE NAME
     return render(request, 'accounts/request_form.html', {'form': form})
 
 
+# 🔷 SUCCESS PAGE
 @login_required
 def success(request):
     req = Request.objects.filter(user=request.user).order_by('-id').first()
     allocation = Allocation.objects.filter(request=req).first() if req else None
 
     return render(request, 'accounts/success.html', {
+        'request': req,
         'volunteer': allocation.volunteer if allocation else None,
         'score': allocation.score if allocation else None,
         'level': allocation.ecosystem_level if allocation else None,
-        'request': req
     })
 
 
+# 🔷 REGISTER
 def register(request):
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
@@ -133,8 +129,6 @@ def register(request):
             )
 
             login(request, user)
-
-            # ✅ BETTER FLOW
             return redirect('role_selection')
 
     else:
@@ -143,32 +137,39 @@ def register(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
+# 🔷 DASHBOARD (IMPROVED)
 @login_required
 def dashboard(request):
+    user = request.user
+
     return render(request, 'accounts/dashboard.html', {
-        'total_requests': Request.objects.count(),
+        'user': user,
+        'total_requests': Request.objects.filter(user=user).count(),
         'total_volunteers': Volunteer.objects.count(),
         'total_allocations': Allocation.objects.count(),
-        'recent_allocations': Allocation.objects.select_related('request', 'volunteer').order_by('-id')[:5]
+        'recent_allocations': Allocation.objects.select_related(
+            'request', 'volunteer'
+        ).order_by('-id')[:5]
     })
 
 
+# 🔷 ROLE SELECTION
+@login_required
 def role_selection(request):
     return render(request, 'accounts/role_selection.html')
 
-from .forms import VolunteerForm
-from .models import Volunteer
 
+# 🔷 VOLUNTEER FORM
 @login_required
 def volunteer_form(request):
     if request.method == 'POST':
         form = VolunteerForm(request.POST)
         if form.is_valid():
             volunteer = form.save(commit=False)
-            volunteer.user = request.user   # link with logged-in user
+            volunteer.user = request.user
             volunteer.save()
 
-            return redirect('dashboard')  # ya success page
+            return redirect('dashboard')
 
     else:
         form = VolunteerForm()
