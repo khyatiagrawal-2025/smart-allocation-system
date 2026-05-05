@@ -1,6 +1,8 @@
 from django import forms
 from .models import Request
 from django.contrib.auth.models import User
+from django import forms
+from .models import Volunteer
 
 
 class RequestForm(forms.ModelForm):
@@ -64,3 +66,10 @@ class UserRegistrationForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+    
+
+class VolunteerForm(forms.ModelForm):
+    class Meta:
+        model = Volunteer
+        fields = '__all__'
+        exclude = ['user']

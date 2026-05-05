@@ -17,4 +17,5 @@ urlpatterns = [
     ), name='login'),
 
     path('role-selection/', views.role_selection, name='role_selection'),
+    path('volunteer/', views.volunteer_form, name='volunteer_form'),
 ]

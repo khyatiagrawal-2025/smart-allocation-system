@@ -155,3 +155,22 @@ def dashboard(request):
 
 def role_selection(request):
     return render(request, 'accounts/role_selection.html')
+
+from .forms import VolunteerForm
+from .models import Volunteer
+
+@login_required
+def volunteer_form(request):
+    if request.method == 'POST':
+        form = VolunteerForm(request.POST)
+        if form.is_valid():
+            volunteer = form.save(commit=False)
+            volunteer.user = request.user   # link with logged-in user
+            volunteer.save()
+
+            return redirect('dashboard')  # ya success page
+
+    else:
+        form = VolunteerForm()
+
+    return render(request, 'accounts/volunteer_form.html', {'form': form})
