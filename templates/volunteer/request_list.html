@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Open Requests — Smart Alloc{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  .grid-bg { background-image: linear-gradient(rgba(17,17,17,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,0.06) 1px, transparent 1px); background-size: 40px 40px; min-height: 100vh; padding: 40px 0 80px; }
+  .page-header { padding: 48px 0 32px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+  .label-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--dark); color: #fff; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; margin-bottom: 20px; }
+  .label-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); animation: pulse 2s infinite; }
+  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 72px; line-height: 0.9; letter-spacing: 0.02em; }
+  .page-title .accent { color: var(--orange); }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(217,79,43,0.5); } 50% { box-shadow: 0 0 0 6px rgba(217,79,43,0); } }
+  .stats-strip { background: var(--dark); color: #fff; display: flex; align-items: stretch; margin-bottom: 40px; overflow: hidden; }
+  .stat-item { flex: 1; padding: 20px 28px; border-right: 1px solid rgba(255,255,255,0.08); text-align: center; }
+  .stat-item:last-child { border-right: none; }
+  .stat-big { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--orange); line-height: 1; }
+  .stat-sm { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.45); }
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; align-items: center; }
+  .filter-btn { border: 1px solid var(--border); background: #fff; color: var(--dark); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; padding: 8px 18px; cursor: pointer; transition: all 0.2s; }
+  .filter-btn:hover, .filter-btn.active { background: var(--dark); color: #fff; border-color: var(--dark); }
+  .filter-btn.orange { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .search-box { border: 1px solid var(--border); background: #fff; font-size: 13px; padding: 8px 16px; outline: none; color: var(--dark); transition: border-color 0.2s; width: 240px; }
+  .search-box:focus { border-color: var(--orange); }
+  .request-card { background: #fff; border: 1px solid var(--border); padding: 28px; margin-bottom: 12px; transition: all 0.2s; position: relative; overflow: hidden; display: flex; align-items: flex-start; gap: 20px; }
+  .request-card:hover { border-color: var(--orange); transform: translateX(4px); }
+  .request-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--orange); transform: scaleY(0); transition: transform 0.2s; transform-origin: top; }
+  .request-card:hover::before { transform: scaleY(1); }
+  .req-number { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--orange); min-width: 44px; line-height: 1; padding-top: 2px; }
+  .req-type-badge { display: inline-block; background: var(--dark); color: #fff; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; margin-bottom: 8px; }
+  .req-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; color: var(--dark); }
+  .req-desc { font-size: 13px; color: rgba(17,17,17,0.55); line-height: 1.6; margin-bottom: 12px; }
+  .req-meta { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+  .meta-item { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(17,17,17,0.4); }
+  .meta-item strong { color: var(--dark); }
+  .btn-accept { background: var(--orange); color: #fff; border: none; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 9px 20px; text-decoration: none; transition: background 0.2s; white-space: nowrap; display: inline-block; margin-top: 4px; }
+  .btn-accept:hover { background: #c04425; color: #fff; }
+  .priority-high { color: #E53935; font-weight: 600; }
+  .priority-med  { color: var(--gold); font-weight: 600; }
+  .priority-low  { color: #4CAF50; font-weight: 600; }
+  .section-label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(17,17,17,0.4); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .empty-state { text-align: center; padding: 80px 40px; border: 1px dashed var(--border); background: #fff; }
+  .empty-big { font-family: 'Bebas Neue', sans-serif; font-size: 64px; color: rgba(17,17,17,0.08); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="grid-bg">
+  <div class="container">
+
+    <div class="page-header">
+      <div class="label-pill"><span class="dot"></span> LIVE REQUESTS</div>
+      <h1 class="page-title">OPEN <span class="accent">REQUESTS.</span></h1>
+    </div>
+
+    <div class="stats-strip mb-4">
+      <div class="stat-item">
+        <div class="stat-big">{{ requests.count|default:"0" }}</div>
+        <div class="stat-sm">Total Open</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-big" style="color:#E53935;">{{ high_count|default:"0" }}</div>
+        <div class="stat-sm">High Priority</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-big">{{ medium_count|default:"0" }}</div>
+        <div class="stat-sm">Medium</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-big" style="color:#4CAF50;">{{ low_count|default:"0" }}</div>
+        <div class="stat-sm">Low Priority</div>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-btn orange active" onclick="filterRequests('all', this)">ALL</button>
+      <button class="filter-btn" onclick="filterRequests('high', this)">HIGH PRIORITY</button>
+      <button class="filter-btn" onclick="filterRequests('medium', this)">MEDIUM</button>
+      <button class="filter-btn" onclick="filterRequests('low', this)">LOW</button>
+      <input class="search-box ms-auto" type="text" placeholder="Search requests..." oninput="searchRequests(this.value)">
+    </div>
+
+    <div class="section-label">Pending Requests</div>
+
+    {% if requests %}
+      {% for req in requests %}
+      <div class="request-card" data-priority="{{ req.priority }}">
+        <div class="req-number">#{{ forloop.counter|stringformat:"02d" }}</div>
+        <div class="flex-grow-1">
+          <span class="req-type-badge">{{ req.get_problem_type_display }}</span>
+          <div class="req-title">{{ req.description|truncatechars:80 }}</div>
+          <div class="req-desc">{{ req.description|truncatechars:160 }}</div>
+          <div class="req-meta">
+            <div class="meta-item">FROM: <strong>{{ req.user.get_full_name|default:req.user.username }}</strong></div>
+            <div class="meta-item">POSTED: <strong>{{ req.created_at|timesince }} ago</strong></div>
+            <div class="meta-item">PRIORITY: <strong class="priority-{{ req.priority }}">{{ req.priority|upper }}</strong></div>
+          </div>
+        </div>
+        <div class="d-flex flex-column gap-2 align-items-end">
+          <a href="{% url 'request_detail' req.id %}" class="btn-accept">VIEW →</a>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-big">NO REQUESTS</div>
+        <p style="color:rgba(17,17,17,0.4); font-size:14px; margin-top:12px;">No pending requests at the moment.</p>
+      </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+function filterRequests(priority, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active','orange'));
+  btn.classList.add('active','orange');
+  document.querySelectorAll('.request-card').forEach(card => {
+    card.style.display = (priority === 'all' || card.dataset.priority === priority) ? 'flex' : 'none';
+  });
+}
+function searchRequests(val) {
+  const q = val.toLowerCase();
+  document.querySelectorAll('.request-card').forEach(card => {
+    card.style.display = card.textContent.toLowerCase().includes(q) ? 'flex' : 'none';
+  });
+}
+</script>
+{% endblock %}

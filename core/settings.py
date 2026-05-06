@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     "allocation",
     "home",
+    "volunteer",
 ]
 
 MIDDLEWARE = [
@@ -122,3 +123,8 @@ STATIC_URL = 'static/'
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'role_selection'
 LOGOUT_REDIRECT_URL = 'home'
+# Auth settings
+LOGIN_URL = '/allocation/login/'
+LOGIN_REDIRECT_URL = '/volunteer/profile/'
+LOGIN_URL = '/allocation/login/'
+LOGIN_REDIRECT_URL = '/allocation/dashboard/'

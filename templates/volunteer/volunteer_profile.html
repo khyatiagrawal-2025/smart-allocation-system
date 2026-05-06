@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Volunteer Profile — Smart Alloc{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  .grid-bg {
+    background-image: linear-gradient(rgba(17,17,17,0.06) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(17,17,17,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    min-height: 100vh;
+    padding: 40px 0 80px;
+  }
+  .page-header { padding: 48px 0 32px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+  .label-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--dark); color: #fff;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 6px 14px; margin-bottom: 20px;
+  }
+  .label-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: #4CAF50; }
+  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 72px; line-height: 0.9; letter-spacing: 0.02em; }
+  .page-title .accent { color: var(--orange); }
+  .profile-card {
+    background: var(--dark); color: #fff;
+    padding: 40px; position: relative; overflow: hidden;
+  }
+  .profile-card::before {
+    content: ''; position: absolute; top: -30px; right: -30px;
+    width: 120px; height: 120px; border: 1px solid rgba(217,79,43,0.3); border-radius: 50%;
+  }
+  .avatar-box {
+    width: 80px; height: 80px; background: var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 36px; color: #fff;
+    flex-shrink: 0;
+  }
+  .vol-name { font-family: 'Bebas Neue', sans-serif; font-size: 42px; line-height: 1; margin-bottom: 4px; }
+  .vol-type-badge {
+    display: inline-block; background: var(--orange); color: #fff;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 12px; font-weight: 600;
+  }
+  .stat-block { border-left: 1px solid rgba(255,255,255,0.15); padding-left: 24px; }
+  .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 44px; color: var(--orange); line-height: 1; }
+  .stat-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
+  .section-label {
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(17,17,17,0.4); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .info-card {
+    background: #fff; border: 1px solid var(--border);
+    padding: 28px; transition: border-color 0.2s;
+  }
+  .info-card:hover { border-color: var(--orange); }
+  .info-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(17,17,17,0.4); margin-bottom: 4px; }
+  .info-value { font-size: 16px; font-weight: 600; color: var(--dark); }
+  .skill-tag {
+    display: inline-block; border: 1px solid var(--border);
+    font-size: 12px; letter-spacing: 0.05em; padding: 6px 14px;
+    margin: 4px; transition: all 0.2s; cursor: default; background: #fff;
+  }
+  .skill-tag:hover { border-color: var(--orange); background: var(--orange); color: #fff; }
+  .btn-edit {
+    border: 1px solid var(--dark); color: var(--dark); background: transparent;
+    font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 10px 24px; text-decoration: none; transition: all 0.2s; display: inline-block;
+  }
+  .btn-edit:hover { background: var(--dark); color: #fff; }
+  .btn-primary-custom {
+    background: var(--orange); color: #fff; border: none;
+    font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 12px 28px; text-decoration: none; transition: background 0.2s; display: inline-block;
+  }
+  .btn-primary-custom:hover { background: #c04425; color: #fff; }
+  .status-online { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .status-online .pulse {
+    width: 8px; height: 8px; border-radius: 50%; background: #4CAF50;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(76,175,80,0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(76,175,80,0); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="grid-bg">
+  <div class="container">
+
+    <div class="page-header">
+      <div class="label-pill"><span class="dot"></span> VOLUNTEER PROFILE</div>
+      <h1 class="page-title">MY <span class="accent">PROFILE.</span></h1>
+    </div>
+
+    <div class="profile-card mb-4">
+      <div class="d-flex align-items-start gap-4 flex-wrap">
+        <div class="avatar-box">{{ volunteer.display_name|first|upper }}</div>
+        <div class="flex-grow-1">
+          <div class="vol-name">{{ volunteer.display_name }}</div>
+          <span class="vol-type-badge">{{ volunteer.get_volunteer_type_display }}</span>
+          <div class="mt-3 status-online">
+            <div class="pulse"></div>
+            <span style="color:rgba(255,255,255,0.7); font-size:12px; letter-spacing:0.05em;">ACTIVE &amp; AVAILABLE</span>
+          </div>
+        </div>
+        <div class="d-flex gap-4 mt-2">
+          <div class="stat-block text-center">
+            <div class="stat-num">{{ volunteer.total_resolved }}</div>
+            <div class="stat-label">Resolved</div>
+          </div>
+          <div class="stat-block text-center">
+            <div class="stat-num">{{ volunteer.total_accepted }}</div>
+            <div class="stat-label">Accepted</div>
+          </div>
+          <div class="stat-block text-center">
+            <div class="stat-num">98<span style="font-size:22px;">%</span></div>
+            <div class="stat-label">Rating</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Personal Information</div>
+    <div class="row g-3 mb-5">
+      <div class="col-md-4">
+        <div class="info-card">
+          <div class="info-label">Full Name</div>
+          <div class="info-value">{{ volunteer.user.get_full_name|default:volunteer.display_name }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="info-card">
+          <div class="info-label">Email Address</div>
+          <div class="info-value">{{ volunteer.user.email }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="info-card">
+          <div class="info-label">Volunteer Type</div>
+          <div class="info-value">{{ volunteer.get_volunteer_type_display }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="info-card">
+          <div class="info-label">Member Since</div>
+          <div class="info-value">{{ volunteer.user.date_joined|date:"M Y" }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="info-card">
+          <div class="info-label">Status</div>
+          <div class="info-value" style="color:#4CAF50;">● Active</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="info-card">
+          <div class="info-label">Location</div>
+          <div class="info-value">{{ volunteer.location|default:"India" }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Skills &amp; Expertise</div>
+    <div class="mb-5 p-4" style="background:#fff; border:1px solid var(--border);">
+      <span class="skill-tag">Problem Solving</span>
+      <span class="skill-tag">Communication</span>
+      <span class="skill-tag">{{ volunteer.get_volunteer_type_display }}</span>
+      <span class="skill-tag">Community Support</span>
+      <span class="skill-tag">Crisis Management</span>
+      <span class="skill-tag">Resource Allocation</span>
+    </div>
+
+    <div class="d-flex gap-3 flex-wrap">
+      <a href="{% url 'dashboard' %}" class="btn-primary-custom">← BACK TO DASHBOARD</a>
+      <a href="#" class="btn-edit">EDIT PROFILE</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

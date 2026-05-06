@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Request #{{ request_obj.id }} — Smart Alloc{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  .grid-bg { background-image: linear-gradient(rgba(17,17,17,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(17,17,17,0.06) 1px, transparent 1px); background-size: 40px 40px; min-height: 100vh; padding: 40px 0 80px; }
+  .breadcrumb-bar { padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
+  .bc-link { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(17,17,17,0.4); text-decoration: none; transition: color 0.2s; }
+  .bc-link:hover { color: var(--orange); }
+  .bc-sep { color: rgba(17,17,17,0.2); margin: 0 10px; }
+  .bc-current { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); }
+  .req-header-card { background: var(--dark); color: #fff; padding: 40px; margin-bottom: 32px; position: relative; overflow: hidden; }
+  .req-header-card::after { content: attr(data-num); font-family: 'Bebas Neue', sans-serif; font-size: 160px; position: absolute; right: 40px; top: -20px; color: rgba(217,79,43,0.12); line-height: 1; }
+  .req-id-label { font-size: 11px; letter-spacing: 0.15em; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+  .req-big-title { font-family: 'Bebas Neue', sans-serif; font-size: 52px; line-height: 1; margin-bottom: 16px; }
+  .req-type-tag { display: inline-block; background: var(--orange); color: #fff; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 14px; margin-right: 8px; }
+  .status-pending { display: inline-block; border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 5px 14px; }
+  .section-label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(17,17,17,0.4); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .detail-card { background: #fff; border: 1px solid var(--border); padding: 28px; margin-bottom: 16px; }
+  .detail-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(17,17,17,0.4); margin-bottom: 6px; }
+  .detail-value { font-size: 15px; font-weight: 500; }
+  .description-box { background: #fff; border: 1px solid var(--border); padding: 28px; border-left: 4px solid var(--orange); margin-bottom: 32px; }
+  .desc-text { font-size: 15px; line-height: 1.8; color: rgba(17,17,17,0.75); }
+  .user-card { background: var(--dark); color: #fff; padding: 28px; display: flex; align-items: center; gap: 20px; }
+  .user-avatar { width: 56px; height: 56px; background: var(--orange); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: #fff; flex-shrink: 0; }
+  .user-name { font-family: 'Bebas Neue', sans-serif; font-size: 28px; line-height: 1; }
+  .user-meta { font-size: 12px; letter-spacing: 0.06em; color: rgba(255,255,255,0.5); }
+  .action-panel { background: #fff; border: 1px solid var(--border); padding: 32px; position: sticky; top: 20px; }
+  .action-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; margin-bottom: 20px; }
+  .btn-accept-big { display: block; width: 100%; background: var(--orange); color: #fff; border: none; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 16px; text-align: center; text-decoration: none; transition: background 0.2s; margin-bottom: 12px; cursor: pointer; }
+  .btn-accept-big:hover { background: #c04425; color: #fff; }
+  .btn-cancel-big { display: block; width: 100%; background: transparent; color: var(--dark); border: 1px solid var(--border); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px; text-align: center; text-decoration: none; transition: all 0.2s; margin-bottom: 12px; cursor: pointer; }
+  .btn-cancel-big:hover { border-color: #E53935; color: #E53935; }
+  .btn-back { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(17,17,17,0.4); text-decoration: none; display: flex; align-items: center; gap: 6px; transition: color 0.2s; }
+  .btn-back:hover { color: var(--orange); }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .info-note { font-size: 12px; color: rgba(17,17,17,0.4); text-align: center; line-height: 1.6; }
+  .timeline { list-style: none; padding: 0; margin: 0; }
+  .timeline li { display: flex; align-items: flex-start; gap: 14px; padding-bottom: 20px; position: relative; }
+  .timeline li:not(:last-child)::before { content: ''; position: absolute; left: 7px; top: 20px; bottom: 0; width: 1px; background: var(--border); }
+  .tl-dot { width: 14px; height: 14px; border: 2px solid var(--orange); border-radius: 50%; background: #fff; flex-shrink: 0; margin-top: 3px; }
+  .tl-dot.filled { background: var(--orange); }
+  .tl-text { font-size: 13px; color: rgba(17,17,17,0.6); }
+  .tl-time { font-size: 11px; color: rgba(17,17,17,0.35); letter-spacing: 0.05em; }
+  #confirm-overlay { display: none; position: fixed; inset: 0; background: rgba(17,17,17,0.75); z-index: 999; align-items: center; justify-content: center; }
+  #confirm-overlay.show { display: flex; }
+  .confirm-box { background: var(--cream); padding: 40px; width: 420px; max-width: 90vw; border-top: 4px solid var(--orange); }
+  .confirm-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; margin-bottom: 12px; }
+  .confirm-msg { font-size: 14px; color: rgba(17,17,17,0.6); margin-bottom: 28px; line-height: 1.6; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="grid-bg">
+  <div class="container">
+
+    <div class="breadcrumb-bar">
+      <a href="{% url 'volunteer_dashboard' %}" class="bc-link">DASHBOARD</a>
+      <span class="bc-sep">›</span>
+      <a href="{% url 'request_list' %}" class="bc-link">REQUESTS</a>
+      <span class="bc-sep">›</span>
+      <span class="bc-current">REQUEST #{{ request_obj.id }}</span>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+
+        <div class="req-header-card" data-num="#{{ request_obj.id }}">
+          <div class="req-id-label">REQUEST ID — #{{ request_obj.id }}</div>
+          <div class="req-big-title">{{ request_obj.get_problem_type_display|upper }}</div>
+          <span class="req-type-tag">{{ request_obj.get_problem_type_display }}</span>
+          <span class="status-pending">● {{ request_obj.get_status_display|upper }}</span>
+        </div>
+
+        <div class="section-label">Description</div>
+        <div class="description-box">
+          <p class="desc-text">{{ request_obj.description }}</p>
+        </div>
+
+        <div class="section-label">Request Details</div>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="detail-card">
+              <div class="detail-label">Problem Type</div>
+              <div class="detail-value">{{ request_obj.get_problem_type_display }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="detail-card">
+              <div class="detail-label">Posted On</div>
+              <div class="detail-value">{{ request_obj.created_at|date:"d M Y, g:i A" }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="detail-card">
+              <div class="detail-label">Priority</div>
+              <div class="detail-value" style="color:#E53935; font-weight:700;">{{ request_obj.priority|upper }}</div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="detail-card">
+              <div class="detail-label">Status</div>
+              <div class="detail-value" style="color:var(--gold);">{{ request_obj.get_status_display }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-label">Requester</div>
+        <div class="user-card mb-4">
+          <div class="user-avatar">{{ request_obj.user.get_full_name|first|upper }}</div>
+          <div>
+            <div class="user-name">{{ request_obj.user.get_full_name|default:request_obj.user.username|upper }}</div>
+            <div class="user-meta">{{ request_obj.user.email }}</div>
+          </div>
+        </div>
+
+        <div class="section-label">Activity Timeline</div>
+        <div class="detail-card">
+          <ul class="timeline">
+            <li>
+              <div class="tl-dot filled"></div>
+              <div>
+                <div class="tl-text">Request submitted by {{ request_obj.user.username }}</div>
+                <div class="tl-time">{{ request_obj.created_at|timesince }} ago</div>
+              </div>
+            </li>
+            <li>
+              <div class="tl-dot"></div>
+              <div>
+                <div class="tl-text">Waiting for volunteer to accept</div>
+                <div class="tl-time">Now</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <div class="col-lg-4">
+        <div class="action-panel">
+          <div class="action-title">TAKE ACTION</div>
+          <form method="POST" action="{% url 'accept_request' request_obj.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-accept-big">✓ ACCEPT REQUEST</button>
+          </form>
+          <button class="btn-cancel-big" onclick="showCancel()">✕ CANCEL / SKIP</button>
+          <hr class="divider">
+          <p class="info-note">Once accepted, the requester will be notified and you'll be connected directly.</p>
+          <hr class="divider">
+          <a href="{% url 'request_list' %}" class="btn-back">← BACK TO REQUESTS</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="confirm-overlay" onclick="hideCancel()">
+  <div class="confirm-box" onclick="event.stopPropagation()">
+    <div class="confirm-title">SKIP THIS REQUEST?</div>
+    <p class="confirm-msg">Are you sure? It will remain available for other volunteers.</p>
+    <div class="d-flex gap-3">
+      <form method="POST" action="{% url 'cancel_request' request_obj.id %}" style="flex:1">
+        {% csrf_token %}
+        <button type="submit" style="width:100%; background:#E53935; color:#fff; border:none; padding:13px; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer;">YES, SKIP</button>
+      </form>
+      <button onclick="hideCancel()" style="flex:1; background:transparent; border:1px solid var(--border); padding:13px; font-size:12px; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; color:var(--dark);">GO BACK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showCancel() { document.getElementById('confirm-overlay').classList.add('show'); }
+  function hideCancel() { document.getElementById('confirm-overlay').classList.remove('show'); }
+</script>
+{% endblock %}
