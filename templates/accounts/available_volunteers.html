@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Available Matches - Smart Allocation{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ai-glow-card {
+        background: rgba(88, 166, 255, 0.05);
+        border: 1px solid #58a6ff;
+        box-shadow: 0 0 15px rgba(88, 166, 255, 0.2);
+        border-radius: 15px;
+    }
+    .volunteer-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(0, 255, 204, 0.2);
+    }
+    .volunteer-card:hover {
+        transform: translateY(-5px);
+        border-color: #00ffcc;
+        box-shadow: 0 0 20px rgba(0, 255, 204, 0.15);
+    }
+    .badge-neon {
+        background: rgba(0, 255, 204, 0.1);
+        color: #00ffcc;
+        border: 1px solid #00ffcc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 style="color: #58a6ff;"><i class="fa-solid fa-microchip"></i> System Match Results</h2>
+            <p class="text-secondary">Request ID: <span class="text-light">#{{ req.id }}</span> | Category: <span class="badge badge-neon">{{ req.problem_category }}</span></p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-danger p-2 px-3">Priority: {{ req.priority }}</span>
+        </div>
+    </div>
+
+    <div class="ai-glow-card p-4 mb-5">
+        <h5 style="color: #58a6ff;"><i class="fa-solid fa-robot"></i> Gemini AI Insight:</h5>
+        <p class="mb-0 fs-5 italic" style="color: #c9d1d9;">
+            "{{ ai_recommendation }}"
+        </p>
+    </div>
+
+    <h4 class="mb-4 text-light">Optimal Volunteers Found:</h4>
+    
+    <div class="row g-4">
+        {% for vol in volunteers %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card volunteer-card h-100 p-3">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-dark d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border: 1px solid #00ffcc;">
+                        <i class="fa-solid fa-user-shield text-info"></i>
+                    </div>
+                    <div class="ms-3">
+                        <h5 class="mb-0 text-light">{{ vol.user.username }}</h5>
+                        <small class="text-secondary">Level: Professional</small>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <p class="small text-secondary mb-1">Expertise:</p>
+                    <span class="badge badge-neon">{{ vol.service_role }}</span>
+                </div>
+
+                <p class="small text-secondary">Status: <span class="text-success fw-bold">● Available Now</span></p>
+
+                <a href="{% url 'select_volunteer' req.id vol.id %}" class="btn btn-neon-green w-100 mt-2">
+                    <i class="fa-solid fa-handshake"></i> SELECT VOLUNTEER
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5 glass-card">
+            <i class="fa-solid fa-user-slash fs-1 text-secondary mb-3"></i>
+            <h3 class="text-secondary">No matching volunteers active right now.</h3>
+            <p>We are broadcasting your request to other sectors...</p>
+            <a href="{% url 'create_request' %}" class="btn btn-outline-light mt-3">Edit Request</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

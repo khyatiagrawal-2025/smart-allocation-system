@@ -1,355 +1,148 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Smart Alloc{% endblock %}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}Smart Allocation System{% endblock %}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Base Cyberpunk Styling */
+        body {
+            background-color: #0d1117; 
+            color: #c9d1d9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
 
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+        /* Glassmorphism Navbar */
+        .glass-navbar {
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px 0;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #58a6ff !important;
+            letter-spacing: 1px;
+            font-size: 1.5rem;
+        }
 
-  <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+        /* Neon Buttons */
+        .btn-neon-blue {
+            background-color: transparent;
+            border: 2px solid #58a6ff;
+            color: #58a6ff;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+        .btn-neon-blue:hover {
+            background-color: #58a6ff;
+            color: #0d1117;
+            box-shadow: 0 0 15px rgba(88, 166, 255, 0.6);
+        }
 
-  <!-- Global CSS Variables & Reset -->
-  <style>
-    :root {
-      --cream:        #F2EDE4;
-      --dark:         #111111;
-      --orange:       #D94F2B;
-      --orange-light: #E8734A;
-      --gold:         #C9A84C;
-      --green:        #4CAF50;
-      --border:       rgba(17,17,17,0.12);
-      --font-display: 'Bebas Neue', cursive;
-      --font-body:    'DM Sans', sans-serif;
-    }
+        .btn-neon-green {
+            background-color: transparent;
+            border: 2px solid #00ffcc;
+            color: #00ffcc;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+        .btn-neon-green:hover {
+            background-color: #00ffcc;
+            color: #0d1117;
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.6);
+        }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        .btn-neon-red {
+            background-color: transparent;
+            border: 2px solid #ff5555;
+            color: #ff5555;
+            transition: all 0.3s;
+            border-radius: 8px;
+        }
+        .btn-neon-red:hover {
+            background-color: #ff5555;
+            color: #0d1117;
+            box-shadow: 0 0 15px rgba(255, 85, 85, 0.6);
+        }
 
-    body {
-      font-family: var(--font-body);
-      background: var(--cream);
-      color: var(--dark);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+        /* Glass Cards for Content */
+        .glass-card {
+            background: rgba(22, 27, 34, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 30px;
+        }
 
-    main { flex: 1; }
+        /* Main Content Padding to push below fixed navbar */
+        .main-content {
+            padding-top: 100px;
+            flex-grow: 1;
+        }
 
-    a { color: inherit; }
-    button { font-family: var(--font-body); }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: var(--cream); }
-    ::-webkit-scrollbar-thumb { background: var(--orange); }
-
-    /* Django messages */
-    .django-messages { position: fixed; top: 20px; right: 20px; z-index: 9999; width: 320px; }
-    .django-msg {
-      padding: 14px 18px; margin-bottom: 10px;
-      font-size: 13px; letter-spacing: 0.04em;
-      display: flex; align-items: center; justify-content: space-between; gap: 12px;
-      animation: slideIn 0.3s ease;
-    }
-    .django-msg.success { background: var(--dark); color: #fff; border-left: 4px solid var(--green); }
-    .django-msg.error   { background: var(--dark); color: #fff; border-left: 4px solid #E53935; }
-    .django-msg.warning { background: var(--dark); color: #fff; border-left: 4px solid var(--gold); }
-    .django-msg.info    { background: var(--dark); color: #fff; border-left: 4px solid var(--orange); }
-    .msg-close { cursor: pointer; opacity: 0.6; font-size: 16px; background: none; border: none; color: #fff; }
-    .msg-close:hover { opacity: 1; }
-    @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
-    /* Grid background utility */
-    .grid-bg {
-      background-image:
-        linear-gradient(rgba(17,17,17,0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(17,17,17,0.06) 1px, transparent 1px);
-      background-size: 40px 40px;
-    }
-
-    /* Ticker bar */
-    .ticker-bar {
-      background: var(--dark); color: #fff;
-      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-      padding: 10px 0; overflow: hidden; position: relative;
-    }
-    .ticker-track {
-      display: flex; gap: 60px; white-space: nowrap;
-      animation: ticker 22s linear infinite;
-    }
-    .ticker-track span { color: var(--orange); font-size: 8px; }
-    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-
-    /* Navbar */
-    .smart-nav {
-      background: var(--cream);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 0;
-      position: sticky; top: 0; z-index: 100;
-    }
-    .nav-brand {
-      font-family: var(--font-body); font-weight: 700;
-      font-size: 15px; letter-spacing: 0.05em;
-      text-decoration: none; color: var(--dark);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .nav-brand .alloc { color: var(--orange); }
-    .nav-dot { width: 8px; height: 8px; background: var(--orange); border-radius: 50%; }
-    .nav-link-item {
-      font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
-      color: var(--dark); text-decoration: none; padding: 4px 0;
-      transition: color 0.2s; position: relative;
-    }
-    .nav-link-item::after {
-      content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
-      height: 1px; background: var(--orange);
-      transform: scaleX(0); transition: transform 0.2s;
-    }
-    .nav-link-item:hover::after,
-    .nav-link-item.active::after { transform: scaleX(1); }
-    .nav-link-item:hover,
-    .nav-link-item.active { color: var(--orange); }
-
-    .btn-get-help {
-      background: var(--dark); color: #fff !important;
-      font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-      padding: 10px 22px; border: none; text-decoration: none !important;
-      transition: background 0.2s; white-space: nowrap;
-    }
-    .btn-get-help:hover { background: var(--orange); }
-
-    /* Mobile nav toggle */
-    .nav-toggler {
-      background: none; border: 1px solid var(--border);
-      padding: 6px 10px; cursor: pointer; display: none;
-    }
-    .nav-toggler span { display: block; width: 20px; height: 2px; background: var(--dark); margin: 4px 0; transition: 0.3s; }
-
-    @media (max-width: 991px) {
-      .nav-toggler { display: block; }
-      .nav-links {
-        display: none; flex-direction: column; gap: 8px;
-        padding: 16px 0; border-top: 1px solid var(--border); margin-top: 12px;
-      }
-      .nav-links.open { display: flex; }
-    }
-
-    /* Footer */
-    .smart-footer {
-      background: var(--dark); color: rgba(255,255,255,0.5);
-      padding: 40px 0 24px; margin-top: auto;
-    }
-    .footer-brand { font-family: var(--font-display); font-size: 32px; color: #fff; line-height: 1; margin-bottom: 8px; }
-    .footer-brand .accent { color: var(--orange); }
-    .footer-tagline { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; }
-    .footer-link { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); text-decoration: none; transition: color 0.2s; display: block; margin-bottom: 8px; }
-    .footer-link:hover { color: var(--orange); }
-    .footer-divider { border-color: rgba(255,255,255,0.08); margin: 24px 0; }
-    .footer-bottom { font-size: 11px; letter-spacing: 0.06em; display: flex; justify-content: space-between; flex-wrap: gap; }
-  </style>
-
-  <!-- Page-specific CSS -->
-  {% block extra_css %}{% endblock %}
+        {% block extra_css %}{% endblock %}
+    </style>
 </head>
-
 <body>
 
-  <!-- ═══════════════════════════════════════
-       DJANGO MESSAGES (Alerts / Toasts)
-  ════════════════════════════════════════ -->
-  {% if messages %}
-  <div class="django-messages">
-    {% for message in messages %}
-    <div class="django-msg {{ message.tags }}">
-      <span>{{ message }}</span>
-      <button class="msg-close" onclick="this.parentElement.remove()">✕</button>
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  <!-- ═══════════════════════════════════════
-       TICKER BAR
-  ════════════════════════════════════════ -->
-  <div class="ticker-bar">
-    <div class="ticker-track">
-      <span>◆</span> AI-POWERED MATCHING
-      <span>◆</span> 94% SUCCESS RATE
-      <span>◆</span> &lt;60S MATCH TIME
-      <span>◆</span> 3,400+ ACTIVE VOLUNTEERS
-      <span>◆</span> INDIA'S VOLUNTEER NETWORK
-      <span>◆</span> AI-POWERED MATCHING
-      <span>◆</span> 94% SUCCESS RATE
-      <span>◆</span> &lt;60S MATCH TIME
-      <span>◆</span> 3,400+ ACTIVE VOLUNTEERS
-      <span>◆</span> INDIA'S VOLUNTEER NETWORK
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════
-       NAVBAR
-  ════════════════════════════════════════ -->
-  <nav class="smart-nav">
-    <div class="container d-flex align-items-center justify-content-between flex-wrap gap-3">
-
-      <!-- Brand -->
-      <a href="{% url 'home' %}" class="nav-brand">
-        <span class="nav-dot"></span>
-        SMART <span class="alloc">ALLOC</span>
-      </a>
-
-      <!-- Mobile toggle -->
-      <button class="nav-toggler" onclick="toggleNav()">
-        <span></span><span></span><span></span>
-      </button>
-
-      <!-- Links -->
-      <div class="nav-links d-lg-flex align-items-center gap-4" id="navLinks">
-        <a href="{% url 'home' %}" class="nav-link-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">HOME</a>
-        <a href="{% url 'dashboard' %}" class="nav-link-item {% if 'dashboard' in request.resolver_match.url_name %}active{% endif %}">DASHBOARD</a>
-        <a href="{% url 'request_help' %}" class="nav-link-item {% if 'request' in request.resolver_match.url_name %}active{% endif %}">REQUEST HELP</a>
-        <a href="{% url 'about' %}" class="nav-link-item {% if request.resolver_match.url_name == 'about' %}active{% endif %}">ABOUT</a>
-
-        {% if user.is_authenticated %}
-          <!-- Volunteer link (only for volunteers) -->
-          {% if user.volunteerprofile %}
-          <a href="{% url 'volunteer_dashboard' %}" class="nav-link-item {% if 'volunteer' in request.resolver_match.url_name %}active{% endif %}">VOLUNTEER</a>
-          {% endif %}
-
-          <!-- User dropdown -->
-          <div class="dropdown">
-            <button class="nav-link-item dropdown-toggle" data-bs-toggle="dropdown" style="background:none; border:none; cursor:pointer;">
-              {{ user.username|upper }}
+    <nav class="navbar navbar-expand-lg glass-navbar fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}"><i class="fa-solid fa-network-wired"></i> Smart Allocation</a>
+            
+            <button class="navbar-toggler shadow-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <i class="fa-solid fa-bars text-light fs-3"></i>
             </button>
-            <ul class="dropdown-menu dropdown-menu-end" style="border-radius:0; border:1px solid var(--border); background:var(--cream); min-width:160px;">
-              <li><a class="dropdown-item" href="{% url 'volunteer_profile' %}" style="font-size:12px; letter-spacing:0.06em; text-transform:uppercase; padding:10px 16px;">My Profile</a></li>
-              <li><hr class="dropdown-divider" style="border-color:var(--border);"></li>
-              <li>
-                <form method="POST" action="{% url 'logout' %}">
-                  {% csrf_token %}
-                  <button type="submit" class="dropdown-item" style="font-size:12px; letter-spacing:0.06em; text-transform:uppercase; padding:10px 16px; color:#E53935;">Logout</button>
-                </form>
-              </li>
-            </ul>
-          </div>
-        {% else %}
-          <a href="{% url 'login' %}" class="nav-link-item">LOGIN</a>
-        {% endif %}
-      </div>
-
-      <!-- CTA Button -->
-      <a href="{% url 'request_help' %}" class="btn-get-help d-none d-lg-inline-block">GET HELP →</a>
-
-    </div>
-  </nav>
-
-  <!-- ═══════════════════════════════════════
-       MAIN CONTENT BLOCK
-  ════════════════════════════════════════ -->
-  <main>
-    {% block content %}{% endblock %}
-  </main>
-
-  <!-- ═══════════════════════════════════════
-       FOOTER
-  ════════════════════════════════════════ -->
-  <footer class="smart-footer">
-    <div class="container">
-      <div class="row g-4">
-
-        <!-- Brand col -->
-        <div class="col-lg-4">
-          <div class="footer-brand">SMART <span class="accent">ALLOC</span></div>
-          <div class="footer-tagline" style="margin-bottom:16px;">India's AI-Powered Volunteer Network</div>
-          <p style="font-size:13px; line-height:1.7; color:rgba(255,255,255,0.35);">
-            Connecting people in need with skilled volunteers. Right help, right now.
-          </p>
-        </div>
-
-        <!-- Links col -->
-        <div class="col-lg-2 col-6">
-          <div style="font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:16px;">Navigation</div>
-          <a href="{% url 'home' %}" class="footer-link">Home</a>
-          <a href="{% url 'dashboard' %}" class="footer-link">Dashboard</a>
-          <a href="{% url 'request_help' %}" class="footer-link">Request Help</a>
-          <a href="{% url 'about' %}" class="footer-link">About</a>
-        </div>
-
-        <!-- Volunteer col -->
-        <div class="col-lg-2 col-6">
-          <div style="font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:16px;">Volunteers</div>
-          <a href="{% url 'register' %}" class="footer-link">Join as Volunteer</a>
-          <a href="{% url 'request_list' %}" class="footer-link">Open Requests</a>
-          <a href="{% url 'volunteer_profile' %}" class="footer-link">My Profile</a>
-        </div>
-
-        <!-- Stats col -->
-        <div class="col-lg-4">
-          <div style="font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.25); margin-bottom:16px;">Live Stats</div>
-          <div style="display:flex; gap:24px;">
-            <div>
-              <div style="font-family:var(--font-display); font-size:36px; color:var(--orange); line-height:1;">94%</div>
-              <div style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.3);">Success Rate</div>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center mt-3 mt-lg-0">
+                    
+                    {% if user.is_authenticated %}
+                        <li class="nav-item me-lg-3 text-center text-lg-start mb-2 mb-lg-0">
+                            <span class="nav-link text-light">System ID: <b style="color: #00ffcc;">{{ user.username }}</b></span>
+                        </li>
+                        <li class="nav-item me-lg-2 mb-2 mb-lg-0">
+                            <a href="{% url 'create_request' %}" class="btn btn-neon-blue btn-sm w-100"><i class="fa-solid fa-plus"></i> New Request</a>
+                        </li>
+                        <li class="nav-item me-lg-3 mb-2 mb-lg-0">
+                            <a href="{% url 'volunteer_dashboard' %}" class="nav-link text-center text-lg-start"><i class="fa-solid fa-user-astronaut"></i> Volunteer Panel</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'logout' %}" class="btn btn-neon-red btn-sm w-100"><i class="fa-solid fa-power-off"></i> Logout</a>
+                        </li>
+                    
+                    {% else %}
+                        <li class="nav-item me-lg-2 mb-2 mb-lg-0 w-100">
+                            <a href="{% url 'login' %}" class="btn btn-neon-blue w-100 fw-bold px-4"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="{% url 'user_register' %}" class="btn btn-neon-green w-100 fw-bold px-4"><i class="fa-solid fa-user-plus"></i> Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
             </div>
-            <div>
-              <div style="font-family:var(--font-display); font-size:36px; color:var(--orange); line-height:1;">3.4K</div>
-              <div style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.3);">Volunteers</div>
-            </div>
-            <div>
-              <div style="font-family:var(--font-display); font-size:36px; color:var(--orange); line-height:1;">&lt;60s</div>
-              <div style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(255,255,255,0.3);">Match Time</div>
-            </div>
-          </div>
         </div>
+    </nav>
 
-      </div>
+    <main class="main-content container">
+        {% block content %}
+        {% endblock %}
+    </main>
 
-      <hr class="footer-divider">
+    <footer class="text-center py-4 mt-5" style="border-top: 1px solid rgba(255,255,255,0.05); background: rgba(13, 17, 23, 0.9);">
+        <p class="text-secondary mb-0">© 2026 Smart Allocation System. Secure & Encrypted.</p>
+    </footer>
 
-      <div class="footer-bottom d-flex justify-content-between flex-wrap gap-2">
-        <span style="font-size:11px; letter-spacing:0.06em;">© {% now "Y" %} SMART ALLOC — ALL RIGHTS RESERVED</span>
-        <span style="font-size:11px; letter-spacing:0.06em; color:var(--orange);">BUILT FOR INDIA ◆</span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Bootstrap 5 JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Global JS -->
-  <script>
-    // Mobile nav toggle
-    function toggleNav() {
-      document.getElementById('navLinks').classList.toggle('open');
-    }
-
-    // Auto-dismiss messages after 4 seconds
-    document.querySelectorAll('.django-msg').forEach(msg => {
-      setTimeout(() => {
-        msg.style.opacity = '0';
-        msg.style.transform = 'translateX(40px)';
-        msg.style.transition = 'all 0.4s ease';
-        setTimeout(() => msg.remove(), 400);
-      }, 4000);
-    });
-
-    // Active nav link highlight (fallback)
-    const currentPath = window.location.pathname;
-    document.querySelectorAll('.nav-link-item').forEach(link => {
-      if (link.href && link.href.includes(currentPath) && currentPath !== '/') {
-        link.classList.add('active');
-      }
-    });
-  </script>
-
-  <!-- Page-specific JS -->
-  {% block extra_js %}{% endblock %}
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -1,193 +1,37 @@
 {% extends 'base.html' %}
-{% load static %}
-{% block title %}Resolve / Assign — Smart Alloc{% endblock %}
 
-{% block extra_css %}
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  .grid-bg {
-    background-image: linear-gradient(rgba(17,17,17,0.06) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(17,17,17,0.06) 1px, transparent 1px);
-    background-size: 40px 40px; min-height: 100vh; padding: 40px 0 80px;
-  }
-  .breadcrumb-bar { padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
-  .bc-link { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(17,17,17,0.4); text-decoration: none; transition: color 0.2s; }
-  .bc-link:hover { color: var(--orange); }
-  .bc-sep { color: rgba(17,17,17,0.2); margin: 0 10px; }
-  .bc-current { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--orange); }
-  .page-header { padding: 0 0 32px; border-bottom: 1px solid var(--border); margin-bottom: 40px; }
-  .label-pill { display: inline-flex; align-items: center; gap: 6px; background: var(--dark); color: #fff; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; margin-bottom: 16px; }
-  .label-pill .dot-orange { width: 6px; height: 6px; border-radius: 50%; background: var(--orange); }
-  .page-title { font-family: 'Bebas Neue', sans-serif; font-size: 64px; line-height: 0.9; }
-  .page-title .accent { color: var(--orange); }
-  .req-summary {
-    background: var(--dark); color: #fff;
-    padding: 32px; margin-bottom: 40px;
-    display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
-  }
-  .req-summary-id { font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: rgba(255,255,255,0.4); }
-  .req-summary-title { font-family: 'Bebas Neue', sans-serif; font-size: 36px; line-height: 1; }
-  .status-tag { display: inline-block; background: var(--gold); color: var(--dark); font-size: 11px; letter-spacing: 0.1em; font-weight: 700; text-transform: uppercase; padding: 6px 14px; }
-  .tab-switcher { display: flex; margin-bottom: 32px; border-bottom: 2px solid var(--border); }
-  .tab-btn { background: none; border: none; padding: 14px 28px; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(17,17,17,0.4); cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; margin-bottom: -2px; }
-  .tab-btn.active { color: var(--orange); border-bottom-color: var(--orange); }
-  .tab-btn:hover { color: var(--dark); }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-  .section-label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(17,17,17,0.4); margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
-  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .form-card { background: #fff; border: 1px solid var(--border); padding: 32px; margin-bottom: 24px; }
-  .field-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(17,17,17,0.5); margin-bottom: 8px; display: block; }
-  .field-input, .field-select, .field-textarea { width: 100%; border: 1px solid var(--border); background: var(--cream); font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--dark); padding: 12px 16px; outline: none; transition: border-color 0.2s; appearance: none; border-radius: 0; }
-  .field-input:focus, .field-select:focus, .field-textarea:focus { border-color: var(--orange); }
-  .field-textarea { min-height: 120px; resize: vertical; }
-  .vol-card { background: #fff; border: 1px solid var(--border); padding: 20px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 16px; }
-  .vol-card:hover { border-color: var(--orange); }
-  .vol-card.selected { border-color: var(--orange); background: rgba(217,79,43,0.04); }
-  .vol-avatar { width: 48px; height: 48px; background: var(--dark); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: #fff; flex-shrink: 0; }
-  .vol-card.selected .vol-avatar { background: var(--orange); }
-  .vol-vname { font-weight: 600; font-size: 15px; }
-  .vol-vtype { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(17,17,17,0.4); }
-  .vol-stats { font-size: 12px; color: rgba(17,17,17,0.5); }
-  .selected-check { margin-left: auto; width: 24px; height: 24px; border-radius: 50%; background: var(--orange); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; opacity: 0; transition: opacity 0.2s; }
-  .vol-card.selected .selected-check { opacity: 1; }
-  .btn-resolve { display: inline-block; background: var(--green); color: #fff; border: none; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 16px 40px; transition: background 0.2s; cursor: pointer; }
-  .btn-resolve:hover { background: #388E3C; color: #fff; }
-  .btn-assign-submit { display: inline-block; background: var(--orange); color: #fff; border: none; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 16px 40px; transition: background 0.2s; cursor: pointer; }
-  .btn-assign-submit:hover { background: #c04425; color: #fff; }
-  .btn-secondary { display: inline-block; background: transparent; color: var(--dark); border: 1px solid var(--border); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px 28px; text-decoration: none; transition: all 0.2s; cursor: pointer; }
-  .btn-secondary:hover { border-color: var(--dark); background: rgba(17,17,17,0.04); }
-  .outcome-box { padding: 24px; border-left: 4px solid; display: flex; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
-  .outcome-resolve { border-color: var(--green); background: rgba(76,175,80,0.06); }
-  .outcome-assign  { border-color: var(--orange); background: rgba(217,79,43,0.06); }
-  .outcome-icon { font-size: 28px; }
-  .outcome-title { font-family: 'Bebas Neue', sans-serif; font-size: 22px; margin-bottom: 4px; }
-  .outcome-desc { font-size: 13px; color: rgba(17,17,17,0.6); line-height: 1.6; }
-</style>
-{% endblock %}
+{% block title %}Active Mission{% endblock %}
 
 {% block content %}
-<div class="grid-bg">
-  <div class="container">
+<div class="row justify-content-center mt-4">
+    <div class="col-lg-8">
+        <div class="glass-card" style="border: 1px solid #00ffcc; box-shadow: 0 0 20px rgba(0, 255, 204, 0.15);">
+            <div class="d-flex justify-content-between border-bottom border-secondary pb-3 mb-3">
+                <h3 style="color: #00ffcc;"><i class="fa-solid fa-unlock-keyhole"></i> Target Unlocked</h3>
+                <span class="badge bg-dark border border-info text-info fs-6">Status: Accepted</span>
+            </div>
 
-    <div class="breadcrumb-bar">
-      <a href="{% url 'volunteer_dashboard' %}" class="bc-link">DASHBOARD</a>
-      <span class="bc-sep">›</span>
-      <a href="{% url 'request_list' %}" class="bc-link">REQUESTS</a>
-      <span class="bc-sep">›</span>
-      <a href="{% url 'request_detail' request_obj.id %}" class="bc-link">REQUEST #{{ request_obj.id }}</a>
-      <span class="bc-sep">›</span>
-      <span class="bc-current">RESOLVE / ASSIGN</span>
-    </div>
+            <div class="bg-dark p-4 rounded mb-4" style="border-left: 3px solid #58a6ff;">
+                <h5 class="text-light mb-3">Requester Details:</h5>
+                <p class="mb-1"><i class="fa-solid fa-user text-secondary me-2"></i> <b>Name:</b> User_892</p>
+                <p class="mb-1"><i class="fa-solid fa-location-dot text-secondary me-2"></i> <b>Distance:</b> 2.4 km away</p>
+                <hr class="border-secondary">
+                <h6 class="text-info mt-3">Private Message/Address:</h6>
+                <p class="text-light" style="font-family: monospace; font-size: 1.1rem;">
+                    "Need O+ blood at City Hospital ICU. Contact number is 9876543210. Please hurry."
+                </p>
+            </div>
 
-    <div class="page-header">
-      <div class="label-pill"><span class="dot-orange"></span> ACTION REQUIRED</div>
-      <h1 class="page-title">RESOLVE <span class="accent">OR</span><br>ASSIGN.</h1>
-    </div>
-
-    <div class="req-summary">
-      <div>
-        <div class="req-summary-id">REQUEST #{{ request_obj.id }}</div>
-        <div class="req-summary-title">{{ request_obj.get_problem_type_display|upper }}</div>
-        <div style="font-size:13px; color:rgba(255,255,255,0.5); margin-top:6px;">{{ request_obj.user.get_full_name|default:request_obj.user.username }}</div>
-      </div>
-      <span class="status-tag">{{ request_obj.get_status_display|upper }}</span>
-    </div>
-
-    <div class="tab-switcher">
-      <button class="tab-btn active" onclick="switchTab('resolve', this)">✓ MARK AS RESOLVED</button>
-      <button class="tab-btn" onclick="switchTab('assign', this)">⇒ ASSIGN TO VOLUNTEER</button>
-    </div>
-
-    <div id="tab-resolve" class="tab-panel active">
-      <div class="outcome-box outcome-resolve">
-        <div class="outcome-icon">✅</div>
-        <div>
-          <div class="outcome-title">MARK THIS REQUEST AS RESOLVED</div>
-          <div class="outcome-desc">This means you have personally helped the requester and the issue is now solved.</div>
+            <div class="d-flex gap-3 mt-4">
+                <a href="#" class="btn btn-lg w-50" style="background-color: #00ffcc; color: #000; font-weight: bold; box-shadow: 0 0 15px rgba(0,255,204,0.5);">
+                    <i class="fa-solid fa-check-double"></i> Mark Done
+                </a>
+                
+                <a href="#" class="btn btn-outline-info btn-lg w-50">
+                    <i class="fa-solid fa-rotate-right"></i> Fetch New Details
+                </a>
+            </div>
         </div>
-      </div>
-      <form method="POST" action="{% url 'resolve_request' request_obj.id %}">
-        {% csrf_token %}
-        <div class="form-card">
-          <div class="section-label">Resolution Note</div>
-          <div class="mb-4">
-            <label class="field-label">How was the issue resolved? (Optional)</label>
-            <textarea name="resolution_note" class="field-textarea" placeholder="Describe what was done..."></textarea>
-          </div>
-          <div class="mb-4">
-            <label class="field-label">Time Spent</label>
-            <select name="time_spent" class="field-select">
-              <option value="">Select time spent</option>
-              <option>Less than 30 minutes</option>
-              <option>30 minutes – 1 hour</option>
-              <option>1–2 hours</option>
-              <option>More than 2 hours</option>
-            </select>
-          </div>
-        </div>
-        <div class="d-flex gap-3 flex-wrap">
-          <button type="submit" class="btn-resolve">✓ CONFIRM RESOLVED</button>
-          <a href="{% url 'request_detail' request_obj.id %}" class="btn-secondary">← BACK</a>
-        </div>
-      </form>
     </div>
-
-    <div id="tab-assign" class="tab-panel">
-      <div class="outcome-box outcome-assign">
-        <div class="outcome-icon">⇒</div>
-        <div>
-          <div class="outcome-title">ASSIGN TO ANOTHER VOLUNTEER</div>
-          <div class="outcome-desc">Reassign this request to another available volunteer.</div>
-        </div>
-      </div>
-      <form method="POST" action="{% url 'assign_request' request_obj.id %}">
-        {% csrf_token %}
-        <input type="hidden" name="assigned_volunteer" id="selected-vol-id">
-        <div class="form-card">
-          <div class="section-label">Select Volunteer</div>
-          <div class="d-flex flex-column gap-2 mb-4">
-            {% if available_volunteers %}
-              {% for vol in available_volunteers %}
-              <label class="vol-card" onclick="selectVol(this, '{{ vol.id }}')">
-                <div class="vol-avatar">{{ vol.display_name|first|upper }}</div>
-                <div class="flex-grow-1">
-                  <div class="vol-vname">{{ vol.display_name }}</div>
-                  <div class="vol-vtype">{{ vol.get_volunteer_type_display }}</div>
-                  <div class="vol-stats">{{ vol.total_resolved }} resolved · Available now</div>
-                </div>
-                <div class="selected-check">✓</div>
-              </label>
-              {% endfor %}
-            {% else %}
-              <p style="color:rgba(17,17,17,0.4); font-size:13px;">No volunteers available right now.</p>
-            {% endif %}
-          </div>
-          <div class="section-label">Assignment Note</div>
-          <label class="field-label">Reason for reassignment (Optional)</label>
-          <textarea name="assign_note" class="field-textarea" placeholder="Why are you reassigning?"></textarea>
-        </div>
-        <div class="d-flex gap-3 flex-wrap">
-          <button type="submit" class="btn-assign-submit">⇒ CONFIRM ASSIGN</button>
-          <a href="{% url 'request_detail' request_obj.id %}" class="btn-secondary">← BACK</a>
-        </div>
-      </form>
-    </div>
-
-  </div>
 </div>
-
-<script>
-function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
-}
-function selectVol(card, id) {
-  document.querySelectorAll('.vol-card').forEach(c => c.classList.remove('selected'));
-  card.classList.add('selected');
-  document.getElementById('selected-vol-id').value = id;
-}
-</script>
 {% endblock %}

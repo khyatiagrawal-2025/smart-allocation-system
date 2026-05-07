@@ -1,21 +1,16 @@
 from django.urls import path
 from . import views
-from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    path('request/', views.create_request, name='create_request'),
-    path('success/', views.success, name='success'),
+    # Auth URLs
+    path('register/', views.register_user, name='user_register'),
+    path('login/', views.login_user, name='login'),
+    path('logout/', views.logout_user, name='logout'),
     
-    path('dashboard/', views.dashboard, name='dashboard'),
-    
-    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
-    
-    path('register/', views.register, name='register'),
-    
-    path('login/', auth_views.LoginView.as_view(
-    template_name='accounts/login.html',
-    next_page='/allocation/dashboard/'
-    ), name='login'),
+    # Core Flow URLs (Ab yeh active hain!)
     path('role-selection/', views.role_selection, name='role_selection'),
-    path('volunteer/', views.volunteer_form, name='volunteer_form'),
+    path('request-help/', views.create_request, name='create_request'),
+    path('match/<int:request_id>/', views.find_volunteers, name='find_volunteers'),
+    path('select/<int:request_id>/<int:volunteer_id>/', views.select_volunteer, name='select_volunteer'),
+    path('waiting/<int:request_id>/', views.waiting_status, name='waiting_status'),
 ]

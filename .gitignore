@@ -4,3 +4,4 @@ venv/
 *.pyc
 
 .env
+workflow.txt

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Connecting...{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Radar pulsing effect */
+    .radar-pulse {
+        width: 100px;
+        height: 100px;
+        background: rgba(0, 255, 204, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: pulse 1.5s infinite;
+        margin: 0 auto 20px auto;
+    }
+    @keyframes pulse {
+        0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 255, 204, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 30px rgba(0, 255, 204, 0); }
+        100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(0, 255, 204, 0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 text-center">
+        <div class="glass-card py-5">
+            <div class="radar-pulse">
+                <i class="fa-solid fa-satellite-dish fa-2x" style="color: #00ffcc;"></i>
+            </div>
+            <h3 style="color: #00ffcc;">Connecting to Volunteer...</h3>
+            <p class="text-secondary mt-3">Your request has been securely sent to the selected volunteer. Waiting for them to accept and unlock the communication channel.</p>
+            
+            <div class="mt-4">
+                <button class="btn btn-outline-danger btn-sm">Cancel Request</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

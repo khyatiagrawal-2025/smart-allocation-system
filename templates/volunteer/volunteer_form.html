@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Setup Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="glass-card border-success">
+            <h3 class="mb-4 text-success"><i class="fa-solid fa-id-card-clip"></i> Volunteer Registration</h3>
+            <p class="text-secondary">Define your role so the system can route the right problems to you.</p>
+            
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="form-label text-light">Service Category</label>
+                    <select name="service_role" class="form-select bg-dark text-light border-secondary shadow-none" required>
+                        <option value="Blood Bank">Blood Bank / Donor</option>
+                        <option value="Medical">Medical Emergency Help</option>
+                        <option value="Home Rent">Accommodation / Shelter</option>
+                        <option value="Tech Support">IT & Tech Support</option>
+                    </select>
+                </div>
+                
+                <div class="form-check form-switch mb-4">
+                    <input class="form-check-input bg-dark border-secondary" type="checkbox" name="is_available" id="availSwitch" checked>
+                    <label class="form-check-label text-light" for="availSwitch">I am currently available to take requests</label>
+                </div>
+
+                <button type="submit" class="btn btn-outline-success w-100 py-2 fw-bold">ACTIVATE PROFILE</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
