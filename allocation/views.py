@@ -10,8 +10,8 @@ from volunteer.models import VolunteerProfile
 import google.generativeai as genai
 
 # ================= AUTHENTICATION & CORE =================
-def home_page(request):
-    return render(request, 'home/home.html')
+#def home_page(request):
+   # return render(request, 'home/home.html')
 
 def register_user(request):
     if request.method == 'POST':

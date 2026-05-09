@@ -1,47 +1,1115 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Request Help — SmartAlloc</title>
 
-{% block title %}Create Request{% endblock %}
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
 
-{% block content %}
-<div class="row justify-content-center mt-4">
-    <div class="col-lg-8">
-        <div class="glass-card">
-            <h3 class="mb-4 border-bottom border-secondary pb-2"><i class="fa-solid fa-satellite-dish" style="color: #58a6ff;"></i> Broadcast Help Request</h3>
-            
-            <form method="POST" action="">
-                {% csrf_token %}
-                
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <label class="form-label text-info">Problem Category</label>
-                        <select name="problem_category" class="form-select bg-dark text-light border-secondary shadow-none">
-                            <option value="Blood Bank">Blood Bank</option>
-                            <option value="Medical">Medical Emergency</option>
-                            <option value="Home Rent">Home / Shelter</option>
-                            <option value="Tech Support">Tech / IT Support</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mt-3 mt-md-0">
-                        <label class="form-label text-warning">Priority Level</label>
-                        <select name="priority" class="form-select bg-dark text-light border-secondary shadow-none">
-                            <option value="High" style="color: #ff5555; font-weight: bold;">High (Critical)</option>
-                            <option value="Medium" style="color: #ffcc00;">Medium</option>
-                            <option value="Low" style="color: #55ff55;">Low</option>
-                        </select>
-                    </div>
-                </div>
+<style>
+/* ─── TOKENS ─── */
+:root {
+  --cream:      #F5F0E8;
+  --ink:        #0A0A0A;
+  --rust:       #C84B31;
+  --sage:       #3D7A5A;
+  --gold:       #D4A017;
+  --slate:      #2C3E50;
+  --mist:       #BFC9D1;
+  --paper:      #EDE8DE;
+  --neon-rust:  #FF5533;
+  --neon-sage:  #00FF88;
+  --neon-gold:  #FFD700;
+  --neon-cyan:  #00E5FF;
+  --glow-rust:  0 0 8px rgba(255,85,51,.55), 0 0 28px rgba(255,85,51,.25);
+  --glow-sage:  0 0 8px rgba(0,255,136,.5),  0 0 28px rgba(0,255,136,.2);
+  --glow-gold:  0 0 8px rgba(255,215,0,.55), 0 0 28px rgba(255,215,0,.22);
+}
 
-                <div class="mb-4">
-                    <label class="form-label" style="color: #ff5555;"><i class="fa-solid fa-lock"></i> Private Details (Locked)</label>
-                    <p class="text-secondary" style="font-size: 0.85rem;">*This information is securely locked and only shared after a volunteer accepts your request.</p>
-                    <textarea name="private_details" class="form-control bg-dark text-light border-secondary shadow-none" rows="4" placeholder="Enter exact address, phone number, and sensitive details here..." required></textarea>
-                </div>
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+html { scroll-behavior:smooth; cursor:none }
+body {
+  font-family:'Space Grotesk', sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
 
-                <div class="text-end">
-                    <button type="submit" class="btn btn-neon-blue px-4 py-2"><i class="fa-solid fa-radar"></i> Scan for Volunteers</button>
-                </div>
-            </form>
-        </div>
-    </div>
+/* ─── GRAIN OVERLAY ─── */
+body::after {
+  content:''; position:fixed; inset:0; z-index:9990; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.45;
+}
+
+/* ─── CUSTOM CURSOR ─── */
+.cursor {
+  position:fixed; width:12px; height:12px;
+  background:var(--neon-rust); border-radius:50%;
+  pointer-events:none; z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:transform .15s ease, width .3s ease, height .3s ease;
+  box-shadow:var(--glow-rust);
+}
+.cursor-ring {
+  position:fixed; width:38px; height:38px;
+  border:1.5px solid var(--neon-rust); border-radius:50%;
+  pointer-events:none; z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:transform .38s cubic-bezier(.25,.46,.45,.94), width .3s, height .3s, opacity .3s;
+  opacity:.5; box-shadow:0 0 12px rgba(255,85,51,.3);
+}
+.cursor.expand { width:56px; height:56px; background:transparent; border:1.5px solid var(--neon-rust); }
+.cursor-ring.expand { width:70px; height:70px; opacity:.3; }
+
+::-webkit-scrollbar { width:4px }
+::-webkit-scrollbar-track { background:var(--cream) }
+::-webkit-scrollbar-thumb { background:var(--rust); border-radius:2px; box-shadow:var(--glow-rust) }
+
+/* ─── KEYFRAMES ─── */
+@keyframes border-flow {
+  0%  { background-position:0% 50% }
+  50% { background-position:100% 50% }
+  100%{ background-position:0% 50% }
+}
+@keyframes pulse-dot {
+  0%,100%{ transform:scale(1); opacity:1 }
+  50%{ transform:scale(1.6); opacity:.7 }
+}
+@keyframes live-ping {
+  0%  { box-shadow:0 0 0 0 rgba(0,255,136,.4) }
+  70% { box-shadow:0 0 0 8px rgba(0,255,136,0) }
+  100%{ box-shadow:0 0 0 0 rgba(0,255,136,0) }
+}
+@keyframes fade-up {
+  from { opacity:0; transform:translateY(28px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+@keyframes float-card {
+  0%,100%{ transform:translateY(0) }
+  50%{ transform:translateY(-8px) }
+}
+@keyframes shimmer-line {
+  0%{ background-position:0% 50% }
+  100%{ background-position:200% 50% }
+}
+@keyframes success-pop {
+  0%{ transform:scale(0.7); opacity:0 }
+  60%{ transform:scale(1.08) }
+  100%{ transform:scale(1); opacity:1 }
+}
+@keyframes check-draw {
+  to{ stroke-dashoffset:0 }
+}
+@keyframes grid-drift {
+  from{ background-position:0 0, 0 0 }
+  to{ background-position:18px 18px, 18px 18px }
+}
+
+/* ─── NAVBAR ─── */
+.navbar {
+  position:fixed; top:0; left:0; right:0; z-index:500;
+  height:60px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 4%;
+  background:rgba(245,240,232,0.88); backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(10,10,10,0.1);
+}
+.navbar::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:1.5px;
+  background:linear-gradient(90deg,transparent,var(--neon-rust),transparent);
+  animation:border-flow 3s ease infinite; background-size:300% 300%;
+}
+.nav-logo {
+  font-family:'Bebas Neue', sans-serif; font-size:1.45rem; letter-spacing:.06em;
+  color:var(--ink); display:flex; align-items:center; gap:10px; text-decoration:none;
+}
+.nav-logo-dot {
+  width:9px; height:9px; border-radius:50%; background:var(--rust);
+  display:inline-block; box-shadow:var(--glow-rust); animation:pulse-dot 2s ease-in-out infinite;
+}
+.nav-right { display:flex; align-items:center; gap:10px; }
+.back-link {
+  display:flex; align-items:center; gap:8px; font-size:.82rem; font-weight:500;
+  color:#666; text-decoration:none; letter-spacing:.04em; text-transform:uppercase;
+  padding:8px 14px; border:1px solid rgba(10,10,10,0.12); border-radius:3px;
+  transition:all .22s; cursor:none;
+}
+.back-link:hover {
+  color:var(--rust); border-color:rgba(200,75,49,.3);
+  background:rgba(200,75,49,.04); box-shadow:0 0 12px rgba(200,75,49,.1);
+}
+
+/* ─── TICKER ─── */
+.ticker-wrap {
+  position:fixed; top:60px; left:0; right:0; z-index:499;
+  background:var(--ink); overflow:hidden; height:28px;
+  display:flex; align-items:center;
+  border-bottom:1px solid rgba(255,85,51,.25);
+}
+.ticker-wrap::after {
+  content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg,transparent,var(--neon-rust),transparent);
+  animation:border-flow 4s ease infinite; background-size:300% 300%;
+}
+.ticker-track {
+  display:flex; white-space:nowrap;
+  animation:ticker-scroll 30s linear infinite;
+}
+@keyframes ticker-scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.ticker-item {
+  font-family:'IBM Plex Mono',monospace; font-size:.68rem;
+  color:var(--cream); letter-spacing:.08em; text-transform:uppercase;
+  padding:0 32px; opacity:.75;
+}
+.ticker-sep { color:var(--neon-rust); opacity:1; font-size:.8rem; text-shadow:var(--glow-rust) }
+
+/* ─── PAGE SHELL ─── */
+.page-shell {
+  min-height:100vh; padding-top:88px; padding-bottom:60px;
+  display:grid; grid-template-columns:1fr 1.5fr;
+  position:relative; overflow:hidden;
+}
+@media(max-width:960px){ .page-shell{ grid-template-columns:1fr } }
+
+/* ─── LEFT PANEL ─── */
+.left-panel {
+  background:var(--ink); color:var(--cream);
+  display:flex; flex-direction:column; justify-content:center;
+  padding:clamp(40px,5vw,70px) clamp(28px,4vw,60px);
+  position:relative; overflow:hidden;
+  min-height:calc(100vh - 88px);
+}
+.left-panel::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,85,51,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,85,51,.05) 1px, transparent 1px);
+  background-size:50px 50px;
+  animation:grid-drift 20s ease-in-out infinite alternate;
+}
+.left-panel::after {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background:repeating-linear-gradient(
+    -45deg, transparent 0, transparent 28px,
+    rgba(255,85,51,.02) 28px, rgba(255,85,51,.02) 29px
+  );
+}
+.left-inner { position:relative; z-index:1; max-width:360px; }
+
+.left-bg-num {
+  position:absolute; right:-8%; bottom:-10%;
+  font-family:'Bebas Neue', sans-serif;
+  font-size:clamp(10rem,18vw,20rem); line-height:1;
+  color:transparent; -webkit-text-stroke:1px rgba(255,85,51,.07);
+  pointer-events:none; user-select:none; z-index:0;
+}
+
+.left-badge {
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(255,85,51,.12); border:1px solid rgba(255,85,51,.22);
+  color:var(--neon-rust); font-family:'IBM Plex Mono', monospace;
+  font-size:.68rem; letter-spacing:.12em; text-transform:uppercase;
+  padding:7px 14px; border-radius:2px; margin-bottom:28px;
+  text-shadow:0 0 8px rgba(255,85,51,.4);
+}
+.live-dot {
+  width:7px; height:7px; border-radius:50%; background:var(--neon-sage);
+  display:inline-block; animation:live-ping 1.6s ease-in-out infinite;
+}
+
+.left-headline {
+  font-family:'Bebas Neue', sans-serif;
+  font-size:clamp(3rem,5.5vw,5rem); line-height:.9;
+  color:var(--cream); margin-bottom:20px;
+}
+.left-headline em {
+  font-family:'Playfair Display', serif; font-style:italic;
+  color:var(--neon-rust); text-shadow:0 0 24px rgba(255,85,51,.4);
+}
+.left-sub {
+  font-size:.9rem; color:rgba(245,240,232,.42); line-height:1.75; margin-bottom:36px;
+}
+
+/* how-it-works mini steps */
+.mini-steps { display:flex; flex-direction:column; gap:0; }
+.mini-step {
+  display:flex; align-items:flex-start; gap:16px;
+  padding:18px 0; border-bottom:1px solid rgba(255,255,255,.05);
+  transition:padding-left .22s;
+}
+.mini-step:last-child { border-bottom:none; }
+.mini-step:hover { padding-left:5px; }
+.ms-num {
+  font-family:'Bebas Neue', sans-serif; font-size:1.6rem; line-height:1;
+  color:var(--rust); text-shadow:var(--glow-rust); min-width:36px; flex-shrink:0;
+}
+.ms-text strong { color:rgba(245,240,232,.85); display:block; font-size:.88rem; margin-bottom:2px; }
+.ms-text span { font-size:.8rem; color:rgba(245,240,232,.38); line-height:1.5; }
+
+/* floating stat cards */
+.left-stat-strip {
+  display:flex; gap:16px; flex-wrap:wrap; margin-top:28px;
+  padding-top:20px; border-top:1px solid rgba(255,255,255,.06);
+}
+.ls-item .n {
+  font-family:'Bebas Neue', sans-serif; font-size:1.9rem; line-height:1;
+  color:var(--neon-rust); text-shadow:var(--glow-rust);
+}
+.ls-item .l { font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:rgba(245,240,232,.28); margin-top:3px; }
+
+/* ─── RIGHT PANEL ─── */
+.right-panel {
+  background:var(--cream);
+  padding:clamp(32px,4vw,56px) clamp(20px,4vw,64px);
+  display:flex; flex-direction:column; justify-content:center; align-items:flex-start;
+  position:relative;
+}
+.right-panel::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:radial-gradient(rgba(200,75,49,.08) 1px, transparent 1px);
+  background-size:26px 26px;
+}
+
+.form-container {
+  width:100%; max-width:640px;
+  position:relative; z-index:1;
+  animation:fade-up .65s ease both;
+}
+
+/* ─── FORM HEADER ─── */
+.form-header { margin-bottom:36px; }
+.form-eyebrow {
+  font-family:'IBM Plex Mono', monospace; font-size:.68rem;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--rust);
+  margin-bottom:10px; display:flex; align-items:center; gap:8px;
+}
+.form-eyebrow::before {
+  content:''; width:20px; height:1.5px;
+  background:var(--rust); box-shadow:0 0 6px rgba(200,75,49,.5);
+}
+.form-title {
+  font-family:'Bebas Neue', sans-serif;
+  font-size:clamp(2.8rem,5vw,4rem); line-height:.9; color:var(--ink); margin-bottom:8px;
+}
+.form-sub { font-size:.88rem; color:#888; line-height:1.6; }
+
+/* ─── PROGRESS BAR ─── */
+.progress-wrap { margin-bottom:32px; }
+.progress-label {
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:'IBM Plex Mono', monospace; font-size:.66rem;
+  letter-spacing:.1em; text-transform:uppercase; color:#aaa; margin-bottom:8px;
+}
+.progress-bar-bg {
+  height:3px; background:rgba(10,10,10,0.1); border-radius:2px; overflow:hidden;
+}
+.progress-bar-fill {
+  height:100%; border-radius:2px;
+  background:linear-gradient(90deg, var(--rust), var(--neon-rust));
+  background-size:200% 200%; animation:shimmer-line 2s ease infinite;
+  transition:width .5s cubic-bezier(.25,.46,.45,.94);
+  box-shadow:0 0 8px rgba(255,85,51,.4);
+  width:0%;
+}
+
+/* ─── SECTION DIVIDERS ─── */
+.form-section-label {
+  font-family:'IBM Plex Mono', monospace; font-size:.66rem;
+  letter-spacing:.16em; text-transform:uppercase;
+  color:#bbb; margin:28px 0 16px; display:flex; align-items:center; gap:10px;
+}
+.form-section-label::after {
+  content:''; flex:1; height:1px; background:rgba(10,10,10,.08);
+}
+
+/* ─── FORM GROUPS ─── */
+.form-group { margin-bottom:20px; }
+.form-label {
+  display:flex; align-items:center; gap:6px;
+  font-size:.76rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  color:#555; margin-bottom:8px;
+}
+.form-label .req { color:var(--rust); font-size:.8rem; }
+.form-label i { font-size:.7rem; color:#bbb; }
+
+.input-wrap { position:relative; }
+.input-icon {
+  position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  color:#bbb; font-size:.85rem; pointer-events:none; transition:color .25s;
+}
+.input-wrap:focus-within .input-icon { color:var(--rust); }
+
+.form-input, .form-textarea, .form-select {
+  width:100%; padding:13px 16px 13px 42px;
+  background:#fff; border:1.5px solid rgba(10,10,10,0.13);
+  border-radius:3px; font-family:'Space Grotesk', sans-serif;
+  font-size:.92rem; color:var(--ink); outline:none; transition:all .25s; cursor:none;
+  appearance:none;
+}
+.form-textarea {
+  padding:13px 16px; resize:vertical; min-height:100px; cursor:auto;
+}
+.form-input::placeholder, .form-textarea::placeholder { color:#c2c2c2; }
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  border-color:var(--rust);
+  box-shadow:0 0 0 3px rgba(200,75,49,.09), 0 0 14px rgba(200,75,49,.07);
+}
+.form-input.error, .form-select.error { border-color:#e74c3c; box-shadow:0 0 0 3px rgba(231,76,60,.07); }
+.form-input.success, .form-select.success { border-color:var(--sage); box-shadow:0 0 0 3px rgba(61,122,90,.08); }
+
+/* select arrow */
+.select-wrap { position:relative; }
+.select-wrap::after {
+  content:'\f078'; font-family:'Font Awesome 6 Free'; font-weight:900;
+  position:absolute; right:14px; top:50%; transform:translateY(-50%);
+  color:#bbb; font-size:.7rem; pointer-events:none; transition:color .25s;
+}
+.select-wrap:focus-within::after { color:var(--rust); }
+
+/* date/time row */
+.date-time-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media(max-width:480px){ .date-time-row{ grid-template-columns:1fr; } }
+
+/* ─── TYPE CARDS ─── */
+.type-cards-grid {
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;
+  margin-bottom:4px;
+}
+@media(max-width:520px){ .type-cards-grid{ grid-template-columns:repeat(2, 1fr); } }
+
+.type-card {
+  position:relative; cursor:none;
+  padding:16px 12px; border-radius:4px;
+  background:#fff; border:1.5px solid rgba(10,10,10,.1);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:8px; text-align:center; transition:all .25s;
+  user-select:none;
+}
+.type-card:hover {
+  border-color:rgba(200,75,49,.3);
+  background:rgba(200,75,49,.03);
+  transform:translateY(-2px);
+  box-shadow:4px 4px 0 rgba(200,75,49,.15);
+}
+.type-card.active {
+  border-color:var(--rust);
+  background:rgba(200,75,49,.05);
+  box-shadow:4px 4px 0 var(--rust), 0 0 16px rgba(200,75,49,.12);
+  transform:translateY(-3px);
+}
+.type-card.active .tc-icon { color:var(--rust); text-shadow:0 0 12px rgba(200,75,49,.4); }
+.type-card.active .tc-label { color:var(--rust); font-weight:600; }
+.type-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--rust),var(--neon-rust));
+  transform:scaleX(0); transform-origin:left; transition:transform .3s; border-radius:4px 4px 0 0;
+}
+.type-card.active::before, .type-card:hover::before { transform:scaleX(1); }
+.tc-icon { font-size:1.3rem; color:#aaa; transition:color .25s; }
+.tc-label { font-size:.76rem; font-weight:500; color:#888; letter-spacing:.02em; transition:color .25s; }
+
+/* selected check */
+.type-card .tc-check {
+  position:absolute; top:7px; right:8px;
+  width:18px; height:18px; border-radius:50%;
+  background:var(--rust); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font-size:.55rem; opacity:0; transform:scale(0);
+  transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:var(--glow-rust);
+}
+.type-card.active .tc-check { opacity:1; transform:scale(1); }
+
+/* ─── URGENCY BADGES ─── */
+.urgency-row { display:flex; gap:10px; flex-wrap:wrap; }
+.urgency-badge {
+  flex:1; min-width:90px; padding:12px 10px;
+  border-radius:3px; border:1.5px solid rgba(10,10,10,.1);
+  background:#fff; text-align:center; cursor:none;
+  transition:all .25s; user-select:none;
+  position:relative; overflow:hidden;
+}
+.urgency-badge::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  transform:scaleX(0); transform-origin:left; transition:transform .3s;
+}
+.urgency-badge:hover { transform:translateY(-2px); }
+.urgency-badge.urg-low { }
+.urgency-badge.urg-low:hover, .urgency-badge.urg-low.active {
+  border-color:var(--sage); background:rgba(61,122,90,.05);
+  box-shadow:3px 3px 0 var(--sage), 0 0 12px rgba(61,122,90,.1);
+}
+.urgency-badge.urg-low::before { background:var(--sage); }
+.urgency-badge.urg-low:hover::before, .urgency-badge.urg-low.active::before { transform:scaleX(1); }
+
+.urgency-badge.urg-med:hover, .urgency-badge.urg-med.active {
+  border-color:var(--gold); background:rgba(212,160,23,.05);
+  box-shadow:3px 3px 0 var(--gold), 0 0 12px rgba(212,160,23,.12);
+}
+.urgency-badge.urg-med::before { background:var(--gold); }
+.urgency-badge.urg-med:hover::before, .urgency-badge.urg-med.active::before { transform:scaleX(1); }
+
+.urgency-badge.urg-high:hover, .urgency-badge.urg-high.active {
+  border-color:var(--rust); background:rgba(200,75,49,.05);
+  box-shadow:3px 3px 0 var(--rust), 0 0 12px rgba(200,75,49,.12);
+}
+.urgency-badge.urg-high::before { background:var(--rust); }
+.urgency-badge.urg-high:hover::before, .urgency-badge.urg-high.active::before { transform:scaleX(1); }
+
+.ub-icon { font-size:1rem; margin-bottom:5px; display:block; }
+.ub-label { font-size:.78rem; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:#888; display:block; }
+.urgency-badge.urg-low.active .ub-label { color:var(--sage); }
+.urgency-badge.urg-med.active .ub-label { color:var(--gold); }
+.urgency-badge.urg-high.active .ub-label { color:var(--rust); }
+.ub-sub { font-size:.68rem; color:#bbb; margin-top:3px; display:block; }
+
+/* radio hidden */
+.urgency-badge input[type="radio"] { display:none; }
+
+/* ─── FIELD MESSAGES ─── */
+.field-msg {
+  font-size:.73rem; margin-top:5px; padding-left:2px;
+  display:none; align-items:center; gap:5px;
+}
+.field-msg.show { display:flex; }
+.field-msg.err { color:#e74c3c; }
+.field-msg.ok  { color:var(--sage); }
+
+/* ─── BUTTONS ─── */
+.btn-row { display:flex; gap:12px; margin-top:32px; flex-wrap:wrap; }
+
+.btn-submit {
+  flex:1; min-width:180px; padding:16px 28px;
+  font-family:'Bebas Neue', sans-serif; font-size:1.05rem; letter-spacing:.12em;
+  background:var(--rust); color:#fff;
+  border:2px solid var(--rust); border-radius:3px;
+  cursor:none; position:relative; overflow:hidden;
+  transition:all .28s; display:flex; align-items:center; justify-content:center; gap:10px;
+}
+.btn-submit::before {
+  content:''; position:absolute; inset:0;
+  background:var(--ink); transform:scaleX(0); transform-origin:right;
+  transition:transform .35s ease; z-index:0;
+}
+.btn-submit:hover {
+  color:#fff; transform:translateY(-3px);
+  box-shadow:6px 6px 0 var(--ink), var(--glow-rust);
+}
+.btn-submit:hover::before { transform:scaleX(1); transform-origin:left; }
+.btn-submit span, .btn-submit i { position:relative; z-index:1; }
+.btn-submit.loading { pointer-events:none; }
+
+.spinner {
+  display:none; width:16px; height:16px;
+  border:2px solid rgba(255,255,255,.3); border-top-color:#fff;
+  border-radius:50%; animation:spin .7s linear infinite;
+  position:relative; z-index:1;
+}
+@keyframes spin { to{ transform:rotate(360deg) } }
+.btn-submit.loading .btn-text-inner { display:none; }
+.btn-submit.loading .spinner { display:block; }
+
+.btn-cancel {
+  padding:16px 24px;
+  font-size:.88rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--ink); background:transparent;
+  border:2px solid rgba(10,10,10,0.15); border-radius:3px;
+  cursor:none; text-decoration:none;
+  display:inline-flex; align-items:center; gap:8px;
+  transition:all .25s;
+}
+.btn-cancel:hover {
+  border-color:var(--ink); background:var(--ink); color:var(--cream);
+  transform:translateY(-2px); box-shadow:4px 4px 0 var(--rust);
+}
+
+/* ─── SUCCESS OVERLAY ─── */
+.success-overlay {
+  position:fixed; inset:0; z-index:1000;
+  background:rgba(10,10,10,.88); backdrop-filter:blur(12px);
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none;
+  transition:opacity .4s ease;
+}
+.success-overlay.show { opacity:1; pointer-events:auto; }
+
+.success-card {
+  background:var(--cream); border-radius:6px;
+  padding:clamp(36px,5vw,56px) clamp(28px,4vw,48px);
+  max-width:440px; width:90%;
+  text-align:center; position:relative; overflow:hidden;
+  border:2px solid rgba(200,75,49,.2);
+  box-shadow:12px 12px 0 var(--rust), 0 0 60px rgba(200,75,49,.2);
+  animation:success-pop .55s cubic-bezier(.34,1.56,.64,1) both;
+}
+.success-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:linear-gradient(90deg,var(--rust),var(--neon-rust),var(--sage),var(--neon-gold));
+  background-size:300% 300%; animation:border-flow 2.5s ease infinite;
+}
+
+.success-icon-wrap {
+  width:88px; height:88px; border-radius:50%;
+  background:rgba(61,122,90,.1); border:3px solid rgba(61,122,90,.2);
+  display:flex; align-items:center; justify-content:center;
+  margin:0 auto 24px; position:relative;
+  animation:float-card 4s ease-in-out infinite;
+}
+.success-icon-wrap svg {
+  width:40px; height:40px;
+}
+.check-circle { stroke:var(--sage); fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.check-path {
+  stroke-dasharray:60; stroke-dashoffset:60;
+  animation:check-draw .5s ease .2s forwards;
+}
+
+.success-title {
+  font-family:'Bebas Neue', sans-serif; font-size:2.8rem; color:var(--ink);
+  margin-bottom:10px; letter-spacing:.04em;
+}
+.success-sub { font-size:.9rem; color:#888; line-height:1.65; margin-bottom:28px; }
+
+.match-score-display {
+  background:var(--ink); border-radius:4px; padding:16px 20px;
+  margin-bottom:24px; text-align:left;
+  border:1px solid rgba(255,85,51,.15);
+  font-family:'IBM Plex Mono', monospace; font-size:.78rem;
+  line-height:1.9;
+}
+.msd-line .k { color:rgba(245,240,232,.35); }
+.msd-line .v { color:var(--neon-sage); text-shadow:0 0 8px rgba(0,255,136,.4); }
+.msd-line .vh { color:var(--neon-rust); text-shadow:0 0 8px rgba(255,85,51,.4); }
+
+.btn-success-done {
+  font-family:'Bebas Neue', sans-serif; font-size:1rem; letter-spacing:.12em;
+  background:var(--sage); color:#fff; border:2px solid var(--sage);
+  padding:14px 32px; border-radius:3px; cursor:none; transition:all .25s;
+  display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+}
+.btn-success-done:hover {
+  background:var(--ink); border-color:var(--ink);
+  transform:translateY(-2px); box-shadow:4px 4px 0 var(--rust);
+  color:#fff;
+}
+
+/* ─── SIDE LABELS ─── */
+.side-label {
+  position:fixed; font-family:'IBM Plex Mono', monospace;
+  font-size:.62rem; letter-spacing:.18em; text-transform:uppercase;
+  color:rgba(10,10,10,.12); writing-mode:vertical-rl;
+  z-index:1; pointer-events:none;
+}
+.side-label-left { left:14px; top:50%; transform:translateY(-50%) rotate(180deg); }
+.side-label-right { right:14px; top:50%; transform:translateY(-50%); }
+@media(max-width:768px){ .side-label{ display:none; } }
+@media(max-width:960px){ .left-panel{ display:none; } }
+
+a,button,input,select,textarea,label { cursor:none !important; }
+
+/* ─── CHAR COUNTER ─── */
+.char-counter {
+  font-family:'IBM Plex Mono', monospace; font-size:.68rem; color:#bbb;
+  text-align:right; margin-top:5px; letter-spacing:.04em;
+  transition:color .25s;
+}
+.char-counter.warn { color:var(--gold); }
+.char-counter.max  { color:var(--rust); }
+
+/* ─── LOCATION SUGGESTIONS (visual only) ─── */
+.location-note {
+  display:flex; align-items:center; gap:7px;
+  font-size:.74rem; color:#bbb; margin-top:6px;
+}
+.location-note i { color:var(--rust); font-size:.75rem; }
+
+/* ─── LOGOUT BUTTON ─── */
+.logout-link {
+  font-family:'Bebas Neue', sans-serif; font-size:.95rem; letter-spacing:.1em;
+  background:var(--ink); color:var(--cream);
+  padding:8px 16px; border-radius:3px; text-decoration:none;
+  transition:all .22s; display:inline-flex; align-items:center; gap:8px; 
+  cursor:none; position:relative; overflow:hidden; border:1px solid var(--ink);
+}
+.logout-link::before {
+  content:''; position:absolute; inset:0;
+  background:var(--rust); transform:scaleX(0); transform-origin:right;
+  transition:transform .3s ease; z-index:0;
+}
+.logout-link:hover { 
+  color:#fff; border-color:var(--rust); 
+  transform:translateY(-2px); box-shadow:var(--glow-rust); 
+}
+.logout-link:hover::before { transform:scaleX(1); transform-origin:left; }
+.logout-link span, .logout-link i { position:relative; z-index:1; }
+
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<div class="side-label side-label-left">Smart Allocation System · 2025</div>
+<div class="side-label side-label-right">Request Help · Powered by AI</div>
+
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">Request Help Now</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">AI Match in &lt;60s</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">3,400+ Volunteers Ready</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">94% Success Rate</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">No Sign-up Required</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">India's Volunteer Network</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">Request Help Now</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">AI Match in &lt;60s</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">3,400+ Volunteers Ready</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">94% Success Rate</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">No Sign-up Required</span>
+    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">India's Volunteer Network</span>
+    <span class="ticker-item ticker-sep">◆</span>
+  </div>
 </div>
-{% endblock %}
+
+<nav class="navbar">
+  <a href="{% url 'home' %}" class="nav-logo">
+    <span class="nav-logo-dot"></span>
+    Smart<span style="color:var(--rust)">Alloc</span>
+  </a>
+  <div class="nav-right">
+    <a href="{% url 'home' %}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Home</a>
+    
+    <a href="{% url 'logout' %}" class="logout-link">
+      <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+    </a>
+  </div>
+</nav>
+
+<div class="page-shell">
+
+  <div class="left-panel">
+    <div class="left-bg-num">AID</div>
+    <div class="left-inner">
+      <div class="left-badge">
+        <span class="live-dot"></span>
+        Volunteers Online Now
+      </div>
+      <h1 class="left-headline">
+        Help is<br><em>closer</em><br>than you<br>think
+      </h1>
+      <p class="left-sub">
+        Submit your request in under 60 seconds. Our AI engine will scan across local, city, and national volunteers to find the best match for your need.
+      </p>
+      <div class="mini-steps">
+        <div class="mini-step">
+          <div class="ms-num">01</div>
+          <div class="ms-text">
+            <strong>Describe Your Need</strong>
+            <span>Select the type of help and fill the short form.</span>
+          </div>
+        </div>
+        <div class="mini-step">
+          <div class="ms-num">02</div>
+          <div class="ms-text">
+            <strong>AI Finds Best Match</strong>
+            <span>Multi-factor scoring across 3,400+ volunteers.</span>
+          </div>
+        </div>
+        <div class="mini-step">
+          <div class="ms-num">03</div>
+          <div class="ms-text">
+            <strong>Get Help Instantly</strong>
+            <span>Volunteer is notified and connects with you directly.</span>
+          </div>
+        </div>
+      </div>
+      <div class="left-stat-strip">
+        <div class="ls-item"><div class="n">94%</div><div class="l">Success Rate</div></div>
+        <div class="ls-item"><div class="n">&lt;60s</div><div class="l">Match Time</div></div>
+        <div class="ls-item"><div class="n">Free</div><div class="l">Always</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="form-container">
+
+      <div class="form-header">
+        <div class="form-eyebrow">New Request</div>
+        <h2 class="form-title">Request Help</h2>
+        <p class="form-sub">Fill in the details below — our AI will find the right volunteer for you.</p>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>Form Completion</span>
+          <span id="progressPct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <form id="helpForm" method="POST" action="">
+        {% csrf_token %}
+
+        <div class="form-section-label">Type of Help</div>
+        <div class="form-group">
+          <div class="form-label">
+            <i class="fa-solid fa-hand-holding-heart"></i>
+            What do you need?
+            <span class="req">*</span>
+          </div>
+          <div class="type-cards-grid" id="typeCardsGrid">
+            <div class="type-card" data-value="Blood Bank" onclick="selectType(this)">
+              <div class="tc-check"><i class="fa-solid fa-check"></i></div>
+              <div class="tc-icon"><i class="fa-solid fa-droplet" style="color:#e74c3c"></i></div>
+              <div class="tc-label">Blood</div>
+            </div>
+            <div class="type-card" data-value="Medical" onclick="selectType(this)">
+              <div class="tc-check"><i class="fa-solid fa-check"></i></div>
+              <div class="tc-icon"><i class="fa-solid fa-truck-medical" style="color:var(--rust)"></i></div>
+              <div class="tc-label">Ambulance</div>
+            </div>
+            <div class="type-card" data-value="Education" onclick="selectType(this)">
+              <div class="tc-check"><i class="fa-solid fa-check"></i></div>
+              <div class="tc-icon"><i class="fa-solid fa-book-open" style="color:var(--sage)"></i></div>
+              <div class="tc-label">Books / Study</div>
+            </div>
+            <div class="type-card" data-value="Accommodation" onclick="selectType(this)">
+              <div class="tc-check"><i class="fa-solid fa-check"></i></div>
+              <div class="tc-icon"><i class="fa-solid fa-house-chimney" style="color:var(--slate)"></i></div>
+              <div class="tc-label">Accommodation</div>
+            </div>
+            <div class="type-card" data-value="Food Supply" onclick="selectType(this)">
+              <div class="tc-check"><i class="fa-solid fa-check"></i></div>
+              <div class="tc-icon"><i class="fa-solid fa-utensils" style="color:var(--gold)"></i></div>
+              <div class="tc-label">Food</div>
+            </div>
+            <div class="type-card" data-value="Other" onclick="selectType(this)">
+              <div class="tc-check"><i class="fa-solid fa-check"></i></div>
+              <div class="tc-icon"><i class="fa-solid fa-ellipsis" style="color:#aaa"></i></div>
+              <div class="tc-label">Other</div>
+            </div>
+          </div>
+          <input type="hidden" id="problem_category" name="problem_category"/>
+          <div class="field-msg err" id="typeErr" style="margin-top:8px">
+            <i class="fa-solid fa-circle-exclamation"></i> Please select a type of help.
+          </div>
+        </div>
+
+        <div class="form-section-label">Location & Time</div>
+
+        <div class="form-group">
+          <label class="form-label" for="location">
+            <i class="fa-solid fa-location-dot"></i>
+            Your Location <span class="req">*</span>
+          </label>
+          <div class="input-wrap">
+            <input type="text" id="location" name="location"
+              class="form-input" placeholder="Enter your city or locality"
+              autocomplete="off" required/>
+            <i class="fa-solid fa-map-marker-alt input-icon"></i>
+          </div>
+          <div class="location-note">
+            <i class="fa-solid fa-circle-info"></i>
+            Used to find nearby volunteers. Be as specific as possible.
+          </div>
+          <div class="field-msg err" id="locationErr">
+            <i class="fa-solid fa-circle-exclamation"></i> Location is required.
+          </div>
+        </div>
+
+        <div class="date-time-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="reqDate">
+              <i class="fa-solid fa-calendar"></i>
+              Date <span class="req">*</span>
+            </label>
+            <div class="input-wrap">
+              <input type="date" id="reqDate" name="reqDate" class="form-input"
+                style="padding-left:42px" required/>
+              <i class="fa-solid fa-calendar-days input-icon"></i>
+            </div>
+            <div class="field-msg err" id="dateErr">
+              <i class="fa-solid fa-circle-exclamation"></i> Date required.
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" for="reqTime">
+              <i class="fa-solid fa-clock"></i>
+              Time <span class="req">*</span>
+            </label>
+            <div class="input-wrap">
+              <input type="time" id="reqTime" name="reqTime" class="form-input"
+                style="padding-left:42px" required/>
+              <i class="fa-regular fa-clock input-icon"></i>
+            </div>
+            <div class="field-msg err" id="timeErr">
+              <i class="fa-solid fa-circle-exclamation"></i> Time required.
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section-label">Urgency Level</div>
+        <div class="form-group">
+          <div class="form-label">
+            <i class="fa-solid fa-gauge-high"></i>
+            How urgent is your request? <span class="req">*</span>
+          </div>
+          <div class="urgency-row">
+            <label class="urgency-badge urg-low" id="urg-low">
+              <input type="radio" name="priority" value="Low" onchange="onUrgencyChange()"/>
+              <span class="ub-icon">🟢</span>
+              <span class="ub-label">Low</span>
+              <span class="ub-sub">Within a week</span>
+            </label>
+            <label class="urgency-badge urg-med" id="urg-med">
+              <input type="radio" name="priority" value="Medium" onchange="onUrgencyChange()"/>
+              <span class="ub-icon">🟡</span>
+              <span class="ub-label">Medium</span>
+              <span class="ub-sub">Within 24 hrs</span>
+            </label>
+            <label class="urgency-badge urg-high" id="urg-high">
+              <input type="radio" name="priority" value="High (Critical)" onchange="onUrgencyChange()"/>
+              <span class="ub-icon">🔴</span>
+              <span class="ub-label">High</span>
+              <span class="ub-sub">Immediate</span>
+            </label>
+          </div>
+          <div class="field-msg err" id="urgencyErr" style="margin-top:8px">
+            <i class="fa-solid fa-circle-exclamation"></i> Please select urgency level.
+          </div>
+        </div>
+
+        <div class="form-section-label">Additional Details</div>
+
+        <div class="form-group">
+          <label class="form-label" for="contact">
+            <i class="fa-solid fa-phone"></i>
+            Contact Number <span class="req">*</span>
+          </label>
+          <div class="input-wrap">
+            <input type="tel" id="contact" name="contact"
+              class="form-input" placeholder="+91 98765 43210" required/>
+            <i class="fa-solid fa-phone input-icon"></i>
+          </div>
+          <div class="field-msg err" id="contactErr">
+            <i class="fa-solid fa-circle-exclamation"></i> Please enter a valid phone number.
+          </div>
+          <div class="field-msg ok" id="contactOk">
+            <i class="fa-solid fa-circle-check"></i> Looks good!
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="private_details">
+            <i class="fa-solid fa-pen-to-square"></i>
+            Private Details / Description <span style="color:#bbb;font-weight:400;font-size:.75rem;text-transform:none;letter-spacing:0">(optional)</span>
+          </label>
+          <textarea id="private_details" name="private_details"
+            class="form-textarea"
+            placeholder="Briefly describe your situation — the more detail you provide, the better we can match you..."
+            maxlength="400"
+            oninput="updateCharCount(this)"></textarea>
+          <div class="char-counter" id="charCount">0 / 400</div>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span class="btn-text-inner">
+              <i class="fa-solid fa-paper-plane"></i> Submit Request
+            </span>
+            <div class="spinner"></div>
+          </button>
+          <a href="/" class="btn-cancel">
+            <i class="fa-solid fa-xmark"></i> Cancel
+          </a>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:8px;margin-top:18px;padding:11px 14px;
+          background:rgba(61,122,90,.05);border:1px solid rgba(61,122,90,.14);border-radius:3px;
+          font-size:.74rem;color:#888;line-height:1.5;">
+          <i class="fa-solid fa-shield-halved" style="color:var(--sage);font-size:.88rem;flex-shrink:0"></i>
+          Your information is handled securely. No sign-up required to submit a request.
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div><script>
+/* ── CURSOR ── */
+const cursor = document.getElementById('cursor');
+const ring   = document.getElementById('cursorRing');
+let mx=0, my=0, rx=0, ry=0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx+'px'; cursor.style.top = my+'px';
+});
+(function animRing(){
+  rx += (mx-rx)*.12; ry += (my-ry)*.12;
+  ring.style.left = rx+'px'; ring.style.top = ry+'px';
+  requestAnimationFrame(animRing);
+})();
+document.querySelectorAll('a,button,input,label,textarea,.type-card,.urgency-badge').forEach(el => {
+  el.addEventListener('mouseenter', () => { cursor.classList.add('expand'); ring.classList.add('expand'); });
+  el.addEventListener('mouseleave', () => { cursor.classList.remove('expand'); ring.classList.remove('expand'); });
+});
+
+/* ── TYPE SELECTION ── */
+function selectType(card) {
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+  document.getElementById('problem_category').value = card.dataset.value;
+  document.getElementById('typeErr').classList.remove('show');
+  updateProgress();
+}
+
+/* ── URGENCY SELECTION ── */
+function onUrgencyChange() {
+  document.querySelectorAll('.urgency-badge').forEach(b => b.classList.remove('active'));
+  const checked = document.querySelector('input[name="priority"]:checked');
+  if (checked) {
+    checked.closest('.urgency-badge').classList.add('active');
+    document.getElementById('urgencyErr').classList.remove('show');
+  }
+  updateProgress();
+}
+
+/* ── PROGRESS ── */
+function updateProgress() {
+  let filled = 0;
+  if (document.getElementById('problem_category').value) filled++;
+  if (document.getElementById('location').value.trim().length > 1) filled++;
+  if (document.getElementById('reqDate').value) filled++;
+  if (document.getElementById('reqTime').value) filled++;
+  if (document.querySelector('input[name="priority"]:checked')) filled++;
+  if (validatePhone(document.getElementById('contact').value)) filled++;
+
+  const pct = Math.round((filled / 6) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+/* ── CHAR COUNTER ── */
+function updateCharCount(el) {
+  const len = el.value.length;
+  const max = parseInt(el.getAttribute('maxlength'));
+  const counter = document.getElementById('charCount');
+  counter.textContent = len + ' / ' + max;
+  counter.className = 'char-counter';
+  if (len > max * 0.85) counter.classList.add('warn');
+  if (len >= max) counter.classList.add('max');
+}
+
+/* ── VALIDATION ── */
+function showMsg(el, show) { el.classList.toggle('show', show); }
+
+function validatePhone(v) {
+  return /^[+]?[\d\s\-().]{8,15}$/.test(v.trim());
+}
+
+document.getElementById('location').addEventListener('input', updateProgress);
+document.getElementById('reqDate').addEventListener('change', updateProgress);
+document.getElementById('reqTime').addEventListener('change', updateProgress);
+
+document.getElementById('contact').addEventListener('blur', function() {
+  const v = this.value.trim();
+  const ok = validatePhone(v);
+  this.classList.toggle('error', v !== '' && !ok);
+  this.classList.toggle('success', ok);
+  showMsg(document.getElementById('contactErr'), v !== '' && !ok);
+  showMsg(document.getElementById('contactOk'), ok);
+  updateProgress();
+});
+document.getElementById('contact').addEventListener('input', function() {
+  if (this.classList.contains('error')) {
+    const ok = validatePhone(this.value.trim());
+    this.classList.toggle('error', !ok);
+    this.classList.toggle('success', ok);
+    showMsg(document.getElementById('contactErr'), !ok);
+    showMsg(document.getElementById('contactOk'), ok);
+  }
+  updateProgress();
+});
+
+/* ── SET DEFAULT DATE ── */
+(function(){
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth()+1).padStart(2,'0');
+  const dd = String(today.getDate()).padStart(2,'0');
+  document.getElementById('reqDate').value = `${yyyy}-${mm}-${dd}`;
+  document.getElementById('reqDate').min = `${yyyy}-${mm}-${dd}`;
+  const h = String(today.getHours()).padStart(2,'0');
+  const m = String(today.getMinutes()).padStart(2,'0');
+  document.getElementById('reqTime').value = `${h}:${m}`;
+  updateProgress();
+})();
+
+/* ── FORM SUBMIT ── */
+document.getElementById('helpForm').addEventListener('submit', function(e) {
+  e.preventDefault(); // Pehle default submit roko validation ke liye
+  let valid = true;
+
+  // Validation checks
+  if (!document.getElementById('problem_category').value) {
+    showMsg(document.getElementById('typeErr'), true);
+    valid = false;
+  }
+  if (document.getElementById('location').value.trim().length < 2) {
+    showMsg(document.getElementById('locationErr'), true);
+    document.getElementById('location').classList.add('error');
+    valid = false;
+  }
+  if (!document.getElementById('reqDate').value) {
+    showMsg(document.getElementById('dateErr'), true);
+    document.getElementById('reqDate').classList.add('error');
+    valid = false;
+  }
+  if (!document.getElementById('reqTime').value) {
+    showMsg(document.getElementById('timeErr'), true);
+    document.getElementById('reqTime').classList.add('error');
+    valid = false;
+  }
+  if (!document.querySelector('input[name="priority"]:checked')) {
+    showMsg(document.getElementById('urgencyErr'), true);
+    valid = false;
+  }
+  if (!validatePhone(document.getElementById('contact').value)) {
+    showMsg(document.getElementById('contactErr'), true);
+    document.getElementById('contact').classList.add('error');
+    valid = false;
+  }
+
+  // Agar validation fail hai toh return ho jao
+  if (!valid) return;
+
+  // Agar sab sahi hai, toh Loading Spinner on karo
+  const btn = document.getElementById('submitBtn');
+  btn.classList.add('loading');
+
+  // AI Matching animation ke liye 1.5 seconds wait karo, fir form POST kardo!
+  setTimeout(() => {
+    HTMLFormElement.prototype.submit.call(document.getElementById('helpForm'));
+  }, 1500); 
+});
+</script>
+</body>
+</html>

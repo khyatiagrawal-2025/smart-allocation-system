@@ -1,34 +1,650 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Become a Volunteer — SmartAlloc</title>
 
-{% block title %}Setup Profile{% endblock %}
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
 
-{% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="glass-card border-success">
-            <h3 class="mb-4 text-success"><i class="fa-solid fa-id-card-clip"></i> Volunteer Registration</h3>
-            <p class="text-secondary">Define your role so the system can route the right problems to you.</p>
-            
-            <form method="POST" action="">
-                {% csrf_token %}
-                <div class="mb-4">
-                    <label class="form-label text-light">Service Category</label>
-                    <select name="service_role" class="form-select bg-dark text-light border-secondary shadow-none" required>
-                        <option value="Blood Bank">Blood Bank / Donor</option>
-                        <option value="Medical">Medical Emergency Help</option>
-                        <option value="Home Rent">Accommodation / Shelter</option>
-                        <option value="Tech Support">IT & Tech Support</option>
-                    </select>
-                </div>
-                
-                <div class="form-check form-switch mb-4">
-                    <input class="form-check-input bg-dark border-secondary" type="checkbox" name="is_available" id="availSwitch" checked>
-                    <label class="form-check-label text-light" for="availSwitch">I am currently available to take requests</label>
-                </div>
+<style>
+:root {
+  --cream:      #F5F0E8;
+  --ink:        #0A0A0A;
+  --rust:       #C84B31;
+  --sage:       #3D7A5A;
+  --gold:       #D4A017;
+  --slate:      #2C3E50;
+  --mist:       #BFC9D1;
+  --paper:      #EDE8DE;
+  --neon-rust:  #FF5533;
+  --neon-sage:  #00FF88;
+  --neon-gold:  #FFD700;
+  --neon-cyan:  #00E5FF;
+  --glow-rust:  0 0 8px rgba(255,85,51,.55), 0 0 28px rgba(255,85,51,.25);
+  --glow-sage:  0 0 8px rgba(0,255,136,.5),  0 0 28px rgba(0,255,136,.2);
+}
 
-                <button type="submit" class="btn btn-outline-success w-100 py-2 fw-bold">ACTIVATE PROFILE</button>
-            </form>
-        </div>
-    </div>
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+html { scroll-behavior:smooth; cursor:none }
+body {
+  font-family:'Space Grotesk',sans-serif;
+  background:var(--cream); color:var(--ink);
+  min-height:100vh; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+body::after {
+  content:''; position:fixed; inset:0; z-index:9990; pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.45;
+}
+
+/* cursor */
+.cursor { position:fixed;width:12px;height:12px;background:var(--neon-rust);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .3s,height .3s;box-shadow:var(--glow-rust); }
+.cursor-ring { position:fixed;width:38px;height:38px;border:1.5px solid var(--neon-rust);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:transform .38s cubic-bezier(.25,.46,.45,.94),width .3s,height .3s,opacity .3s;opacity:.5;box-shadow:0 0 12px rgba(255,85,51,.3); }
+.cursor.expand { width:56px;height:56px;background:transparent;border:1.5px solid var(--neon-rust); }
+.cursor-ring.expand { width:70px;height:70px;opacity:.3; }
+
+::-webkit-scrollbar { width:4px }
+::-webkit-scrollbar-track { background:var(--cream) }
+::-webkit-scrollbar-thumb { background:var(--rust);border-radius:2px;box-shadow:var(--glow-rust) }
+
+@keyframes border-flow { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+@keyframes pulse-dot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.7} }
+@keyframes live-ping { 0%{box-shadow:0 0 0 0 rgba(0,255,136,.4)} 70%{box-shadow:0 0 0 8px rgba(0,255,136,0)} 100%{box-shadow:0 0 0 0 rgba(0,255,136,0)} }
+@keyframes fade-up { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+@keyframes grid-drift { from{background-position:0 0,0 0} to{background-position:20px 20px,20px 20px} }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes success-pop { 0%{transform:scale(.72);opacity:0} 65%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+@keyframes check-draw { to{stroke-dashoffset:0} }
+@keyframes shimmer { 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
+
+/* ── NAVBAR ── */
+.navbar {
+  position:fixed;top:0;left:0;right:0;z-index:500;height:60px;
+  display:flex;align-items:center;justify-content:space-between;padding:0 4%;
+  background:rgba(245,240,232,.88);backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(10,10,10,.1);
+}
+.navbar::after { content:'';position:absolute;bottom:0;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--neon-rust),transparent);animation:border-flow 3s ease infinite;background-size:300% 300%; }
+.nav-logo { font-family:'Bebas Neue',sans-serif;font-size:1.45rem;letter-spacing:.06em;color:var(--ink);display:flex;align-items:center;gap:10px;text-decoration:none; }
+.nav-logo-dot { width:9px;height:9px;border-radius:50%;background:var(--rust);display:inline-block;box-shadow:var(--glow-rust);animation:pulse-dot 2s ease-in-out infinite; }
+.nav-right { display:flex;align-items:center;gap:10px; }
+.back-link { display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:500;color:#666;text-decoration:none;letter-spacing:.04em;text-transform:uppercase;padding:8px 14px;border:1px solid rgba(10,10,10,.12);border-radius:3px;transition:all .22s;cursor:none; }
+.back-link:hover { color:var(--rust);border-color:rgba(200,75,49,.3);background:rgba(200,75,49,.04);box-shadow:0 0 12px rgba(200,75,49,.1); }
+.btn-nav { font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.1em;background:var(--ink);color:var(--cream);padding:9px 18px;border-radius:3px;text-decoration:none;transition:all .22s;cursor:none;position:relative;overflow:hidden;display:inline-block; }
+.btn-nav::before { content:'';position:absolute;inset:0;background:var(--rust);transform:scaleX(0);transform-origin:right;transition:transform .3s ease;z-index:0; }
+.btn-nav:hover { color:#fff;transform:translateY(-1px);box-shadow:var(--glow-rust) }
+.btn-nav:hover::before { transform:scaleX(1);transform-origin:left }
+.btn-nav span { position:relative;z-index:1; }
+
+/* ── TICKER ── */
+.ticker-wrap { position:fixed;top:60px;left:0;right:0;z-index:499;background:var(--ink);overflow:hidden;height:28px;display:flex;align-items:center;border-bottom:1px solid rgba(255,85,51,.25); }
+.ticker-wrap::after { content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--neon-rust),transparent);animation:border-flow 4s ease infinite;background-size:300% 300%; }
+.ticker-track { display:flex;white-space:nowrap;animation:ticker-scroll 32s linear infinite; }
+@keyframes ticker-scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.ticker-item { font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--cream);letter-spacing:.08em;text-transform:uppercase;padding:0 32px;opacity:.75; }
+.ticker-sep { color:var(--neon-rust);opacity:1;font-size:.8rem;text-shadow:var(--glow-rust) }
+
+/* ── PAGE SHELL ── */
+.page-shell { min-height:100vh;padding-top:88px;display:grid;grid-template-columns:1fr 1.55fr; }
+@media(max-width:960px){ .page-shell{ grid-template-columns:1fr } }
+
+/* ── LEFT PANEL (dark, like Login/Register/Request Form) ── */
+.left-panel {
+  background:var(--ink);color:var(--cream);
+  display:flex;flex-direction:column;justify-content:center;
+  padding:clamp(40px,5vw,72px) clamp(28px,4vw,60px);
+  position:relative;overflow:hidden;min-height:calc(100vh - 88px);
+}
+.left-panel::before { content:'';position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,255,136,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,.04) 1px,transparent 1px);background-size:50px 50px;animation:grid-drift 22s ease-in-out infinite alternate; }
+.left-panel::after { content:'';position:absolute;inset:0;pointer-events:none;z-index:0;background:repeating-linear-gradient(-45deg,transparent 0,transparent 28px,rgba(0,255,136,.015) 28px,rgba(0,255,136,.015) 29px); }
+.left-inner { position:relative;z-index:1;max-width:360px; }
+.left-bg-word { position:absolute;right:-6%;bottom:-8%;font-family:'Bebas Neue',sans-serif;font-size:clamp(9rem,17vw,19rem);line-height:1;color:transparent;-webkit-text-stroke:1px rgba(0,255,136,.06);pointer-events:none;user-select:none;z-index:0; }
+
+.left-badge { display:inline-flex;align-items:center;gap:9px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);color:var(--neon-sage);font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;padding:7px 15px;border-radius:2px;margin-bottom:28px;text-shadow:0 0 8px rgba(0,255,136,.4); }
+.live-dot { width:7px;height:7px;border-radius:50%;background:var(--neon-sage);display:inline-block;animation:live-ping 1.6s ease-in-out infinite; }
+
+.left-headline { font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,5.5vw,5rem);line-height:.9;color:var(--cream);margin-bottom:20px;letter-spacing:-.01em; }
+.left-headline em { font-family:'Playfair Display',serif;font-style:italic;color:var(--neon-sage);text-shadow:0 0 24px rgba(0,255,136,.35); }
+.left-sub { font-size:.9rem;color:rgba(245,240,232,.42);line-height:1.75;margin-bottom:36px; }
+
+.benefit-list { display:flex;flex-direction:column; }
+.benefit-item { display:flex;align-items:flex-start;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.05);transition:padding-left .22s; }
+.benefit-item:last-child { border-bottom:none; }
+.benefit-item:hover { padding-left:5px; }
+.b-icon { width:38px;height:38px;border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.88rem;background:rgba(0,255,136,.07);border:1px solid rgba(0,255,136,.14);color:var(--neon-sage);transition:all .25s; }
+.benefit-item:hover .b-icon { background:rgba(0,255,136,.16);box-shadow:var(--glow-sage);transform:rotate(-5deg); }
+.b-text strong { color:rgba(245,240,232,.85);display:block;font-size:.88rem;margin-bottom:3px; }
+.b-text span { font-size:.8rem;color:rgba(245,240,232,.35);line-height:1.55; }
+
+.stat-strip { display:flex;gap:22px;flex-wrap:wrap;margin-top:28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.06); }
+.ss-item .n { font-family:'Bebas Neue',sans-serif;font-size:2rem;line-height:1;color:var(--neon-sage);text-shadow:var(--glow-sage); }
+.ss-item .l { font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,240,232,.28);margin-top:3px; }
+
+.avatar-row { display:flex;align-items:center;gap:0;margin-bottom:22px; }
+.av-item { width:34px;height:34px;border-radius:50%;border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:.72rem;color:#fff;margin-left:-9px;transition:transform .2s;cursor:none; }
+.av-item:first-child { margin-left:0; }
+.av-item:hover { transform:translateY(-3px) scale(1.08);z-index:10; }
+.av-rust{background:var(--rust)} .av-sage{background:var(--sage)} .av-gold{background:var(--gold);color:var(--ink)} .av-slate{background:var(--slate)}
+.av-more { background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15);color:rgba(245,240,232,.4);font-size:.6rem;font-family:'Space Grotesk',sans-serif;font-weight:600; }
+.avatar-caption { margin-left:13px;font-size:.76rem;color:rgba(245,240,232,.4); }
+.avatar-caption strong { color:var(--neon-sage); }
+
+/* ── RIGHT PANEL (cream/paper — matches Request Form right panel) ── */
+.right-panel {
+  background:var(--paper);
+  padding:clamp(32px,4vw,56px) clamp(20px,4.5vw,68px);
+  display:flex;flex-direction:column;justify-content:flex-start;
+  position:relative;overflow:hidden;
+}
+.right-panel::before { content:'';position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(rgba(200,75,49,.08) 1px,transparent 1px);background-size:26px 26px; }
+
+.form-container { width:100%;max-width:660px;position:relative;z-index:1;animation:fade-up .6s ease both;padding-bottom:48px; }
+
+/* form header */
+.form-eyebrow { font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--sage);margin-bottom:10px;display:flex;align-items:center;gap:9px; }
+.form-eyebrow::before { content:'';width:22px;height:1.5px;background:var(--sage);box-shadow:0 0 6px rgba(61,122,90,.5); }
+.form-title { font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,5vw,4.2rem);line-height:.9;color:var(--ink);margin-bottom:8px; }
+.form-sub { font-size:.88rem;color:#888;line-height:1.65;margin-bottom:28px; }
+
+/* progress */
+.progress-wrap { margin-bottom:30px; }
+.progress-top { display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:#bbb;margin-bottom:8px; }
+.progress-bg { height:3px;background:rgba(10,10,10,.08);border-radius:2px;overflow:hidden; }
+.progress-fill { height:100%;border-radius:2px;width:0%;background:linear-gradient(90deg,var(--sage),var(--neon-sage));background-size:200% 200%;animation:shimmer 2s ease infinite;box-shadow:0 0 8px rgba(61,122,90,.4);transition:width .5s cubic-bezier(.25,.46,.45,.94); }
+
+/* section labels */
+.sec-label { font-family:'IBM Plex Mono',monospace;font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;color:#bbb;margin:26px 0 14px;display:flex;align-items:center;gap:10px; }
+.sec-label::after { content:'';flex:1;height:1px;background:rgba(10,10,10,.09); }
+
+/* form groups */
+.form-group { margin-bottom:18px; }
+.form-row-2 { display:grid;grid-template-columns:1fr 1fr;gap:14px; }
+@media(max-width:500px){ .form-row-2{ grid-template-columns:1fr; } }
+
+.form-label { display:flex;align-items:center;gap:6px;font-size:.74rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#666;margin-bottom:8px; }
+.form-label .req { color:var(--rust);font-size:.8rem; }
+.form-label i { font-size:.68rem;color:#ccc; }
+
+/* inputs */
+.input-wrap { position:relative; }
+.input-icon { position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#bbb;font-size:.82rem;pointer-events:none;transition:color .25s; }
+.input-wrap:focus-within .input-icon { color:var(--sage); }
+.form-input,.form-select { width:100%;padding:13px 16px 13px 42px;background:#fff;border:1.5px solid rgba(10,10,10,.13);border-radius:3px;font-family:'Space Grotesk',sans-serif;font-size:.92rem;color:var(--ink);outline:none;transition:all .25s;cursor:none;appearance:none; }
+.form-input::placeholder { color:#c5c5c5; }
+.form-input:focus,.form-select:focus { border-color:var(--sage);box-shadow:0 0 0 3px rgba(61,122,90,.1),0 0 14px rgba(61,122,90,.07); }
+.form-input.error { border-color:#e74c3c;box-shadow:0 0 0 3px rgba(231,76,60,.08); }
+.form-input.success { border-color:var(--sage);box-shadow:0 0 0 3px rgba(61,122,90,.09); }
+.form-textarea { width:100%;padding:13px 16px;background:#fff;border:1.5px solid rgba(10,10,10,.13);border-radius:3px;font-family:'Space Grotesk',sans-serif;font-size:.92rem;color:var(--ink);outline:none;transition:all .25s;resize:vertical;min-height:88px;cursor:auto; }
+.form-textarea::placeholder { color:#c5c5c5; }
+.form-textarea:focus { border-color:var(--sage);box-shadow:0 0 0 3px rgba(61,122,90,.1); }
+.select-wrap { position:relative; }
+.select-wrap::after { content:'\f078';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#bbb;font-size:.68rem;pointer-events:none;transition:color .25s; }
+.select-wrap:focus-within::after { color:var(--sage); }
+
+/* field messages */
+.field-msg { font-size:.72rem;margin-top:5px;display:none;align-items:center;gap:5px; }
+.field-msg.show { display:flex; }
+.field-msg.err { color:#e74c3c; }
+.field-msg.ok { color:var(--sage); }
+
+/* ── SKILL CARDS ── */
+.skill-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:10px; }
+@media(max-width:520px){ .skill-grid{ grid-template-columns:repeat(2,1fr); } }
+
+.skill-card { position:relative;cursor:none;padding:16px 10px;border-radius:4px;text-align:center;background:#fff;border:1.5px solid rgba(10,10,10,.1);display:flex;flex-direction:column;align-items:center;gap:8px;transition:all .25s;user-select:none;overflow:hidden; }
+.skill-card::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--sage),var(--neon-sage));transform:scaleX(0);transform-origin:left;transition:transform .3s;border-radius:4px 4px 0 0; }
+.skill-card:hover { border-color:rgba(61,122,90,.3);background:rgba(61,122,90,.03);transform:translateY(-3px);box-shadow:4px 4px 0 rgba(61,122,90,.18); }
+.skill-card:hover::before,.skill-card.active::before { transform:scaleX(1); }
+.skill-card.active { border-color:var(--sage);background:rgba(61,122,90,.06);box-shadow:4px 4px 0 var(--sage),0 0 16px rgba(61,122,90,.1);transform:translateY(-3px); }
+.skill-card.active .sk-label { color:var(--sage);font-weight:600; }
+.sk-check { position:absolute;top:7px;right:8px;width:18px;height:18px;border-radius:50%;background:var(--sage);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.52rem;opacity:0;transform:scale(0);transition:all .25s cubic-bezier(.34,1.56,.64,1);box-shadow:var(--glow-sage); }
+.skill-card.active .sk-check { opacity:1;transform:scale(1); }
+.sk-icon { font-size:1.3rem;transition:all .25s; }
+.sk-label { font-size:.74rem;font-weight:500;color:#999;transition:all .25s;letter-spacing:.01em; }
+
+/* ── AVAILABILITY ── */
+.avail-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+
+.avail-check-row { grid-column:span 2;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:3px;background:rgba(61,122,90,.05);border:1.5px solid rgba(61,122,90,.15);cursor:none;transition:all .25s; }
+.avail-check-row:hover { background:rgba(61,122,90,.09);border-color:rgba(61,122,90,.28); }
+.avail-check-row input[type="checkbox"] { appearance:none;width:20px;height:20px;min-width:20px;border:1.5px solid rgba(61,122,90,.3);border-radius:3px;background:#fff;cursor:none;position:relative;transition:all .2s;flex-shrink:0; }
+.avail-check-row input[type="checkbox"]:checked { background:var(--sage);border-color:var(--sage);box-shadow:0 0 8px rgba(61,122,90,.3); }
+.avail-check-row input[type="checkbox"]:checked::after { content:'\f00c';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff; }
+.avail-check-label { font-size:.87rem;color:#777;line-height:1.4;cursor:none; }
+.avail-check-label strong { color:var(--sage);display:block;font-size:.82rem;margin-bottom:2px;font-weight:600; }
+
+.slot-pill { padding:13px 10px;border-radius:3px;text-align:center;background:#fff;border:1.5px solid rgba(10,10,10,.1);cursor:none;user-select:none;transition:all .25s;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;overflow:hidden; }
+.slot-pill::before { content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--sage);transform:scaleX(0);transform-origin:left;transition:transform .3s; }
+.slot-pill:hover { border-color:rgba(61,122,90,.28);background:rgba(61,122,90,.04);transform:translateY(-2px);box-shadow:3px 3px 0 rgba(61,122,90,.14); }
+.slot-pill:hover::before { transform:scaleX(1); }
+.slot-pill.active { border-color:var(--sage);background:rgba(61,122,90,.07);box-shadow:3px 3px 0 var(--sage),0 0 12px rgba(61,122,90,.08);transform:translateY(-2px); }
+.slot-pill.active::before,.slot-pill.active:hover::before { transform:scaleX(1); }
+.slot-pill.active .sp-icon,.slot-pill.active .sp-label { color:var(--sage); }
+.slot-pill.active .sp-label { font-weight:600; }
+.slot-pill input[type="checkbox"] { display:none; }
+.sp-icon { font-size:1.05rem;color:#bbb;transition:color .25s; }
+.sp-label { font-size:.76rem;font-weight:500;color:#999;transition:color .25s; }
+.sp-time { font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:#ccc; }
+
+/* ── EXPERIENCE SLIDER ── */
+.exp-row { display:flex;align-items:center;gap:14px;margin-top:6px; }
+.exp-slider { flex:1;height:4px;cursor:none;appearance:none;background:rgba(10,10,10,.1);border-radius:2px;outline:none; }
+.exp-slider::-webkit-slider-thumb { appearance:none;width:18px;height:18px;border-radius:50%;background:var(--sage);border:2px solid #fff;box-shadow:0 0 0 2px var(--sage),var(--glow-sage);cursor:none; }
+.exp-val { font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--sage);text-shadow:0 0 10px rgba(61,122,90,.2);min-width:60px;text-align:right; }
+
+/* ── TERMS ── */
+.terms-row { display:flex;align-items:flex-start;gap:11px;padding:16px 0;margin-top:4px; }
+.terms-row input[type="checkbox"] { appearance:none;width:18px;height:18px;min-width:18px;border:1.5px solid rgba(10,10,10,.18);border-radius:2px;background:#fff;cursor:none;position:relative;transition:all .2s;margin-top:2px; }
+.terms-row input[type="checkbox"]:checked { background:var(--sage);border-color:var(--sage);box-shadow:0 0 8px rgba(61,122,90,.3); }
+.terms-row input[type="checkbox"]:checked::after { content:'\f00c';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff; }
+.terms-label { font-size:.8rem;color:#888;line-height:1.6;cursor:none; }
+.terms-label a { color:var(--sage);text-decoration:none;font-weight:600; }
+.terms-label a:hover { color:var(--neon-sage); }
+.terms-err { font-size:.72rem;color:#e74c3c;display:none;align-items:center;gap:5px;margin-top:2px; }
+.terms-err.show { display:flex; }
+
+/* ── BUTTONS ── */
+.btn-row { display:flex;gap:12px;margin-top:28px;flex-wrap:wrap; }
+.btn-submit { flex:1;min-width:200px;padding:16px 24px;font-family:'Bebas Neue',sans-serif;font-size:1.05rem;letter-spacing:.12em;background:var(--sage);color:#fff;border:2px solid var(--sage);border-radius:3px;cursor:none;position:relative;overflow:hidden;transition:all .28s;display:flex;align-items:center;justify-content:center;gap:10px; }
+.btn-submit::before { content:'';position:absolute;inset:0;background:var(--ink);transform:scaleX(0);transform-origin:right;transition:transform .35s ease;z-index:0; }
+.btn-submit:hover { color:#fff;transform:translateY(-3px);box-shadow:6px 6px 0 var(--ink),0 0 20px rgba(61,122,90,.3); }
+.btn-submit:hover::before { transform:scaleX(1);transform-origin:left; }
+.btn-submit span,.btn-submit i { position:relative;z-index:1; }
+.btn-submit.loading { pointer-events:none;opacity:.85; }
+.spinner { display:none;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;position:relative;z-index:1; }
+.btn-submit.loading .btn-text-inner { display:none; }
+.btn-submit.loading .spinner { display:block; }
+.btn-cancel { padding:16px 22px;font-size:.86rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888;background:transparent;border:2px solid rgba(10,10,10,.14);border-radius:3px;cursor:none;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .25s; }
+.btn-cancel:hover { border-color:var(--ink);background:var(--ink);color:var(--cream);transform:translateY(-2px);box-shadow:4px 4px 0 var(--rust); }
+/* Logout Link added */
+.logout-link { font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.1em;background:var(--ink);color:var(--cream);padding:8px 16px;border-radius:3px;text-decoration:none;transition:all .22s;display:inline-flex;align-items:center;gap:8px;cursor:none;position:relative;overflow:hidden;border:1px solid var(--ink); }
+.logout-link::before { content:'';position:absolute;inset:0;background:var(--rust);transform:scaleX(0);transform-origin:right;transition:transform .3s ease;z-index:0; }
+.logout-link:hover { color:#fff;border-color:var(--rust);transform:translateY(-2px);box-shadow:var(--glow-rust); }
+.logout-link:hover::before { transform:scaleX(1);transform-origin:left; }
+.logout-link span, .logout-link i { position:relative;z-index:1; }
+
+.security-note { display:flex;align-items:center;gap:8px;margin-top:18px;padding:11px 14px;background:rgba(61,122,90,.05);border:1px solid rgba(61,122,90,.14);border-radius:3px;font-size:.74rem;color:#888;line-height:1.5; }
+.security-note i { color:var(--sage);font-size:.88rem;flex-shrink:0; }
+
+.char-counter { font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:#ccc;text-align:right;margin-top:5px;transition:color .25s; }
+.char-counter.warn { color:var(--gold); }
+.char-counter.max { color:var(--rust); }
+
+/* ── SUCCESS OVERLAY ── */
+.success-overlay { position:fixed;inset:0;z-index:1000;background:rgba(10,10,10,.82);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s ease; }
+.success-overlay.show { opacity:1;pointer-events:auto; }
+.success-card { background:var(--cream);border-radius:6px;padding:clamp(36px,5vw,52px) clamp(28px,4vw,46px);max-width:460px;width:90%;text-align:center;position:relative;overflow:hidden;border:2px solid rgba(61,122,90,.2);box-shadow:12px 12px 0 var(--sage),0 0 60px rgba(61,122,90,.15);animation:success-pop .55s cubic-bezier(.34,1.56,.64,1) both; }
+.success-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--sage),var(--neon-sage),var(--rust),var(--gold));background-size:300% 300%;animation:border-flow 2.5s ease infinite; }
+.success-icon-wrap { width:88px;height:88px;border-radius:50%;background:rgba(61,122,90,.08);border:3px solid rgba(61,122,90,.2);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;animation:float 4s ease-in-out infinite; }
+.success-icon-wrap svg { width:42px;height:42px; }
+.check-circle { stroke:var(--sage);fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round; }
+.check-path { stroke-dasharray:62;stroke-dashoffset:62;animation:check-draw .5s ease .2s forwards; }
+.success-title { font-family:'Bebas Neue',sans-serif;font-size:3rem;letter-spacing:.04em;color:var(--ink);margin-bottom:8px; }
+.success-sub { font-size:.9rem;color:#888;line-height:1.65;margin-bottom:24px; }
+.match-score-display { background:var(--ink);border-radius:4px;padding:16px 20px;margin-bottom:24px;text-align:left;border:1px solid rgba(0,255,136,.12);font-family:'IBM Plex Mono',monospace;font-size:.78rem;line-height:2; }
+.msd-line .k { color:rgba(245,240,232,.3); }
+.msd-line .v { color:var(--neon-sage);text-shadow:0 0 8px rgba(0,255,136,.4); }
+.btn-success { font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.12em;background:var(--sage);color:#fff;border:2px solid var(--sage);padding:13px 32px;border-radius:3px;cursor:none;transition:all .25s;display:inline-flex;align-items:center;gap:8px;text-decoration:none; }
+.btn-success:hover { background:var(--ink);border-color:var(--ink);color:#fff;transform:translateY(-2px);box-shadow:4px 4px 0 var(--rust); }
+
+.side-label { position:fixed;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(10,10,10,.1);writing-mode:vertical-rl;z-index:1;pointer-events:none; }
+.side-label-l { left:14px;top:50%;transform:translateY(-50%) rotate(180deg); }
+.side-label-r { right:14px;top:50%;transform:translateY(-50%); }
+@media(max-width:768px){ .side-label{ display:none; } }
+@media(max-width:960px){ .left-panel{ display:none; } }
+
+a,button,input,select,textarea,label { cursor:none !important; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="side-label side-label-l">Smart Allocation System · 2025</div>
+<div class="side-label side-label-r">Volunteer Registration · Join the Network</div>
+
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">Join as Volunteer</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">3,400+ Active Volunteers</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">AI-Matched Requests</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">Free to Join · No Fees</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">India's Volunteer Network</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">Track Your Impact</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">Join as Volunteer</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">3,400+ Active Volunteers</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">AI-Matched Requests</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">Free to Join · No Fees</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">India's Volunteer Network</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">Track Your Impact</span><span class="ticker-item ticker-sep">◆</span>
+  </div>
 </div>
-{% endblock %}
+
+<nav class="navbar">
+  <a href="{% url 'home' %}" class="nav-logo"><span class="nav-logo-dot"></span>Smart<span style="color:var(--rust)">Alloc</span></a>
+  <div class="nav-right">
+    <a href="{% url 'home' %}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Home</a>
+    <a href="{% url 'logout' %}" class="logout-link"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a>
+  </div>
+</nav>
+
+<div class="page-shell">
+
+  <div class="left-panel">
+    <div class="left-bg-word">HELP</div>
+    <div class="left-inner">
+      <div class="left-badge"><span class="live-dot"></span> Accepting Volunteers</div>
+      <div class="avatar-row">
+        <div class="av-item av-rust">AS</div>
+        <div class="av-item av-sage">RV</div>
+        <div class="av-item av-gold">PK</div>
+        <div class="av-item av-slate">SM</div>
+        <div class="av-item av-more">+3.4k</div>
+        <div class="avatar-caption">Join <strong>3,400+</strong> volunteers</div>
+      </div>
+      <h1 class="left-headline">Make a<br><em>real</em><br>difference<br>today</h1>
+      <p class="left-sub">Register your skills and availability. Our AI matches you only to requests that need exactly what you offer — no wasted time, maximum impact.</p>
+      <div class="benefit-list">
+        <div class="benefit-item">
+          <div class="b-icon"><i class="fa-solid fa-brain"></i></div>
+          <div class="b-text"><strong>Smart Skill Matching</strong><span>You only see requests that align with your expertise and location.</span></div>
+        </div>
+        <div class="benefit-item">
+          <div class="b-icon"><i class="fa-solid fa-bell"></i></div>
+          <div class="b-text"><strong>Instant Notifications</strong><span>Get alerted the moment someone nearby needs your help.</span></div>
+        </div>
+        <div class="benefit-item">
+          <div class="b-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="b-text"><strong>Track Your Impact</strong><span>A live dashboard shows everyone you've helped and your ranking.</span></div>
+        </div>
+        <div class="benefit-item">
+          <div class="b-icon"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="b-text"><strong>Verified Badge</strong><span>Earn a trust badge after your first successful mission.</span></div>
+        </div>
+      </div>
+      <div class="stat-strip">
+        <div class="ss-item"><div class="n">3.4k+</div><div class="l">Volunteers</div></div>
+        <div class="ss-item"><div class="n">94%</div><div class="l">Match Rate</div></div>
+        <div class="ss-item"><div class="n">Free</div><div class="l">Always</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+    <div class="form-container">
+
+      <div class="form-eyebrow">Volunteer Registration</div>
+      <h2 class="form-title">Become a Volunteer</h2>
+      <p class="form-sub">Provide your details to join India's AI-powered volunteer network. Takes under 2 minutes.</p>
+
+      <div class="progress-wrap">
+        <div class="progress-top"><span>Profile Completion</span><span id="progressPct">0%</span></div>
+        <div class="progress-bg"><div class="progress-fill" id="progressFill"></div></div>
+      </div>
+
+      <form id="volForm" method="POST" action="{% url 'register_volunteer' %}">
+        {% csrf_token %}
+
+        <div class="sec-label">Personal Info</div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label" for="fullName"><i class="fa-solid fa-user"></i> Full Name <span class="req">*</span></label>
+            <div class="input-wrap">
+              <input type="text" id="fullName" name="fullName" class="form-input" placeholder="Aarav Sharma" autocomplete="name"/>
+              <i class="fa-solid fa-user input-icon"></i>
+            </div>
+            <div class="field-msg err" id="nameErr"><i class="fa-solid fa-circle-exclamation"></i> Name is required.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="contact"><i class="fa-solid fa-phone"></i> Phone Number <span class="req">*</span></label>
+            <div class="input-wrap">
+              <input type="tel" id="contact" name="phone_number" class="form-input" placeholder="+91 98765 43210"/>
+              <i class="fa-solid fa-phone input-icon"></i>
+            </div>
+            <div class="field-msg err" id="contactErr"><i class="fa-solid fa-circle-exclamation"></i> Valid number required.</div>
+            <div class="field-msg ok"  id="contactOk"><i class="fa-solid fa-circle-check"></i> Looks good!</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email"><i class="fa-solid fa-envelope"></i> Email Address <span class="req">*</span></label>
+          <div class="input-wrap">
+            <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" autocomplete="email"/>
+            <i class="fa-solid fa-envelope input-icon"></i>
+          </div>
+          <div class="field-msg err" id="emailErr"><i class="fa-solid fa-circle-exclamation"></i> Enter a valid email address.</div>
+          <div class="field-msg ok"  id="emailOk"><i class="fa-solid fa-circle-check"></i> Looks good!</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="location"><i class="fa-solid fa-location-dot"></i> Your Location <span class="req">*</span></label>
+          <div class="input-wrap">
+            <input type="text" id="location" name="location" class="form-input" placeholder="City, State (e.g. Delhi, DL)"/>
+            <i class="fa-solid fa-map-marker-alt input-icon"></i>
+          </div>
+          <div class="field-msg err" id="locationErr"><i class="fa-solid fa-circle-exclamation"></i> Location is required.</div>
+        </div>
+
+        <div class="sec-label">Skills &amp; Expertise</div>
+        <div class="form-group">
+          <div class="form-label">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Select your skills <span class="req">*</span>
+            <span style="color:#ccc;font-size:.68rem;text-transform:none;letter-spacing:0;font-weight:400;margin-left:4px">(choose all that apply)</span>
+          </div>
+          <div class="skill-grid">
+            <div class="skill-card" data-value="Blood Bank"   onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-kit-medical"        style="color:#e74c3c"></i></div><div class="sk-label">Medical Help</div></div>
+            <div class="skill-card" data-value="Medical" onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-laptop-code"         style="color:var(--slate)"></i></div><div class="sk-label">Technical Support</div></div>
+            <div class="skill-card" data-value="Other"  onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-truck-fast"          style="color:var(--gold)"></i></div><div class="sk-label">Delivery / Transport</div></div>
+            <div class="skill-card" data-value="Education"  onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-chalkboard-user"     style="color:var(--sage)"></i></div><div class="sk-label">Teaching / Study</div></div>
+            <div class="skill-card" data-value="Food Supply"      onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-bowl-food"           style="color:var(--rust)"></i></div><div class="sk-label">Food Distribution</div></div>
+            <div class="skill-card" data-value="Accommodation"     onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-ellipsis"           style="color:#bbb"></i></div><div class="sk-label">Accommodation</div></div>
+          </div>
+          <input type="hidden" id="selectedSkills" name="service_role"/>
+          <div class="field-msg err" id="skillErr" style="margin-top:8px"><i class="fa-solid fa-circle-exclamation"></i> Select at least one skill.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="expSlider"><i class="fa-solid fa-award"></i> Years of Experience</label>
+          <div class="exp-row">
+            <input type="range" id="expSlider" name="experience_years" min="0" max="20" value="1" class="exp-slider" oninput="updateExp(this)"/>
+            <div class="exp-val" id="expVal">1 yr</div>
+          </div>
+        </div>
+
+        <div class="sec-label">Availability</div>
+        <div class="form-group">
+          <div class="avail-grid">
+            <label class="avail-check-row">
+              <input type="checkbox" id="availNow" onchange="updateProgress()"/>
+              <div class="avail-check-label">
+                <strong><i class="fa-solid fa-circle" style="font-size:.45rem;margin-right:4px"></i> Available Right Now</strong>
+                Appear in live match results immediately
+              </div>
+            </label>
+            <label class="slot-pill"><input type="checkbox" name="slots" value="morning"   onchange="toggleSlot(this)"/><span class="sp-icon"><i class="fa-solid fa-sun"></i></span><span class="sp-label">Morning</span><span class="sp-time">6am – 12pm</span></label>
+            <label class="slot-pill"><input type="checkbox" name="slots" value="afternoon" onchange="toggleSlot(this)"/><span class="sp-icon"><i class="fa-solid fa-cloud-sun"></i></span><span class="sp-label">Afternoon</span><span class="sp-time">12pm – 6pm</span></label>
+            <label class="slot-pill"><input type="checkbox" name="slots" value="evening"   onchange="toggleSlot(this)"/><span class="sp-icon"><i class="fa-solid fa-moon"></i></span><span class="sp-label">Evening</span><span class="sp-time">6pm – 10pm</span></label>
+          </div>
+          <input type="hidden" id="selectedAvailability" name="availability"/>
+          <div class="field-msg err" id="availErr" style="margin-top:8px"><i class="fa-solid fa-circle-exclamation"></i> Select at least one availability option.</div>
+        </div>
+
+        <div class="sec-label">About You</div>
+        <div class="form-group">
+          <label class="form-label" for="bio">
+            <i class="fa-solid fa-pen-to-square"></i> Short Bio
+            <span style="color:#ccc;font-size:.68rem;text-transform:none;letter-spacing:0;font-weight:400;margin-left:4px">(optional)</span>
+          </label>
+          <textarea id="bio" name="bio_description" class="form-textarea" placeholder="Tell us about yourself and why you want to volunteer..." maxlength="300" oninput="updateCharCount(this)"></textarea>
+          <div class="char-counter" id="charCount">0 / 300</div>
+        </div>
+
+        <div class="terms-row">
+          <input type="checkbox" id="terms"/>
+          <label class="terms-label" for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Volunteer Code of Conduct</a>. I confirm all information provided is accurate.</label>
+        </div>
+        <div class="terms-err" id="termsErr"><i class="fa-solid fa-circle-exclamation"></i> You must agree to continue.</div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn-submit" id="submitBtn">
+            <span class="btn-text-inner"><i class="fa-solid fa-hands-helping"></i> Register as Volunteer</span>
+            <div class="spinner"></div>
+          </button>
+          <a href="{% url 'role_selection' %}" class="btn-cancel"><i class="fa-solid fa-xmark"></i> Cancel</a>
+        </div>
+
+        <div class="security-note">
+          <i class="fa-solid fa-shield-halved"></i>
+          Your information is encrypted and never shared. We respect your privacy — no spam, ever.
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <div class="success-icon-wrap">
+      <svg viewBox="0 0 52 52">
+        <circle cx="26" cy="26" r="23" class="check-circle" style="stroke:rgba(61,122,90,.2)"/>
+        <polyline points="14,27 22,35 38,19" class="check-circle check-path"/>
+      </svg>
+    </div>
+    <h2 class="success-title">Welcome Aboard!</h2>
+    <p class="success-sub">You're now part of SmartAlloc's volunteer network. Our AI will match you to requests in your area shortly.</p>
+    <div class="match-score-display">
+      <div class="msd-line"><span class="k">→ Status:  </span><span class="v">Active · Verification Pending</span></div>
+      <div class="msd-line"><span class="k">→ Profile: </span><span class="v">Building match profile… ✓</span></div>
+      <div class="msd-line"><span class="k">→ Network: </span><span class="v">Local scan initiated ✓</span></div>
+    </div>
+    <a href="{% url 'volunteer_dashboard' %}" class="btn-success"><i class="fa-solid fa-gauge-high"></i> Go to Dashboard</a>
+  </div>
+</div>
+
+<script>
+/* cursor */
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+(function a(){rx+=(mx-rx)*.12;ry+=(my-ry)*.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(a);})();
+document.querySelectorAll('a,button,input,label,textarea,.skill-card,.slot-pill,.avail-check-row,.av-item,.logout-link').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.classList.add('expand');ring.classList.add('expand');});
+  el.addEventListener('mouseleave',()=>{cursor.classList.remove('expand');ring.classList.remove('expand');});
+});
+
+/* skill multi-select */
+const skillSet=new Set();
+function toggleSkill(card){
+  const v=card.dataset.value;
+  card.classList.contains('active')?(card.classList.remove('active'),skillSet.delete(v)):(card.classList.add('active'),skillSet.add(v));
+  // Send data to hidden input for Django
+  document.getElementById('selectedSkills').value=[...skillSet].join(', ');
+  if(skillSet.size>0) showMsg(document.getElementById('skillErr'),false);
+  updateProgress();
+}
+
+/* slot toggle logic */
+function toggleSlot(inp){ 
+  inp.closest('.slot-pill').classList.toggle('active',inp.checked); 
+  updateProgress(); 
+}
+
+/* Update Django hidden availability field */
+function buildAvailabilityString() {
+    let availStr = "";
+    if(document.getElementById('availNow').checked) availStr += "Available Now, ";
+    
+    let slots = [];
+    document.querySelectorAll('input[name="slots"]:checked').forEach(s => slots.push(s.value));
+    availStr += slots.join(', ');
+
+    document.getElementById('selectedAvailability').value = availStr;
+}
+
+/* exp slider */
+function updateExp(s){ const v=parseInt(s.value); document.getElementById('expVal').textContent=v===0?'< 1 yr':v+(v===20?'+ yrs':' yr'+(v>1?'s':'')); }
+
+/* progress */
+function updateProgress(){
+  let n=0;
+  if(document.getElementById('fullName').value.trim().length>=2) n++;
+  if(validatePhone(document.getElementById('contact').value)) n++;
+  if(validateEmail(document.getElementById('email').value)) n++;
+  if(document.getElementById('location').value.trim().length>1) n++;
+  if(skillSet.size>0) n++;
+  if(document.getElementById('availNow').checked||document.querySelectorAll('input[name="slots"]:checked').length>0) n++;
+  const pct=Math.round(n/6*100);
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').textContent=pct+'%';
+
+  buildAvailabilityString(); // keep hidden input updated
+}
+
+/* char counter */
+function updateCharCount(el){
+  const len=el.value.length,max=parseInt(el.getAttribute('maxlength'));
+  const c=document.getElementById('charCount');
+  c.textContent=len+' / '+max;
+  c.className='char-counter'+(len>max*.82?' warn':'')+(len>=max?' max':'');
+}
+
+/* validators */
+function showMsg(el,show){ el.classList.toggle('show',show); }
+function validatePhone(v){ return /^[+]?[\d\s\-(). ]{8,15}$/.test(v.trim()); }
+function validateEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); }
+
+/* live input listeners */
+document.getElementById('fullName').addEventListener('input',updateProgress);
+document.getElementById('fullName').addEventListener('blur',function(){ const ok=this.value.trim().length>=2; this.classList.toggle('error',!ok&&!!this.value); this.classList.toggle('success',ok); showMsg(document.getElementById('nameErr'),!ok&&!!this.value); updateProgress(); });
+document.getElementById('location').addEventListener('input',updateProgress);
+document.getElementById('availNow').addEventListener('change',updateProgress);
+
+function attachPhoneListeners(inputId,errId,okId){
+  const el=document.getElementById(inputId),err=document.getElementById(errId),ok=document.getElementById(okId);
+  el.addEventListener('input',function(){ if(this.classList.contains('error')||this.classList.contains('success')){ const v=validatePhone(this.value); this.classList.toggle('error',!v); this.classList.toggle('success',v); showMsg(err,!v); showMsg(ok,v); } updateProgress(); });
+  el.addEventListener('blur',function(){ const v=this.value.trim(),r=validatePhone(v); this.classList.toggle('error',!!v&&!r); this.classList.toggle('success',r); showMsg(err,!!v&&!r); showMsg(ok,r); updateProgress(); });
+}
+attachPhoneListeners('contact','contactErr','contactOk');
+
+function attachEmailListeners(inputId,errId,okId){
+  const el=document.getElementById(inputId),err=document.getElementById(errId),ok=document.getElementById(okId);
+  el.addEventListener('input',function(){ if(this.classList.contains('error')){ const v=validateEmail(this.value); this.classList.toggle('error',!v); this.classList.toggle('success',v); showMsg(err,!v); showMsg(ok,v); } updateProgress(); });
+  el.addEventListener('blur',function(){ const v=this.value.trim(); if(!v){ this.classList.remove('error','success'); showMsg(err,false); showMsg(ok,false); return; } const r=validateEmail(v); this.classList.toggle('error',!r); this.classList.toggle('success',r); showMsg(err,!r); showMsg(ok,r); updateProgress(); });
+}
+attachEmailListeners('email','emailErr','emailOk');
+
+/* submit logic */
+document.getElementById('volForm').addEventListener('submit',function(e){
+  e.preventDefault(); 
+  let valid=true;
+  
+  if(document.getElementById('fullName').value.trim().length<2){ showMsg(document.getElementById('nameErr'),true); document.getElementById('fullName').classList.add('error'); valid=false; }
+  if(!validatePhone(document.getElementById('contact').value)){ showMsg(document.getElementById('contactErr'),true); showMsg(document.getElementById('contactOk'),false); document.getElementById('contact').classList.add('error'); document.getElementById('contact').classList.remove('success'); valid=false; }
+  if(!validateEmail(document.getElementById('email').value)){ showMsg(document.getElementById('emailErr'),true); showMsg(document.getElementById('emailOk'),false); document.getElementById('email').classList.add('error'); document.getElementById('email').classList.remove('success'); valid=false; }
+  if(document.getElementById('location').value.trim().length<2){ showMsg(document.getElementById('locationErr'),true); document.getElementById('location').classList.add('error'); valid=false; } else{ showMsg(document.getElementById('locationErr'),false); document.getElementById('location').classList.remove('error'); }
+  if(skillSet.size===0){ showMsg(document.getElementById('skillErr'),true); valid=false; }
+  const slots=document.querySelectorAll('input[name="slots"]:checked').length;
+  if(!document.getElementById('availNow').checked&&slots===0){ showMsg(document.getElementById('availErr'),true); valid=false; } else showMsg(document.getElementById('availErr'),false);
+  const tOk=document.getElementById('terms').checked; showMsg(document.getElementById('termsErr'),!tOk); if(!tOk) valid=false;
+  
+  if(!valid) return;
+  
+  const btn=document.getElementById('submitBtn'); 
+  btn.classList.add('loading');
+  
+  // Submit data to backend after 1.5 seconds loading animation
+  setTimeout(()=>{ 
+      HTMLFormElement.prototype.submit.call(this);
+  }, 1500);
+});
+
+document.getElementById('successOverlay').addEventListener('click',function(e){ if(e.target===this) this.classList.remove('show'); });
+</script>
+</body>
+</html>
