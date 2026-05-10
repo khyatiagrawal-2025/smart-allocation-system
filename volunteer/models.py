@@ -17,6 +17,9 @@ class VolunteerProfile(models.Model):
     # For future distance calculations (Haversine formula)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
+    mobile_number = models.CharField(max_length=15, null=True, blank=True)
+    location_description = models.CharField(max_length=255, null=True, blank=True)
+    
 
     def __str__(self):
         return f"{self.user.username} - {self.service_role} ({'Online' if self.is_available else 'Offline'})"

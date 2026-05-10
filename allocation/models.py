@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from volunteer.models import VolunteerProfile # Link to the volunteer app
+from volunteer.models import VolunteerProfile
 
 class HelpRequest(models.Model):
     PRIORITY_CHOICES = [
@@ -8,27 +8,34 @@ class HelpRequest(models.Model):
         ('Medium', 'Medium'),
         ('Low', 'Low'),
     ]
+    
+    # 🔥 FIX: show status on user screen 
     STATUS_CHOICES = [
         ('Pending', 'Pending'),        # Step 1: User ne form submit kiya
-        ('Selected', 'Selected'),      # Step 2: User ne kisi volunteer ko select kiya
-        ('Accepted', 'Accepted'),      # Step 3: Volunteer ne Accept dabaya (Lock Opens)
-        ('Resolved', 'Resolved'),      # Step 4: Mission Accomplished
+        ('Selected', 'Selected'),      # Step 2: User ne kisi ko select kiya
+        ('Assigned', 'Assigned'),      # Step 3: Volunteer ke incoming list me gaya
+        ('Accepted', 'Accepted'),      # Step 4: Volunteer ne Accept dabaya (Lock Opens)
+        ('Completed', 'Completed'),    # Step 5: Mission Accomplished
     ]
 
-    # Kis user ne help maangi hai
+    # user specific details for the request
     requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name='my_requests')
     
-    # Match engine ke liye category
+    # Problem category (e.g., 'Blood Bank', 'Medical', 'Tech Support')
     problem_category = models.CharField(max_length=100) 
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     
+    # 🔥 logic for contact
+    location = models.CharField(max_length=255, null=True, blank=True)
+    contact_number = models.CharField(max_length=15, null=True, blank=True)
+    
     # ==========================================
-    # 🔒 PRIVACY LOCK: Yeh text field frontend par tab tak hide rahegi jab tak status 'Accepted' na ho
-    private_details = models.TextField(help_text="Encrypted: Phone number, exact address, private instructions.")
+    # 🔒 PRIVACY LOCK: this field id is lock when volunteer accepts the request then show all details
+    private_details = models.TextField(help_text="Encrypted: Extra instructions, exact situation.", null=True, blank=True)
     # ==========================================
     
-    # Jab user volunteer select karega, toh uski ID yahan save hogi
+    # save details of assigned volunteer (agar assigned hai to)
     target_volunteer = models.ForeignKey(VolunteerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_requests')
     
     # Timestamps

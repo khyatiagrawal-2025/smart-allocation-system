@@ -12,5 +12,5 @@ urlpatterns = [
     path('request-help/', views.create_request, name='create_request'),
     path('match/<int:request_id>/', views.find_volunteers, name='find_volunteers'),
     path('select/<int:request_id>/<int:volunteer_id>/', views.select_volunteer, name='select_volunteer'),
-    path('waiting/<int:request_id>/', views.waiting_status, name='waiting_status'),
+    path('track/<int:request_id>/', views.track_request, name='track_request'),
 ]

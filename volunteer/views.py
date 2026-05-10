@@ -1,73 +1,102 @@
-from django.shortcuts import render
-
-# Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import VolunteerProfile
-from allocation.models import HelpRequest
+from allocation.models import HelpRequest 
 
+# ================= VOLUNTEER REGISTRATION =================
+
+@login_required
 def register_volunteer(request):
     if VolunteerProfile.objects.filter(user=request.user).exists():
         return redirect('volunteer_dashboard')
 
-@login_required
-def register_volunteer(request):
     if request.method == 'POST':
-        # Create profile and make them active
+        phone = request.POST.get('phone_number')
+        location = request.POST.get('location')
+        skills = request.POST.get('service_role')
+        email_id = request.POST.get('email')
+
+        if email_id:
+            request.user.email = email_id
+            request.user.save()
+        
         VolunteerProfile.objects.create(
             user=request.user,
-            service_role=request.POST.get('service_role'),
-            is_available=True if request.POST.get('is_available') else False
+            service_role=skills,
+            mobile_number=phone,
+            location_description=location,
+            is_available=True 
         )
         return redirect('volunteer_dashboard')
-    return render(request, 'volunteer/volunteer_form.html')
+        
+    return render(request, 'volunteer/volunteer_form.html') 
+
+
+# ================= VOLUNTEER DASHBOARD & REQUESTS =================
 
 @login_required
 def volunteer_dashboard(request):
     try:
-        my_profile = request.user.volunteer_profile
-        # ONLY show requests where the user specifically selected THIS volunteer
-        pending_requests = HelpRequest.objects.filter(target_volunteer=my_profile, status='Selected').order_by('-created_at')
-        return render(request, 'volunteer/request_list.html', {'requests': pending_requests})
-    except:
-        return redirect('register_volunteer_profile')
+        my_profile = VolunteerProfile.objects.get(user=request.user)
+    except VolunteerProfile.DoesNotExist:
+        return redirect('register_volunteer')
 
-@login_required
-def request_detail(request, request_id):
-    # Privacy Lock ON: Volunteer reads the problem but no private details
-    req = get_object_or_404(HelpRequest, id=request_id)
-    return render(request, 'volunteer/request_detail.html', {'req': req})
+    # 1. INCOMING REQUESTS (Data Locked)
+    incoming_requests = HelpRequest.objects.filter(
+        target_volunteer=my_profile, 
+        status='Assigned'
+    ).order_by('-created_at')
+
+    # 2. ACTIVE REQUESTS (Data Unlocked)
+    active_requests = HelpRequest.objects.filter(
+        target_volunteer=my_profile, 
+        status='Accepted'
+    ).order_by('-created_at')
+    
+    return render(request, 'volunteer/volunteer_dashboard.html', {
+        'profile': my_profile,
+        'incoming_requests': incoming_requests,
+        'active_requests': active_requests  # Yahan variable name update kar diya
+    })
+
+# @login_required
+# def request_detail(request, request_id):
+#     # REQUEST BRIEFING PAGE
+#     req = get_object_or_404(HelpRequest, id=request_id)
+#     return render(request, 'volunteer/request_detail.html', {'req': req})
 
 @login_required
 def accept_request(request, request_id):
-    # Action: Volunteer Hits Accept -> Unlocks Data
+    # ACTION: Volunteer Accepts the Request
     req = get_object_or_404(HelpRequest, id=request_id)
     req.status = 'Accepted'
-    req.save()
-    return redirect('resolve_mission', request_id=req.id)
-
-@login_required
-def resolve_mission(request, request_id):
-    # Privacy Lock OFF: Render the unlocked page
-    req = get_object_or_404(HelpRequest, id=request_id)
-    return render(request, 'volunteer/resolve_assign.html', {'req': req})
-
-@login_required
-def mark_done(request, request_id):
-    # Action: Mission Accomplished
-    req = get_object_or_404(HelpRequest, id=request_id)
-    req.status = 'Resolved'
     req.save()
     return redirect('volunteer_dashboard')
 
 @login_required
-def volunteer_profile(request):
-    my_profile = get_object_or_404(VolunteerProfile, user=request.user)
-    
+def decline_request(request, request_id): # Naam decline_mission se decline_request kar diya
+    # ACTION: Agar volunteer request decline karna chahe
+    req = get_object_or_404(HelpRequest, id=request_id)
+    req.status = 'Pending' 
+    req.target_volunteer = None 
+    req.save()
+    return redirect('volunteer_dashboard')
+
+@login_required
+def mark_done(request, request_id):
+    # ACTION: Request Completed
+    req = get_object_or_404(HelpRequest, id=request_id)
+    req.status = 'Completed' 
+    req.save()
+    return redirect('volunteer_dashboard')
+
+
+# ================= VOLUNTEER AVAILABILITY TOGGLE =================
+
+@login_required
+def toggle_availability(request):
     if request.method == 'POST':
-        # Toggle Online/Offline
-        my_profile.is_available = True if request.POST.get('is_available') else False
+        my_profile = get_object_or_404(VolunteerProfile, user=request.user)
+        my_profile.is_available = not my_profile.is_available
         my_profile.save()
-        return redirect('volunteer_profile')
-        
-    return render(request, 'volunteer/volunteer_profile.html', {'profile': my_profile})
+    return redirect('volunteer_dashboard')

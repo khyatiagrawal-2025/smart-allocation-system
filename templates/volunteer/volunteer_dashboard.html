@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Volunteer Dashboard — SmartAlloc</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+
+<style>
+:root {
+  --cream: #F5F0E8; --ink: #0A0A0A; --rust: #C84B31; --sage: #3D7A5A; --gold: #D4A017;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Space Grotesk', sans-serif; background: var(--cream); color: var(--ink); min-height: 100vh; cursor: none;}
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ─── CURSOR ─── */
+.cursor { position: fixed; width: 12px; height: 12px; background: var(--rust); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%, -50%); transition: transform .15s ease, width .3s ease, height .3s ease; }
+.cursor-ring { position: fixed; width: 38px; height: 38px; border: 1.5px solid var(--rust); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%, -50%); transition: transform .38s cubic-bezier(.25,.46,.45,.94), width .3s, height .3s, opacity .3s; opacity: .5; }
+.cursor.expand { width: 56px; height: 56px; background: transparent; border: 1.5px solid var(--rust); }
+.cursor-ring.expand { width: 70px; height: 70px; opacity: .3; }
+
+/* NAVBAR */
+.navbar { background: var(--ink); color: #fff; padding: 15px 4%; display: flex; justify-content: space-between; align-items: center; }
+.nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: #fff; text-decoration: none; letter-spacing: 1px; cursor: none;}
+.nav-logo span { color: var(--sage); }
+
+/* LAYOUT */
+.container { max-width: 1000px; margin: 40px auto; padding: 0 20px; min-height: calc(100vh - 150px); display: flex; flex-direction: column; }
+.main-content { flex: 1; }
+
+/* HEADER & TOGGLE */
+.dash-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid rgba(10,10,10,0.1); flex-wrap: wrap; gap: 20px;}
+.dh-title { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; line-height: 1; color: var(--ink); text-transform: uppercase; }
+.dh-sub { font-size: 0.9rem; color: #666; margin-top: 5px; }
+
+/* TOGGLE SWITCH UI */
+.status-card { background: #fff; padding: 15px 25px; border-radius: 8px; border: 1px solid rgba(10,10,10,0.1); display: flex; align-items: center; gap: 15px; box-shadow: 4px 4px 0 rgba(10,10,10,0.05); }
+.status-text { font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+.status-text.online { color: var(--sage); }
+.status-text.offline { color: var(--rust); }
+
+.toggle-btn { background: var(--ink); color: #fff; border: none; padding: 10px 20px; font-family: 'Space Grotesk', sans-serif; font-weight: 600; border-radius: 4px; cursor: none; transition: 0.3s; }
+.toggle-btn:hover { background: var(--rust); transform: translateY(-2px); box-shadow: 2px 2px 0 rgba(10,10,10,0.2);}
+
+/* GRID LAYOUT */
+.sections-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+@media(max-width: 768px) { .sections-grid { grid-template-columns: 1fr; } }
+
+.sec-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase; color: #888; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+
+/* CARDS */
+.req-card { background: #fff; border: 1.5px solid rgba(10,10,10,0.1); border-radius: 6px; padding: 20px; margin-bottom: 15px; transition: 0.3s; position: relative; overflow: hidden; }
+.req-card:hover { transform: translateY(-3px); box-shadow: 4px 4px 0 rgba(10,10,10,0.05); border-color: rgba(10,10,10,0.2); }
+.req-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; }
+.req-card.incoming::before { background: var(--rust); }
+.req-card.active-req::before { background: var(--sage); }
+
+.rc-head { display: flex; justify-content: space-between; margin-bottom: 15px; }
+.rc-type { font-weight: 700; font-size: 1.1rem; }
+.rc-urgency { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
+.urg-High { background: rgba(200,75,49,0.1); color: var(--rust); }
+.urg-Medium { background: rgba(212,160,23,0.1); color: var(--gold); }
+.urg-Low { background: rgba(61,122,90,0.1); color: var(--sage); }
+
+.rc-loc { font-size: 0.9rem; color: #555; margin-bottom: 15px; display: flex; gap: 8px; align-items: flex-start; }
+
+/* PRIVACY LOCK UI */
+.privacy-lock { background: rgba(10,10,10,0.04); padding: 10px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: #888; margin-bottom: 15px; border: 1px dashed #ccc; }
+.unlocked-data { background: rgba(61,122,90,0.05); border: 1px solid rgba(61,122,90,0.2); padding: 16px; border-radius: 6px; margin-bottom: 18px; }
+
+/* BUTTONS */
+.action-group { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-action { flex: 1; text-align: center; padding: 12px; border-radius: 4px; text-decoration: none; font-weight: 600; font-family: 'Space Grotesk', sans-serif; transition: 0.2s; border:none; cursor: none; font-size: 0.9rem;}
+.btn-accept { background: var(--ink); color: #fff; }
+.btn-accept:hover { background: var(--sage); transform: translateY(-2px); }
+
+.btn-decline { background: transparent; color: var(--rust); border: 1.5px solid var(--rust); }
+.btn-decline:hover { background: var(--rust); color: #fff; transform: translateY(-2px); }
+
+.btn-complete { width: 100%; background: var(--sage); color: #fff; }
+.btn-complete:hover { background: var(--ink); transform: translateY(-2px); box-shadow: 3px 3px 0 rgba(10,10,10,0.1);}
+
+.empty-state { text-align: center; padding: 40px 20px; color: #888; font-size: 0.9rem; border: 1.5px dashed #ccc; border-radius: 6px; }
+
+/* ─── FOOTER ─── */
+.site-footer { width: 100%; margin-top: 60px; padding-top: 20px; padding-bottom: 20px; border-top: 1px solid rgba(10, 10, 10, 0.08); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; }
+.site-footer a { color: var(--rust); text-decoration: none; transition: color 0.2s; font-weight: 500; cursor: none;}
+.site-footer a:hover { color: var(--ink); text-shadow: 0 0 8px rgba(200,75,49,.2); }
+@media (max-width: 640px) { .site-footer { flex-direction: column; text-align: center; justify-content: center; } }
+
+a, button, input { cursor: none !important; }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav class="navbar">
+  <a href="{% url 'home' %}" class="nav-logo">Smart<span>Alloc</span> // Control</a>
+  <a href="{% url 'logout' %}" style="color: #fff; text-decoration: none; font-size: 0.9rem; cursor: none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+</nav>
+
+<div class="container">
+  
+  <div class="main-content">
+    <div class="dash-header">
+      <div>
+        <h1 class="dh-title">Welcome, {{ request.user.get_full_name|default:request.user.username }}</h1>
+        <p class="dh-sub">Manage your incoming requests and active tasks.</p>
+      </div>
+
+      <div class="status-card">
+        <div>
+          <div style="font-size: 0.7rem; color: #888; text-transform: uppercase;">Current Status</div>
+          {% if profile.is_available %}
+            <div class="status-text online"><i class="fa-solid fa-circle-dot"></i> Accepting Requests</div>
+          {% else %}
+            <div class="status-text offline"><i class="fa-solid fa-lock"></i> Locked / Busy</div>
+          {% endif %}
+        </div>
+        <form method="POST" action="{% url 'toggle_availability' %}">
+          {% csrf_token %}
+          <button type="submit" class="toggle-btn">
+            {% if profile.is_available %}Go Offline{% else %}Go Online{% endif %}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="sections-grid">
+      
+      <div>
+        <div class="sec-title"><i class="fa-solid fa-satellite-dish"></i> Incoming Alerts ({{ incoming_requests.count }})</div>
+        
+        {% for req in incoming_requests %}
+        <div class="req-card incoming">
+          <div class="rc-head">
+            <div class="rc-type">{{ req.problem_category }}</div>
+            <div class="rc-urgency urg-{{ req.priority }}">{{ req.priority }}</div>
+          </div>
+          <div class="rc-loc"><i class="fa-solid fa-location-dot" style="color: var(--rust); margin-top:3px;"></i> {{ req.location }}</div>
+          
+          <div class="privacy-lock">
+            <i class="fa-solid fa-lock"></i> Contact & User details encrypted. Accept to unlock.
+          </div>
+
+          <div class="action-group">
+              <a href="{% url 'decline_request' req.id %}" class="btn-action btn-decline"><i class="fa-solid fa-xmark"></i> Decline</a>
+              <a href="{% url 'accept_request' req.id %}" class="btn-action btn-accept"><i class="fa-solid fa-check"></i> Accept</a>
+          </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">No new requests assigned to you right now.</div>
+        {% endfor %}
+      </div>
+
+      <div>
+        <div class="sec-title"><i class="fa-solid fa-truck-fast"></i> Active Requests ({{ active_requests.count }})</div>
+        
+        {% for req in active_requests %}
+        <div class="req-card active-req">
+          <div class="rc-head">
+            <div class="rc-type">{{ req.problem_category }}</div>
+            <div class="rc-urgency urg-{{ req.priority }}">{{ req.priority }}</div>
+          </div>
+          <div class="rc-loc"><i class="fa-solid fa-location-dot" style="color: var(--sage); margin-top:3px;"></i> {{ req.location }}</div>
+          
+          <div class="unlocked-data">
+            <div style="font-size: 0.75rem; color: var(--sage); text-transform: uppercase; margin-bottom: 12px; font-weight: bold;">User Details Unlocked</div>
+            
+            <div style="font-size: 1rem; font-weight: 600; color: var(--ink); margin-bottom: 6px;">
+                <i class="fa-solid fa-user" style="color: #888; font-size: 0.85rem; margin-right: 5px;"></i> 
+                {{ req.requester.get_full_name|default:req.requester.username }}
+            </div>
+            
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--rust); margin-bottom: 10px; letter-spacing: 0.5px;">
+                <i class="fa-solid fa-phone" style="margin-right: 5px;"></i> 
+                {{ req.contact_number|default:'No Phone Provided' }} 
+            </div> 
+            
+            <div style="background: rgba(255,255,255,0.7); padding: 10px; border-radius: 4px; border: 1px solid rgba(10,10,10,0.08); font-size: 0.85rem; color: #444; line-height: 1.4;">
+                <i class="fa-solid fa-circle-info" style="color: #888; margin-right: 5px;"></i> 
+                "{{ req.private_details|default:'No extra details provided.' }}"
+            </div>
+          </div>
+
+          <form method="POST" action="{% url 'mark_done' req.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-action btn-complete"><i class="fa-solid fa-flag-checkered"></i> Mark Completed</button>
+          </form>
+        </div>
+        {% empty %}
+        <div class="empty-state">You have no active requests currently.</div>
+        {% endfor %}
+      </div>
+
+    </div>
+  </div>
+
+  <div class="site-footer">
+    <div>© 2026 Smart Allocation System. Secure & Encrypted.</div>
+    <div>
+      <a href="#">Terms</a> &nbsp;|&nbsp; 
+      <a href="#">Privacy</a> &nbsp;|&nbsp; 
+      <a href="#">Support</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ── CURSOR SCRIPT ── */
+document.addEventListener("DOMContentLoaded", function() {
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let mx = window.innerWidth / 2; 
+    let my = window.innerHeight / 2;
+    let rx = mx, ry = my;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; 
+      my = e.clientY;
+      if(cursor) { cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; }
+    });
+
+    function animRing(){
+      rx += (mx - rx) * 0.12; 
+      ry += (my - ry) * 0.12;
+      if(ring) { ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; }
+      requestAnimationFrame(animRing);
+    }
+    animRing();
+
+    document.querySelectorAll('a, button, input').forEach(el => {
+      el.addEventListener('mouseenter', () => { 
+          if(cursor) cursor.classList.add('expand'); 
+          if(ring) ring.classList.add('expand'); 
+      });
+      el.addEventListener('mouseleave', () => { 
+          if(cursor) cursor.classList.remove('expand'); 
+          if(ring) ring.classList.remove('expand'); 
+      });
+    });
+});
+</script>
+</body>
+</html>

@@ -74,11 +74,13 @@ body::after {
 .nav-right { display:flex;align-items:center;gap:10px; }
 .back-link { display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:500;color:#666;text-decoration:none;letter-spacing:.04em;text-transform:uppercase;padding:8px 14px;border:1px solid rgba(10,10,10,.12);border-radius:3px;transition:all .22s;cursor:none; }
 .back-link:hover { color:var(--rust);border-color:rgba(200,75,49,.3);background:rgba(200,75,49,.04);box-shadow:0 0 12px rgba(200,75,49,.1); }
-.btn-nav { font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.1em;background:var(--ink);color:var(--cream);padding:9px 18px;border-radius:3px;text-decoration:none;transition:all .22s;cursor:none;position:relative;overflow:hidden;display:inline-block; }
-.btn-nav::before { content:'';position:absolute;inset:0;background:var(--rust);transform:scaleX(0);transform-origin:right;transition:transform .3s ease;z-index:0; }
-.btn-nav:hover { color:#fff;transform:translateY(-1px);box-shadow:var(--glow-rust) }
-.btn-nav:hover::before { transform:scaleX(1);transform-origin:left }
-.btn-nav span { position:relative;z-index:1; }
+
+/* Logout Link */
+.logout-link { font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.1em;background:var(--ink);color:var(--cream);padding:8px 16px;border-radius:3px;text-decoration:none;transition:all .22s;display:inline-flex;align-items:center;gap:8px;cursor:none;position:relative;overflow:hidden;border:1px solid var(--ink); }
+.logout-link::before { content:'';position:absolute;inset:0;background:var(--rust);transform:scaleX(0);transform-origin:right;transition:transform .3s ease;z-index:0; }
+.logout-link:hover { color:#fff;border-color:var(--rust);transform:translateY(-2px);box-shadow:var(--glow-rust); }
+.logout-link:hover::before { transform:scaleX(1);transform-origin:left; }
+.logout-link span, .logout-link i { position:relative;z-index:1; }
 
 /* ── TICKER ── */
 .ticker-wrap { position:fixed;top:60px;left:0;right:0;z-index:499;background:var(--ink);overflow:hidden;height:28px;display:flex;align-items:center;border-bottom:1px solid rgba(255,85,51,.25); }
@@ -92,7 +94,7 @@ body::after {
 .page-shell { min-height:100vh;padding-top:88px;display:grid;grid-template-columns:1fr 1.55fr; }
 @media(max-width:960px){ .page-shell{ grid-template-columns:1fr } }
 
-/* ── LEFT PANEL (dark, like Login/Register/Request Form) ── */
+/* ── LEFT PANEL ── */
 .left-panel {
   background:var(--ink);color:var(--cream);
   display:flex;flex-direction:column;justify-content:center;
@@ -133,7 +135,7 @@ body::after {
 .avatar-caption { margin-left:13px;font-size:.76rem;color:rgba(245,240,232,.4); }
 .avatar-caption strong { color:var(--neon-sage); }
 
-/* ── RIGHT PANEL (cream/paper — matches Request Form right panel) ── */
+/* ── RIGHT PANEL ── */
 .right-panel {
   background:var(--paper);
   padding:clamp(32px,4vw,56px) clamp(20px,4.5vw,68px);
@@ -260,12 +262,6 @@ body::after {
 .btn-submit.loading .spinner { display:block; }
 .btn-cancel { padding:16px 22px;font-size:.86rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#888;background:transparent;border:2px solid rgba(10,10,10,.14);border-radius:3px;cursor:none;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .25s; }
 .btn-cancel:hover { border-color:var(--ink);background:var(--ink);color:var(--cream);transform:translateY(-2px);box-shadow:4px 4px 0 var(--rust); }
-/* Logout Link added */
-.logout-link { font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.1em;background:var(--ink);color:var(--cream);padding:8px 16px;border-radius:3px;text-decoration:none;transition:all .22s;display:inline-flex;align-items:center;gap:8px;cursor:none;position:relative;overflow:hidden;border:1px solid var(--ink); }
-.logout-link::before { content:'';position:absolute;inset:0;background:var(--rust);transform:scaleX(0);transform-origin:right;transition:transform .3s ease;z-index:0; }
-.logout-link:hover { color:#fff;border-color:var(--rust);transform:translateY(-2px);box-shadow:var(--glow-rust); }
-.logout-link:hover::before { transform:scaleX(1);transform-origin:left; }
-.logout-link span, .logout-link i { position:relative;z-index:1; }
 
 .security-note { display:flex;align-items:center;gap:8px;margin-top:18px;padding:11px 14px;background:rgba(61,122,90,.05);border:1px solid rgba(61,122,90,.14);border-radius:3px;font-size:.74rem;color:#888;line-height:1.5; }
 .security-note i { color:var(--sage);font-size:.88rem;flex-shrink:0; }
@@ -436,12 +432,36 @@ a,button,input,select,textarea,label { cursor:none !important; }
             <span style="color:#ccc;font-size:.68rem;text-transform:none;letter-spacing:0;font-weight:400;margin-left:4px">(choose all that apply)</span>
           </div>
           <div class="skill-grid">
-            <div class="skill-card" data-value="Blood Bank"   onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-kit-medical"        style="color:#e74c3c"></i></div><div class="sk-label">Medical Help</div></div>
-            <div class="skill-card" data-value="Medical" onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-laptop-code"         style="color:var(--slate)"></i></div><div class="sk-label">Technical Support</div></div>
-            <div class="skill-card" data-value="Other"  onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-truck-fast"          style="color:var(--gold)"></i></div><div class="sk-label">Delivery / Transport</div></div>
-            <div class="skill-card" data-value="Education"  onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-chalkboard-user"     style="color:var(--sage)"></i></div><div class="sk-label">Teaching / Study</div></div>
-            <div class="skill-card" data-value="Food Supply"      onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-bowl-food"           style="color:var(--rust)"></i></div><div class="sk-label">Food Distribution</div></div>
-            <div class="skill-card" data-value="Accommodation"     onclick="toggleSkill(this)"><div class="sk-check"><i class="fa-solid fa-check"></i></div><div class="sk-icon"><i class="fa-solid fa-ellipsis"           style="color:#bbb"></i></div><div class="sk-label">Accommodation</div></div>
+            <div class="skill-card" data-value="Blood Bank" onclick="toggleSkill(this)">
+              <div class="sk-check"><i class="fa-solid fa-check"></i></div>
+              <div class="sk-icon"><i class="fa-solid fa-droplet" style="color:#e74c3c"></i></div>
+              <div class="sk-label">Blood Bank</div>
+            </div>
+            <div class="skill-card" data-value="Medical" onclick="toggleSkill(this)">
+              <div class="sk-check"><i class="fa-solid fa-check"></i></div>
+              <div class="sk-icon"><i class="fa-solid fa-truck-medical" style="color:var(--rust)"></i></div>
+              <div class="sk-label">Medical / Ambulance</div>
+            </div>
+            <div class="skill-card" data-value="Education" onclick="toggleSkill(this)">
+              <div class="sk-check"><i class="fa-solid fa-check"></i></div>
+              <div class="sk-icon"><i class="fa-solid fa-book-open" style="color:var(--sage)"></i></div>
+              <div class="sk-label">Education / Study</div>
+            </div>
+            <div class="skill-card" data-value="Accommodation" onclick="toggleSkill(this)">
+              <div class="sk-check"><i class="fa-solid fa-check"></i></div>
+              <div class="sk-icon"><i class="fa-solid fa-house-chimney" style="color:var(--slate)"></i></div>
+              <div class="sk-label">Accommodation</div>
+            </div>
+            <div class="skill-card" data-value="Food Supply" onclick="toggleSkill(this)">
+              <div class="sk-check"><i class="fa-solid fa-check"></i></div>
+              <div class="sk-icon"><i class="fa-solid fa-bowl-food" style="color:var(--gold)"></i></div>
+              <div class="sk-label">Food Supply</div>
+            </div>
+            <div class="skill-card" data-value="Other" onclick="toggleSkill(this)">
+              <div class="sk-check"><i class="fa-solid fa-check"></i></div>
+              <div class="sk-icon"><i class="fa-solid fa-ellipsis" style="color:#aaa"></i></div>
+              <div class="sk-label">Other</div>
+            </div>
           </div>
           <input type="hidden" id="selectedSkills" name="service_role"/>
           <div class="field-msg err" id="skillErr" style="margin-top:8px"><i class="fa-solid fa-circle-exclamation"></i> Select at least one skill.</div>

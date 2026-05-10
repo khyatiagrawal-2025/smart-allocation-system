@@ -97,14 +97,6 @@ body::after {
   0%{ background-position:0% 50% }
   100%{ background-position:200% 50% }
 }
-@keyframes success-pop {
-  0%{ transform:scale(0.7); opacity:0 }
-  60%{ transform:scale(1.08) }
-  100%{ transform:scale(1); opacity:1 }
-}
-@keyframes check-draw {
-  to{ stroke-dashoffset:0 }
-}
 @keyframes grid-drift {
   from{ background-position:0 0, 0 0 }
   to{ background-position:18px 18px, 18px 18px }
@@ -142,6 +134,26 @@ body::after {
   color:var(--rust); border-color:rgba(200,75,49,.3);
   background:rgba(200,75,49,.04); box-shadow:0 0 12px rgba(200,75,49,.1);
 }
+
+/* LOGOUT BUTTON */
+.logout-link {
+  font-family:'Bebas Neue', sans-serif; font-size:.95rem; letter-spacing:.1em;
+  background:var(--ink); color:var(--cream);
+  padding:8px 16px; border-radius:3px; text-decoration:none;
+  transition:all .22s; display:inline-flex; align-items:center; gap:8px; 
+  cursor:none; position:relative; overflow:hidden; border:1px solid var(--ink);
+}
+.logout-link::before {
+  content:''; position:absolute; inset:0;
+  background:var(--rust); transform:scaleX(0); transform-origin:right;
+  transition:transform .3s ease; z-index:0;
+}
+.logout-link:hover { 
+  color:#fff; border-color:var(--rust); 
+  transform:translateY(-2px); box-shadow:var(--glow-rust); 
+}
+.logout-link:hover::before { transform:scaleX(1); transform-origin:left; }
+.logout-link span, .logout-link i { position:relative; z-index:1; }
 
 /* ─── TICKER ─── */
 .ticker-wrap {
@@ -234,7 +246,6 @@ body::after {
   font-size:.9rem; color:rgba(245,240,232,.42); line-height:1.75; margin-bottom:36px;
 }
 
-/* how-it-works mini steps */
 .mini-steps { display:flex; flex-direction:column; gap:0; }
 .mini-step {
   display:flex; align-items:flex-start; gap:16px;
@@ -250,7 +261,6 @@ body::after {
 .ms-text strong { color:rgba(245,240,232,.85); display:block; font-size:.88rem; margin-bottom:2px; }
 .ms-text span { font-size:.8rem; color:rgba(245,240,232,.38); line-height:1.5; }
 
-/* floating stat cards */
 .left-stat-strip {
   display:flex; gap:16px; flex-wrap:wrap; margin-top:28px;
   padding-top:20px; border-top:1px solid rgba(255,255,255,.06);
@@ -265,8 +275,10 @@ body::after {
 .right-panel {
   background:var(--cream);
   padding:clamp(32px,4vw,56px) clamp(20px,4vw,64px);
-  display:flex; flex-direction:column; justify-content:center; align-items:flex-start;
+  display:flex; flex-direction:column; justify-content:space-between; 
+  align-items:center; 
   position:relative;
+  min-height: calc(100vh - 88px);
 }
 .right-panel::before {
   content:''; position:absolute; inset:0; pointer-events:none;
@@ -278,6 +290,7 @@ body::after {
   width:100%; max-width:640px;
   position:relative; z-index:1;
   animation:fade-up .65s ease both;
+  flex: 1; 
 }
 
 /* ─── FORM HEADER ─── */
@@ -361,20 +374,7 @@ body::after {
 .form-input.error, .form-select.error { border-color:#e74c3c; box-shadow:0 0 0 3px rgba(231,76,60,.07); }
 .form-input.success, .form-select.success { border-color:var(--sage); box-shadow:0 0 0 3px rgba(61,122,90,.08); }
 
-/* select arrow */
-.select-wrap { position:relative; }
-.select-wrap::after {
-  content:'\f078'; font-family:'Font Awesome 6 Free'; font-weight:900;
-  position:absolute; right:14px; top:50%; transform:translateY(-50%);
-  color:#bbb; font-size:.7rem; pointer-events:none; transition:color .25s;
-}
-.select-wrap:focus-within::after { color:var(--rust); }
-
-/* date/time row */
-.date-time-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-@media(max-width:480px){ .date-time-row{ grid-template-columns:1fr; } }
-
-/* ─── TYPE CARDS ─── */
+/* ─── TYPE CARDS (Fixed Categories) ─── */
 .type-cards-grid {
   display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;
   margin-bottom:4px;
@@ -412,7 +412,6 @@ body::after {
 .tc-icon { font-size:1.3rem; color:#aaa; transition:color .25s; }
 .tc-label { font-size:.76rem; font-weight:500; color:#888; letter-spacing:.02em; transition:color .25s; }
 
-/* selected check */
 .type-card .tc-check {
   position:absolute; top:7px; right:8px;
   width:18px; height:18px; border-radius:50%;
@@ -424,7 +423,7 @@ body::after {
 }
 .type-card.active .tc-check { opacity:1; transform:scale(1); }
 
-/* ─── URGENCY BADGES ─── */
+/* ─── URGENCY BADGES (Fixed Values) ─── */
 .urgency-row { display:flex; gap:10px; flex-wrap:wrap; }
 .urgency-badge {
   flex:1; min-width:90px; padding:12px 10px;
@@ -438,7 +437,7 @@ body::after {
   transform:scaleX(0); transform-origin:left; transition:transform .3s;
 }
 .urgency-badge:hover { transform:translateY(-2px); }
-.urgency-badge.urg-low { }
+
 .urgency-badge.urg-low:hover, .urgency-badge.urg-low.active {
   border-color:var(--sage); background:rgba(61,122,90,.05);
   box-shadow:3px 3px 0 var(--sage), 0 0 12px rgba(61,122,90,.1);
@@ -467,10 +466,8 @@ body::after {
 .urgency-badge.urg-high.active .ub-label { color:var(--rust); }
 .ub-sub { font-size:.68rem; color:#bbb; margin-top:3px; display:block; }
 
-/* radio hidden */
 .urgency-badge input[type="radio"] { display:none; }
 
-/* ─── FIELD MESSAGES ─── */
 .field-msg {
   font-size:.73rem; margin-top:5px; padding-left:2px;
   display:none; align-items:center; gap:5px;
@@ -527,77 +524,14 @@ body::after {
   transform:translateY(-2px); box-shadow:4px 4px 0 var(--rust);
 }
 
-/* ─── SUCCESS OVERLAY ─── */
-.success-overlay {
-  position:fixed; inset:0; z-index:1000;
-  background:rgba(10,10,10,.88); backdrop-filter:blur(12px);
-  display:flex; align-items:center; justify-content:center;
-  opacity:0; pointer-events:none;
-  transition:opacity .4s ease;
+.char-counter {
+  font-family:'IBM Plex Mono', monospace; font-size:.68rem; color:#bbb;
+  text-align:right; margin-top:5px; letter-spacing:.04em;
+  transition:color .25s;
 }
-.success-overlay.show { opacity:1; pointer-events:auto; }
+.char-counter.warn { color:var(--gold); }
+.char-counter.max  { color:var(--rust); }
 
-.success-card {
-  background:var(--cream); border-radius:6px;
-  padding:clamp(36px,5vw,56px) clamp(28px,4vw,48px);
-  max-width:440px; width:90%;
-  text-align:center; position:relative; overflow:hidden;
-  border:2px solid rgba(200,75,49,.2);
-  box-shadow:12px 12px 0 var(--rust), 0 0 60px rgba(200,75,49,.2);
-  animation:success-pop .55s cubic-bezier(.34,1.56,.64,1) both;
-}
-.success-card::before {
-  content:''; position:absolute; top:0; left:0; right:0; height:3px;
-  background:linear-gradient(90deg,var(--rust),var(--neon-rust),var(--sage),var(--neon-gold));
-  background-size:300% 300%; animation:border-flow 2.5s ease infinite;
-}
-
-.success-icon-wrap {
-  width:88px; height:88px; border-radius:50%;
-  background:rgba(61,122,90,.1); border:3px solid rgba(61,122,90,.2);
-  display:flex; align-items:center; justify-content:center;
-  margin:0 auto 24px; position:relative;
-  animation:float-card 4s ease-in-out infinite;
-}
-.success-icon-wrap svg {
-  width:40px; height:40px;
-}
-.check-circle { stroke:var(--sage); fill:none; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
-.check-path {
-  stroke-dasharray:60; stroke-dashoffset:60;
-  animation:check-draw .5s ease .2s forwards;
-}
-
-.success-title {
-  font-family:'Bebas Neue', sans-serif; font-size:2.8rem; color:var(--ink);
-  margin-bottom:10px; letter-spacing:.04em;
-}
-.success-sub { font-size:.9rem; color:#888; line-height:1.65; margin-bottom:28px; }
-
-.match-score-display {
-  background:var(--ink); border-radius:4px; padding:16px 20px;
-  margin-bottom:24px; text-align:left;
-  border:1px solid rgba(255,85,51,.15);
-  font-family:'IBM Plex Mono', monospace; font-size:.78rem;
-  line-height:1.9;
-}
-.msd-line .k { color:rgba(245,240,232,.35); }
-.msd-line .v { color:var(--neon-sage); text-shadow:0 0 8px rgba(0,255,136,.4); }
-.msd-line .vh { color:var(--neon-rust); text-shadow:0 0 8px rgba(255,85,51,.4); }
-
-.btn-success-done {
-  font-family:'Bebas Neue', sans-serif; font-size:1rem; letter-spacing:.12em;
-  background:var(--sage); color:#fff; border:2px solid var(--sage);
-  padding:14px 32px; border-radius:3px; cursor:none; transition:all .25s;
-  display:inline-flex; align-items:center; gap:8px; text-decoration:none;
-}
-.btn-success-done:hover {
-  background:var(--ink); border-color:var(--ink);
-  transform:translateY(-2px); box-shadow:4px 4px 0 var(--rust);
-  color:#fff;
-}
-
-/* ─── SIDE LABELS ─── */
 .side-label {
   position:fixed; font-family:'IBM Plex Mono', monospace;
   font-size:.62rem; letter-spacing:.18em; text-transform:uppercase;
@@ -609,43 +543,19 @@ body::after {
 @media(max-width:768px){ .side-label{ display:none; } }
 @media(max-width:960px){ .left-panel{ display:none; } }
 
+/* ─── FOOTER ─── */
+.site-footer {
+  width: 100%; max-width: 640px; margin-top: 60px; padding-top: 20px; padding-bottom: 10px;
+  border-top: 1px solid rgba(10, 10, 10, 0.08); position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: #888;
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.site-footer a { color: var(--rust); text-decoration: none; transition: color 0.2s; font-weight: 500; }
+.site-footer a:hover { color: var(--ink); text-shadow: 0 0 8px rgba(200,75,49,.2); }
+@media (max-width: 640px) { .site-footer { flex-direction: column; text-align: center; justify-content: center; } }
+
 a,button,input,select,textarea,label { cursor:none !important; }
-
-/* ─── CHAR COUNTER ─── */
-.char-counter {
-  font-family:'IBM Plex Mono', monospace; font-size:.68rem; color:#bbb;
-  text-align:right; margin-top:5px; letter-spacing:.04em;
-  transition:color .25s;
-}
-.char-counter.warn { color:var(--gold); }
-.char-counter.max  { color:var(--rust); }
-
-/* ─── LOCATION SUGGESTIONS (visual only) ─── */
-.location-note {
-  display:flex; align-items:center; gap:7px;
-  font-size:.74rem; color:#bbb; margin-top:6px;
-}
-.location-note i { color:var(--rust); font-size:.75rem; }
-
-/* ─── LOGOUT BUTTON ─── */
-.logout-link {
-  font-family:'Bebas Neue', sans-serif; font-size:.95rem; letter-spacing:.1em;
-  background:var(--ink); color:var(--cream);
-  padding:8px 16px; border-radius:3px; text-decoration:none;
-  transition:all .22s; display:inline-flex; align-items:center; gap:8px; 
-  cursor:none; position:relative; overflow:hidden; border:1px solid var(--ink);
-}
-.logout-link::before {
-  content:''; position:absolute; inset:0;
-  background:var(--rust); transform:scaleX(0); transform-origin:right;
-  transition:transform .3s ease; z-index:0;
-}
-.logout-link:hover { 
-  color:#fff; border-color:var(--rust); 
-  transform:translateY(-2px); box-shadow:var(--glow-rust); 
-}
-.logout-link:hover::before { transform:scaleX(1); transform-origin:left; }
-.logout-link span, .logout-link i { position:relative; z-index:1; }
 
 </style>
 </head>
@@ -654,35 +564,23 @@ a,button,input,select,textarea,label { cursor:none !important; }
 <div class="cursor" id="cursor"></div>
 <div class="cursor-ring" id="cursorRing"></div>
 
-<div class="side-label side-label-left">Smart Allocation System · 2025</div>
+<div class="side-label side-label-left">Smart Allocation System · 2026</div>
 <div class="side-label side-label-right">Request Help · Powered by AI</div>
 
 <div class="ticker-wrap">
   <div class="ticker-track">
-    <span class="ticker-item">Request Help Now</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">AI Match in &lt;60s</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">3,400+ Volunteers Ready</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">94% Success Rate</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">No Sign-up Required</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">India's Volunteer Network</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">Request Help Now</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">AI Match in &lt;60s</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">3,400+ Volunteers Ready</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">94% Success Rate</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">No Sign-up Required</span>
-    <span class="ticker-item ticker-sep">◆</span>
-    <span class="ticker-item">India's Volunteer Network</span>
-    <span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">Request Help Now</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">AI Match in &lt;60s</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">3,400+ Volunteers Ready</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">94% Success Rate</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">No Sign-up Required</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">India's Volunteer Network</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">Request Help Now</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">AI Match in &lt;60s</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">3,400+ Volunteers Ready</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">94% Success Rate</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">No Sign-up Required</span><span class="ticker-item ticker-sep">◆</span>
+    <span class="ticker-item">India's Volunteer Network</span><span class="ticker-item ticker-sep">◆</span>
   </div>
 </div>
 
@@ -693,7 +591,6 @@ a,button,input,select,textarea,label { cursor:none !important; }
   </a>
   <div class="nav-right">
     <a href="{% url 'home' %}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Home</a>
-    
     <a href="{% url 'logout' %}" class="logout-link">
       <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
     </a>
@@ -706,15 +603,11 @@ a,button,input,select,textarea,label { cursor:none !important; }
     <div class="left-bg-num">AID</div>
     <div class="left-inner">
       <div class="left-badge">
-        <span class="live-dot"></span>
-        Volunteers Online Now
+        <span class="live-dot"></span> Volunteers Online Now
       </div>
-      <h1 class="left-headline">
-        Help is<br><em>closer</em><br>than you<br>think
-      </h1>
-      <p class="left-sub">
-        Submit your request in under 60 seconds. Our AI engine will scan across local, city, and national volunteers to find the best match for your need.
-      </p>
+      <h1 class="left-headline">Help is<br><em>closer</em><br>than you<br>think</h1>
+      <p class="left-sub">Submit your request in under 60 seconds. Our AI engine will scan across local, city, and national volunteers to find the best match for your need.</p>
+      
       <div class="mini-steps">
         <div class="mini-step">
           <div class="ms-num">01</div>
@@ -738,6 +631,7 @@ a,button,input,select,textarea,label { cursor:none !important; }
           </div>
         </div>
       </div>
+
       <div class="left-stat-strip">
         <div class="ls-item"><div class="n">94%</div><div class="l">Success Rate</div></div>
         <div class="ls-item"><div class="n">&lt;60s</div><div class="l">Match Time</div></div>
@@ -779,17 +673,17 @@ a,button,input,select,textarea,label { cursor:none !important; }
             <div class="type-card" data-value="Blood Bank" onclick="selectType(this)">
               <div class="tc-check"><i class="fa-solid fa-check"></i></div>
               <div class="tc-icon"><i class="fa-solid fa-droplet" style="color:#e74c3c"></i></div>
-              <div class="tc-label">Blood</div>
+              <div class="tc-label">Blood Bank</div>
             </div>
             <div class="type-card" data-value="Medical" onclick="selectType(this)">
               <div class="tc-check"><i class="fa-solid fa-check"></i></div>
               <div class="tc-icon"><i class="fa-solid fa-truck-medical" style="color:var(--rust)"></i></div>
-              <div class="tc-label">Ambulance</div>
+              <div class="tc-label">Medical / Ambulance</div>
             </div>
             <div class="type-card" data-value="Education" onclick="selectType(this)">
               <div class="tc-check"><i class="fa-solid fa-check"></i></div>
               <div class="tc-icon"><i class="fa-solid fa-book-open" style="color:var(--sage)"></i></div>
-              <div class="tc-label">Books / Study</div>
+              <div class="tc-label">Education / Study</div>
             </div>
             <div class="type-card" data-value="Accommodation" onclick="selectType(this)">
               <div class="tc-check"><i class="fa-solid fa-check"></i></div>
@@ -798,8 +692,8 @@ a,button,input,select,textarea,label { cursor:none !important; }
             </div>
             <div class="type-card" data-value="Food Supply" onclick="selectType(this)">
               <div class="tc-check"><i class="fa-solid fa-check"></i></div>
-              <div class="tc-icon"><i class="fa-solid fa-utensils" style="color:var(--gold)"></i></div>
-              <div class="tc-label">Food</div>
+              <div class="tc-icon"><i class="fa-solid fa-bowl-food" style="color:var(--gold)"></i></div>
+              <div class="tc-label">Food Supply</div>
             </div>
             <div class="type-card" data-value="Other" onclick="selectType(this)">
               <div class="tc-check"><i class="fa-solid fa-check"></i></div>
@@ -813,64 +707,25 @@ a,button,input,select,textarea,label { cursor:none !important; }
           </div>
         </div>
 
-        <div class="form-section-label">Location & Time</div>
+        <div class="form-section-label">Location</div>
 
         <div class="form-group">
           <label class="form-label" for="location">
-            <i class="fa-solid fa-location-dot"></i>
-            Your Location <span class="req">*</span>
+            <i class="fa-solid fa-location-dot"></i> Your Location <span class="req">*</span>
           </label>
           <div class="input-wrap">
-            <input type="text" id="location" name="location"
-              class="form-input" placeholder="Enter your city or locality"
-              autocomplete="off" required/>
+            <input type="text" id="location" name="location" class="form-input" placeholder="Enter your city or locality" autocomplete="off" required/>
             <i class="fa-solid fa-map-marker-alt input-icon"></i>
-          </div>
-          <div class="location-note">
-            <i class="fa-solid fa-circle-info"></i>
-            Used to find nearby volunteers. Be as specific as possible.
           </div>
           <div class="field-msg err" id="locationErr">
             <i class="fa-solid fa-circle-exclamation"></i> Location is required.
           </div>
         </div>
 
-        <div class="date-time-row">
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label" for="reqDate">
-              <i class="fa-solid fa-calendar"></i>
-              Date <span class="req">*</span>
-            </label>
-            <div class="input-wrap">
-              <input type="date" id="reqDate" name="reqDate" class="form-input"
-                style="padding-left:42px" required/>
-              <i class="fa-solid fa-calendar-days input-icon"></i>
-            </div>
-            <div class="field-msg err" id="dateErr">
-              <i class="fa-solid fa-circle-exclamation"></i> Date required.
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label" for="reqTime">
-              <i class="fa-solid fa-clock"></i>
-              Time <span class="req">*</span>
-            </label>
-            <div class="input-wrap">
-              <input type="time" id="reqTime" name="reqTime" class="form-input"
-                style="padding-left:42px" required/>
-              <i class="fa-regular fa-clock input-icon"></i>
-            </div>
-            <div class="field-msg err" id="timeErr">
-              <i class="fa-solid fa-circle-exclamation"></i> Time required.
-            </div>
-          </div>
-        </div>
-
         <div class="form-section-label">Urgency Level</div>
         <div class="form-group">
           <div class="form-label">
-            <i class="fa-solid fa-gauge-high"></i>
-            How urgent is your request? <span class="req">*</span>
+            <i class="fa-solid fa-gauge-high"></i> How urgent is your request? <span class="req">*</span>
           </div>
           <div class="urgency-row">
             <label class="urgency-badge urg-low" id="urg-low">
@@ -886,7 +741,7 @@ a,button,input,select,textarea,label { cursor:none !important; }
               <span class="ub-sub">Within 24 hrs</span>
             </label>
             <label class="urgency-badge urg-high" id="urg-high">
-              <input type="radio" name="priority" value="High (Critical)" onchange="onUrgencyChange()"/>
+              <input type="radio" name="priority" value="High" onchange="onUrgencyChange()"/>
               <span class="ub-icon">🔴</span>
               <span class="ub-label">High</span>
               <span class="ub-sub">Immediate</span>
@@ -901,32 +756,21 @@ a,button,input,select,textarea,label { cursor:none !important; }
 
         <div class="form-group">
           <label class="form-label" for="contact">
-            <i class="fa-solid fa-phone"></i>
-            Contact Number <span class="req">*</span>
+            <i class="fa-solid fa-phone"></i> Contact Number <span class="req">*</span>
           </label>
           <div class="input-wrap">
-            <input type="tel" id="contact" name="contact"
-              class="form-input" placeholder="+91 98765 43210" required/>
+            <input type="tel" id="contact" name="phone_number" class="form-input" placeholder="+91 98765 43210" required/>
             <i class="fa-solid fa-phone input-icon"></i>
           </div>
-          <div class="field-msg err" id="contactErr">
-            <i class="fa-solid fa-circle-exclamation"></i> Please enter a valid phone number.
-          </div>
-          <div class="field-msg ok" id="contactOk">
-            <i class="fa-solid fa-circle-check"></i> Looks good!
-          </div>
+          <div class="field-msg err" id="contactErr"><i class="fa-solid fa-circle-exclamation"></i> Please enter a valid phone number.</div>
+          <div class="field-msg ok" id="contactOk"><i class="fa-solid fa-circle-check"></i> Looks good!</div>
         </div>
 
         <div class="form-group">
           <label class="form-label" for="private_details">
-            <i class="fa-solid fa-pen-to-square"></i>
-            Private Details / Description <span style="color:#bbb;font-weight:400;font-size:.75rem;text-transform:none;letter-spacing:0">(optional)</span>
+            <i class="fa-solid fa-pen-to-square"></i> Private Details / Description <span style="color:#bbb;font-weight:400;font-size:.75rem;text-transform:none;letter-spacing:0">(optional)</span>
           </label>
-          <textarea id="private_details" name="private_details"
-            class="form-textarea"
-            placeholder="Briefly describe your situation — the more detail you provide, the better we can match you..."
-            maxlength="400"
-            oninput="updateCharCount(this)"></textarea>
+          <textarea id="private_details" name="private_details" class="form-textarea" placeholder="Briefly describe your situation — the more detail you provide, the better we can match you..." maxlength="400" oninput="updateCharCount(this)"></textarea>
           <div class="char-counter" id="charCount">0 / 400</div>
         </div>
 
@@ -937,23 +781,33 @@ a,button,input,select,textarea,label { cursor:none !important; }
             </span>
             <div class="spinner"></div>
           </button>
-          <a href="/" class="btn-cancel">
+          <a href="{% url 'role_selection' %}" class="btn-cancel">
             <i class="fa-solid fa-xmark"></i> Cancel
           </a>
         </div>
 
-        <div style="display:flex;align-items:center;gap:8px;margin-top:18px;padding:11px 14px;
-          background:rgba(61,122,90,.05);border:1px solid rgba(61,122,90,.14);border-radius:3px;
-          font-size:.74rem;color:#888;line-height:1.5;">
+        <div style="display:flex;align-items:center;gap:8px;margin-top:18px;padding:11px 14px; background:rgba(61,122,90,.05);border:1px solid rgba(61,122,90,.14);border-radius:3px; font-size:.74rem;color:#888;line-height:1.5;">
           <i class="fa-solid fa-shield-halved" style="color:var(--sage);font-size:.88rem;flex-shrink:0"></i>
-          Your information is handled securely. No sign-up required to submit a request.
+          Your information is handled securely.
         </div>
 
       </form>
     </div>
+
+    <div class="site-footer">
+      <div>© 2026 Smart Allocation System. Secure & Encrypted.</div>
+      <div>
+        <a href="#">Terms</a> &nbsp;|&nbsp; 
+        <a href="#">Privacy</a> &nbsp;|&nbsp; 
+        <a href="#">Support</a>
+      </div>
+    </div>
+
   </div>
 
-</div><script>
+</div>
+
+<script>
 /* ── CURSOR ── */
 const cursor = document.getElementById('cursor');
 const ring   = document.getElementById('cursorRing');
@@ -993,16 +847,15 @@ function onUrgencyChange() {
 }
 
 /* ── PROGRESS ── */
+// 🔥 BUG FIX 2: JS logic se date aur time ka check hata diya
 function updateProgress() {
   let filled = 0;
   if (document.getElementById('problem_category').value) filled++;
   if (document.getElementById('location').value.trim().length > 1) filled++;
-  if (document.getElementById('reqDate').value) filled++;
-  if (document.getElementById('reqTime').value) filled++;
   if (document.querySelector('input[name="priority"]:checked')) filled++;
   if (validatePhone(document.getElementById('contact').value)) filled++;
 
-  const pct = Math.round((filled / 6) * 100);
+  const pct = Math.round((filled / 4) * 100);
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressPct').textContent = pct + '%';
 }
@@ -1026,8 +879,6 @@ function validatePhone(v) {
 }
 
 document.getElementById('location').addEventListener('input', updateProgress);
-document.getElementById('reqDate').addEventListener('change', updateProgress);
-document.getElementById('reqTime').addEventListener('change', updateProgress);
 
 document.getElementById('contact').addEventListener('blur', function() {
   const v = this.value.trim();
@@ -1049,26 +900,11 @@ document.getElementById('contact').addEventListener('input', function() {
   updateProgress();
 });
 
-/* ── SET DEFAULT DATE ── */
-(function(){
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth()+1).padStart(2,'0');
-  const dd = String(today.getDate()).padStart(2,'0');
-  document.getElementById('reqDate').value = `${yyyy}-${mm}-${dd}`;
-  document.getElementById('reqDate').min = `${yyyy}-${mm}-${dd}`;
-  const h = String(today.getHours()).padStart(2,'0');
-  const m = String(today.getMinutes()).padStart(2,'0');
-  document.getElementById('reqTime').value = `${h}:${m}`;
-  updateProgress();
-})();
-
 /* ── FORM SUBMIT ── */
 document.getElementById('helpForm').addEventListener('submit', function(e) {
-  e.preventDefault(); // Pehle default submit roko validation ke liye
+  e.preventDefault(); 
   let valid = true;
 
-  // Validation checks
   if (!document.getElementById('problem_category').value) {
     showMsg(document.getElementById('typeErr'), true);
     valid = false;
@@ -1076,16 +912,6 @@ document.getElementById('helpForm').addEventListener('submit', function(e) {
   if (document.getElementById('location').value.trim().length < 2) {
     showMsg(document.getElementById('locationErr'), true);
     document.getElementById('location').classList.add('error');
-    valid = false;
-  }
-  if (!document.getElementById('reqDate').value) {
-    showMsg(document.getElementById('dateErr'), true);
-    document.getElementById('reqDate').classList.add('error');
-    valid = false;
-  }
-  if (!document.getElementById('reqTime').value) {
-    showMsg(document.getElementById('timeErr'), true);
-    document.getElementById('reqTime').classList.add('error');
     valid = false;
   }
   if (!document.querySelector('input[name="priority"]:checked')) {
@@ -1098,14 +924,11 @@ document.getElementById('helpForm').addEventListener('submit', function(e) {
     valid = false;
   }
 
-  // Agar validation fail hai toh return ho jao
   if (!valid) return;
 
-  // Agar sab sahi hai, toh Loading Spinner on karo
   const btn = document.getElementById('submitBtn');
   btn.classList.add('loading');
 
-  // AI Matching animation ke liye 1.5 seconds wait karo, fir form POST kardo!
   setTimeout(() => {
     HTMLFormElement.prototype.submit.call(document.getElementById('helpForm'));
   }, 1500); 
