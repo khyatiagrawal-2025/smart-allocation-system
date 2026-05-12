@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Terms of Service — SmartAlloc</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+
+    <style>
+        /* ─── DESIGN TOKENS ─── */
+        :root {
+            --cream: #F5F0E8;
+            --ink: #0A0A0A;
+            --rust: #C84B31;
+            --glow-rust: 0 0 15px rgba(200, 75, 49, 0.4);
+        }
+
+        /* ─── BASE RESET ─── */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; cursor: none; }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── CUSTOM CURSOR ─── */
+        .cursor {
+            position: fixed; width: 12px; height: 12px; background: var(--rust);
+            border-radius: 50%; pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s;
+        }
+        .cursor-ring {
+            position: fixed; width: 38px; height: 38px; border: 1.5px solid var(--rust);
+            border-radius: 50%; pointer-events: none; z-index: 9998;
+            transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, opacity 0.3s;
+            opacity: 0.5;
+        }
+        @media (max-width: 768px) { .cursor, .cursor-ring { display: none; } html { cursor: auto; } }
+
+        /* ─── NAVBAR ─── */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 500; height: 70px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 5%;
+            background: rgba(245, 240, 232, 0.9); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(10, 10, 10, 0.1);
+        }
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.05em;
+            color: var(--ink); text-decoration: none;
+        }
+        .nav-logo span { color: var(--rust); }
+        .back-btn {
+            font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink);
+            text-decoration: none; padding: 8px 16px; border: 1px solid rgba(10, 10, 10, 0.2);
+            border-radius: 4px; transition: all 0.3s;
+        }
+        .back-btn:hover { background: var(--ink); color: var(--cream); box-shadow: var(--glow-rust); }
+
+        /* ─── PAGE WRAPPER ─── */
+        .page-wrapper {
+            max-width: 950px; margin: 120px auto 80px; padding: 0 20px;
+        }
+
+        .header-section { text-align: center; margin-bottom: 60px; }
+        .eyebrow {
+            font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--rust);
+            text-transform: uppercase; letter-spacing: 0.2em; display: block; margin-bottom: 10px;
+        }
+        .main-title {
+            font-family: 'Bebas Neue', sans-serif; font-size: clamp(3rem, 7vw, 5rem);
+            line-height: 1; color: var(--ink);
+        }
+
+        /* ─── TERMS CONTENT ─── */
+        .terms-container {
+            background: #fff; border: 1px solid rgba(10, 10, 10, 0.1);
+            border-radius: 8px; padding: 60px; box-shadow: 6px 6px 0 rgba(10, 10, 10, 0.05);
+        }
+        @media (max-width: 768px) { .terms-container { padding: 30px 20px; } }
+
+        .section-block { margin-bottom: 45px; }
+        .section-block:last-child { margin-bottom: 0; }
+        
+        .section-title {
+            font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem;
+            font-weight: 700; color: var(--ink); margin-bottom: 15px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .section-title::before {
+            content: ''; display: block; width: 12px; height: 12px;
+            background: var(--rust); border-radius: 2px;
+        }
+        .section-text { font-size: 1.05rem; color: #444; line-height: 1.8; text-align: justify; }
+        
+        /* ─── LEGAL WARNING BOX ─── */
+        .warning-box {
+            background: rgba(200, 75, 49, 0.05); border-left: 4px solid var(--rust);
+            padding: 30px; margin: 50px 0; border-radius: 0 4px 4px 0;
+        }
+        .warning-title {
+            color: var(--rust); font-weight: 700; text-transform: uppercase;
+            font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+            font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.05em;
+        }
+
+        /* ─── FOOTER ─── */
+        .footer-note {
+            text-align: center; margin-top: 50px; font-size: 0.85rem; color: #888;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        /* Disable default cursors */
+        a, button { cursor: none !important; }
+        @media (max-width: 768px) { a, button { cursor: auto !important; } }
+    </style>
+</head>
+<body>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
+    <nav class="navbar">
+        <a href="{% url 'home' %}" class="nav-logo">Smart<span>Alloc</span></a>
+        <a href="{% url 'home' %}" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Return Home</a>
+    </nav>
+
+    <div class="page-wrapper">
+        <header class="header-section">
+            <span class="eyebrow">Legal Framework</span>
+            <h1 class="main-title">Terms of Service</h1>
+            <p style="margin-top:20px; color:#666; font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem;">Last Updated: May 2026</p>
+        </header>
+
+        <div class="terms-container">
+            
+            <div class="section-block">
+                <h2 class="section-title">Acceptance of Terms</h2>
+                <p class="section-text">
+                    By accessing, registering, or using the SmartAlloc platform, you agree to be bound by these Terms of Service. If you do not agree to all the terms and conditions of this agreement, then you may not access the website or use any of its services. These terms apply to all visitors, users, and others who access or use the platform.
+                </p>
+            </div>
+
+            <div class="section-block">
+                <h2 class="section-title">Voluntary Participation</h2>
+                <p class="section-text">
+                    All individuals registering as "Volunteers" on the SmartAlloc platform acknowledge that their participation is strictly <strong>voluntary</strong>. The organization does not exercise any form of coercion, pressure, or mandatory obligation for any user to become a volunteer. By opting in, you agree that you are offering your skills, time, and services out of your own free will and personal interest to assist the community.
+                </p>
+            </div>
+
+            <div class="section-block">
+                <h2 class="section-title">Account Registration and Security</h2>
+                <p class="section-text">
+                    To use certain features of the service, you must register for an account. You are solely responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to provide accurate, current, and complete information during the registration process. The organization will not be liable for any loss or damage arising from your failure to comply with this security obligation.
+                </p>
+            </div>
+
+            <div class="section-block">
+                <h2 class="section-title">Scope of Operations & Liability Waiver</h2>
+                <p class="section-text">
+                    The SmartAlloc platform acts solely as a technological facilitator between individuals in need and registered volunteers. The organization defines specific operational boundaries for assistance based on the selected problem category. If a volunteer chooses to act outside the predefined criteria or scope of the requested task, the organization shall bear <strong>zero responsibility</strong> for any consequences. Any actions taken beyond the provided guidance are the sole liability of the individual volunteer.
+                </p>
+            </div>
+
+            <div class="section-block">
+                <h2 class="section-title">No Claim Policy</h2>
+                <p class="section-text">
+                    Under no circumstances shall a volunteer or a user be entitled to make any legal, medical, or financial claims against the organization for incidents occurring before, during, or after a task. Participation does not constitute an employment contract, partnership, or agency relationship. The organization is strictly not liable for any personal injury, property damage, or legal disputes arising from voluntary interactions facilitated by the platform.
+                </p>
+            </div>
+
+            <div class="warning-box">
+                <div class="warning-title">
+                    <i class="fa-solid fa-gavel"></i> Legal Notice: Fraudulent Activity & Misuse
+                </div>
+                <p class="section-text" style="font-size: 0.95rem; color: #222;">
+                    SmartAlloc maintains a strict, zero-tolerance policy against deceptive practices, identity theft, and platform misuse. Any user found submitting <strong>fake emergency requests</strong> or any individual registering as a <strong>fake volunteer</strong> with malicious intent will face immediate legal prosecution. 
+                    <br><br>
+                    Offenders will be booked under <strong>Section 318 of the Bharatiya Nyaya Sanhita (BNS)</strong> [formerly <strong>Section 420 of the Indian Penal Code (IPC)</strong>] for cheating and dishonestly inducing delivery of property. Furthermore, violators will be prosecuted under <strong>Section 66C (Identity Theft)</strong> and <strong>Section 66D (Cheating by personation using a computer resource)</strong> of the <strong>Information Technology Act, 2000</strong>. 
+                    <br><br>
+                    The organization will share all IP logs, geo-location data, and device identifiers with law enforcement agencies and initiate formal court proceedings without prior warning.
+                </p>
+            </div>
+
+            <div class="section-block">
+                <h2 class="section-title">Data Privacy and Geo-Location Consent</h2>
+                <p class="section-text">
+                    By using this platform to request help or accept tasks, you explicitly consent to the collection, processing, and temporary sharing of your geographic location and contact details. This data is utilized solely by our AI routing engine to facilitate immediate assistance and is shared only with the specifically assigned volunteer. For detailed information, please review our Privacy Policy.
+                </p>
+            </div>
+
+            <div class="section-block">
+                <h2 class="section-title">Modifications to the Service</h2>
+                <p class="section-text">
+                    We reserve the right to modify or discontinue, temporarily or permanently, the Service (or any part thereof) with or without notice. We shall not be liable to you or to any third party for any modification, suspension, or discontinuance of the platform's operations.
+                </p>
+            </div>
+
+            <div class="section-block">
+                <h2 class="section-title">Governing Law and Dispute Resolution</h2>
+                <p class="section-text">
+                    These Terms shall be governed and construed in accordance with the laws of India, without regard to its conflict of law provisions. Any dispute arising out of or relating to these Terms or the breach thereof shall be subject to the exclusive jurisdiction of the competent courts located within the territory of India.
+                </p>
+            </div>
+
+        </div>
+
+        <p class="footer-note">By clicking "Accept", registering an account, or continuing to use this platform, you acknowledge that you have read, understood, and agreed to these terms.</p>
+    </div>
+
+    <script>
+        // Smooth Cursor Script (Desktop only)
+        if (window.innerWidth > 768) {
+            const cursor = document.getElementById('cursor');
+            const ring = document.getElementById('cursorRing');
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+                setTimeout(() => {
+                    ring.style.left = e.clientX + 'px';
+                    ring.style.top = e.clientY + 'px';
+                }, 50);
+            });
+
+            const interactiveElements = document.querySelectorAll('a, button');
+            interactiveElements.forEach(el => {
+                el.addEventListener('mouseenter', () => { 
+                    if(cursor) cursor.classList.add('expand'); 
+                    if(ring) ring.classList.add('expand'); 
+                });
+                el.addEventListener('mouseleave', () => { 
+                    if(cursor) cursor.classList.remove('expand'); 
+                    if(ring) ring.classList.remove('expand'); 
+                });
+            });
+        }
+    </script>
+</body>
+</html>
