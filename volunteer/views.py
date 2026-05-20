@@ -32,7 +32,7 @@ def register_volunteer(request):
     return render(request, 'volunteer/volunteer_form.html') 
 
 
-# ================= VOLUNTEER DASHBOARD & REQUESTS =================
+# ================= VOLUNTEER DASHBOARD (New Missions) =================
 
 @login_required
 def volunteer_dashboard(request):
@@ -56,14 +56,11 @@ def volunteer_dashboard(request):
     return render(request, 'volunteer/volunteer_dashboard.html', {
         'profile': my_profile,
         'incoming_requests': incoming_requests,
-        'active_requests': active_requests  # Yahan variable name update kar diya
+        'active_requests': active_requests
     })
 
-# @login_required
-# def request_detail(request, request_id):
-#     # REQUEST BRIEFING PAGE
-#     req = get_object_or_404(HelpRequest, id=request_id)
-#     return render(request, 'volunteer/request_detail.html', {'req': req})
+
+# ================= MISSION ACTIONS =================
 
 @login_required
 def accept_request(request, request_id):
@@ -74,8 +71,8 @@ def accept_request(request, request_id):
     return redirect('volunteer_dashboard')
 
 @login_required
-def decline_request(request, request_id): # Naam decline_mission se decline_request kar diya
-    # ACTION: Agar volunteer request decline karna chahe
+def decline_request(request, request_id):
+    # ACTION: Volunteer Declines the Request
     req = get_object_or_404(HelpRequest, id=request_id)
     req.status = 'Pending' 
     req.target_volunteer = None 
@@ -88,6 +85,7 @@ def mark_done(request, request_id):
     req = get_object_or_404(HelpRequest, id=request_id)
     req.status = 'Completed' 
     req.save()
+    # Pura hone ke baad dashboard par wapas bheje
     return redirect('volunteer_dashboard')
 
 
@@ -100,3 +98,38 @@ def toggle_availability(request):
         my_profile.is_available = not my_profile.is_available
         my_profile.save()
     return redirect('volunteer_dashboard')
+
+
+# ================= VOLUNTEER PROFILE (History & Tracking) =================
+
+@login_required
+def volunteer_profile(request):
+    try:
+        my_profile = VolunteerProfile.objects.get(user=request.user)
+    except VolunteerProfile.DoesNotExist:
+        return redirect('register_volunteer')
+
+    # Data filtered for the 3 Tabs in the Profile
+    
+    # Tab 1: Active/Pending (Assigned & Accepted)
+    active_requests = HelpRequest.objects.filter(
+        target_volunteer=my_profile, 
+        status__in=['Assigned', 'Accepted']
+    ).order_by('-created_at')
+    
+    # Tab 2: Completed Missions
+    completed_requests = HelpRequest.objects.filter(
+        target_volunteer=my_profile, 
+        status='Completed'
+    ).order_by('-created_at')
+    
+    # Tab 3: Declined Missions (Placeholder till history table is created)
+    declined_requests = [] 
+
+    return render(request, 'volunteer/volunteer_profile.html', {
+        'user': request.user,
+        'profile': my_profile,
+        'active_requests': active_requests,
+        'completed_requests': completed_requests,
+        'declined_requests': declined_requests,
+    })

@@ -11,10 +11,10 @@ class HelpRequest(models.Model):
     
     # 🔥 FIX: show status on user screen 
     STATUS_CHOICES = [
-        ('Pending', 'Pending'),        # Step 1: User ne form submit kiya
-        ('Selected', 'Selected'),      # Step 2: User ne kisi ko select kiya
-        ('Assigned', 'Assigned'),      # Step 3: Volunteer ke incoming list me gaya
-        ('Accepted', 'Accepted'),      # Step 4: Volunteer ne Accept dabaya (Lock Opens)
+        ('Pending', 'Pending'),        # Step 1: User form submited
+        ('Selected', 'Selected'),      # Step 2: User selectected someone
+        ('Assigned', 'Assigned'),      # Step 3: Volunteer incoming lists
+        ('Accepted', 'Accepted'),      # Step 4: Volunteer pressed Accept  (Lock Opens)
         ('Completed', 'Completed'),    # Step 5: Mission Accomplished
     ]
 
@@ -37,6 +37,7 @@ class HelpRequest(models.Model):
     
     # save details of assigned volunteer (agar assigned hai to)
     target_volunteer = models.ForeignKey(VolunteerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_requests')
+    declined_by = models.ManyToManyField(VolunteerProfile, blank=True, related_name='declined_requests')
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

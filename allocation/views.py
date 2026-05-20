@@ -162,3 +162,20 @@ def track_request(request, request_id):
             return redirect('track_request', request_id=current_req.id) 
 
     return render(request, 'accounts/user_update_status.html', {'req': current_req})
+
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+
+# Agar tera HelpRequest model kisi aur app mein hai toh use yahan import kar le
+# Example: from core.models import HelpRequest
+
+@login_required(login_url='login') 
+def user_profile(request):
+    my_requests = HelpRequest.objects.filter(requester=request.user).order_by('-created_at')
+    user_profile_data = getattr(request.user, 'volunteer_profile', None)  # VolunteerProfile data agar exist karta hai toh
+    context = {
+        'user' : request.user,
+        'profile': user_profile_data,
+        'requests': my_requests,
+    }
+    return render(request, 'accounts/user_profile.html', context)

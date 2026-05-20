@@ -17,6 +17,6 @@ urlpatterns = [
     # Toggle Online/Offline
     path('toggle-status/', views.toggle_availability, name='toggle_availability'), # 🔥 NAYA ADD KIYA
     
-    # My Profile (Agar tu alag se profile page rakhna chahta hai)
-    #path('my-profile/', views.volunteer_profile, name='volunteer_profile'),
+    # My Profile and Requests
+    path('my-profile/', views.volunteer_profile, name='volunteer_profile'),
 ]
