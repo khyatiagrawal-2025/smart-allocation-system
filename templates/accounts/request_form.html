@@ -585,12 +585,12 @@ a,button,input,select,textarea,label { cursor:none !important; }
 </div>
 
 <nav class="navbar">
-  <a href="{% url 'home' %}" class="nav-logo">
+  <div class="nav-logo">
     <span class="nav-logo-dot"></span>
     Smart<span style="color:var(--rust)">Alloc</span>
-  </a>
+  </div>
   <div class="nav-right">
-    <a href="{% url 'home' %}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Home</a>
+    <a href="{% url 'user_profile' %}" class="back-link"><i class="fa-solid fa-arrow-up"></i> Profile</a>
     <a href="{% url 'logout' %}" class="logout-link">
       <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
     </a>

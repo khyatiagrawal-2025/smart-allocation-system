@@ -78,9 +78,37 @@ body::after {
 .navbar::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1.5px; background: linear-gradient(90deg, transparent, var(--neon-rust), transparent); animation: border-flow 3s ease infinite; background-size: 300% 300%; }
 .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.45rem; letter-spacing: .06em; color: var(--ink); display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .nav-logo-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--rust); display: inline-block; box-shadow: var(--glow-rust); }
-.nav-right { display: flex; align-items: center; gap: 10px; }
-.back-link { display: flex; align-items: center; gap: 8px; font-size: .82rem; font-weight: 500; color: #666; text-decoration: none; letter-spacing: .04em; text-transform: uppercase; padding: 8px 14px; border: 1px solid rgba(10,10,10,0.12); border-radius: 3px; transition: all .22s; }
-.back-link:hover { color: var(--rust); border-color: rgba(200,75,49,.3); background: rgba(200,75,49,.04); box-shadow: 0 0 12px rgba(200,75,49,.1); }
+
+/* NAV LINKS & DUAL-TONE BUTTONS */
+.nav-right { display: flex; align-items: center; gap: 15px; }
+
+.btn-nav-text {
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(to right, var(--ink) 50%, var(--rust) 50%);
+  background-size: 200% 100%;
+  background-position: left bottom;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+  transition: 0.3s ease;
+}
+
+.btn-nav-text i {
+    -webkit-text-fill-color: initial; 
+    color: var(--ink); 
+    transition: 0.3s ease;
+}
+.btn-nav-text:hover { background-position: right bottom; text-shadow: 0 0 10px rgba(200, 75, 49, 0.4); }
+.btn-nav-text:hover i { color: var(--rust); }
 
 /* ─── PAGE SHELL ─── */
 .page-shell { min-height: 100vh; padding-top: 60px; display: grid; grid-template-columns: 1fr 1.5fr; position: relative; overflow: hidden; }
@@ -94,6 +122,8 @@ body::after {
 .left-headline { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.5rem,6vw,5.5rem); line-height: .9; color: var(--cream); margin-bottom: 20px; }
 .left-headline em { font-family: 'Playfair Display', serif; font-style: italic; color: var(--neon-rust); text-shadow: 0 0 24px rgba(255,85,51,.4); }
 .left-sub { font-size: .95rem; color: rgba(245,240,232,.5); line-height: 1.75; margin-bottom: 36px; }
+.left-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(200,75,49,.15); border: 1px solid rgba(200,75,49,.3); padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; color: var(--rust); margin-bottom: 20px; }
+.live-dot { width: 8px; height: 8px; background: var(--neon-rust); border-radius: 50%; box-shadow: var(--glow-rust); animation: radar-scan 1.5s infinite; }
 
 /* ─── RIGHT PANEL ─── */
 .right-panel { background: var(--cream); padding: clamp(32px,4vw,56px) clamp(20px,4vw,64px); display: flex; flex-direction: column; justify-content: space-between; align-items: center; position: relative; min-height: calc(100vh - 60px); }
@@ -135,7 +165,7 @@ body::after {
 .radar { position: absolute; left: -30px; top: 0; width: 24px; height: 24px; border-radius: 50%; background: var(--rust); z-index: 1; animation: radar-scan 2s infinite ease-out; }
 
 /* ─── VOLUNTEER INFO CARD ─── */
-.vol-card { background: rgba(61,122,90,0.05); border: 1.5px solid rgba(61,122,90,0.2); border-radius: 4px; padding: 20px; margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+.vol-card { background: rgba(61,122,90,0.05); border: 1.5px solid rgba(61,122,90,0.2); border-radius: 4px; padding: 20px; margin-top: 15px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; }
 .vol-card-title { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--sage); margin-bottom: 5px; }
 .vol-info-row { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--ink); font-weight: 600; }
 .vol-info-row i { color: var(--sage); font-size: 1rem; }
@@ -143,7 +173,7 @@ body::after {
 .vol-contact i { color: #888; }
 
 /* ─── BUTTONS ─── */
-.btn-submit { width: 100%; padding: 16px 28px; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: .12em; background: var(--sage); color: #fff; border: 2px solid var(--sage); border-radius: 3px; position: relative; overflow: hidden; transition: all .28s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; }
+.btn-submit { width: 100%; padding: 16px 28px; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: .12em; background: var(--sage); color: #fff; border: 2px solid var(--sage); border-radius: 3px; position: relative; overflow: hidden; transition: all .28s; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; cursor: none;}
 .btn-submit::before { content: ''; position: absolute; inset: 0; background: var(--ink); transform: scaleX(0); transform-origin: right; transition: transform .35s ease; z-index: 0; }
 .btn-submit:hover { color: #fff; transform: translateY(-3px); box-shadow: 6px 6px 0 var(--ink), var(--glow-sage); }
 .btn-submit:hover::before { transform: scaleX(1); transform-origin: left; }
@@ -155,9 +185,27 @@ body::after {
 
 /* ─── FOOTER ─── */
 .site-footer { width: 100%; max-width: 580px; margin-top: 40px; padding-top: 20px; padding-bottom: 10px; border-top: 1px solid rgba(10, 10, 10, 0.08); position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: #888; text-transform: uppercase; letter-spacing: 0.08em; }
-.site-footer a { color: var(--rust); text-decoration: none; transition: color 0.2s; font-weight: 500; }
+.site-footer a { color: var(--rust); text-decoration: none; transition: color 0.2s; font-weight: 500; cursor: none;}
 .site-footer a:hover { color: var(--ink); text-shadow: 0 0 8px rgba(200,75,49,.2); }
 
+/* Override button styles for the selection card */
+.btn-select {
+    background: var(--sage); 
+    color: white; 
+    border: none; 
+    padding: 8px 16px; 
+    border-radius: 4px; 
+    font-family: 'IBM Plex Mono', monospace; 
+    font-weight: 600; 
+    font-size: 0.8rem; 
+    cursor: none; 
+    transition: 0.3s; 
+    box-shadow: 0 4px 10px rgba(61,122,90,0.2);
+}
+.btn-select:hover {
+    background: var(--ink);
+    transform: translateY(-2px);
+}
 </style>
 </head>
 <body>
@@ -166,9 +214,11 @@ body::after {
 <div class="cursor-ring" id="cursorRing"></div>
 
 <nav class="navbar">
-  <a href="{% url 'home' %}" class="nav-logo"><span class="nav-logo-dot"></span>Smart<span style="color:var(--rust)">Alloc</span></a>
+  <div class="nav-logo"><span class="nav-logo-dot"></span>Smart<span style="color:var(--rust)">Alloc</span></div>
+  
   <div class="nav-right">
-    <a href="{% url 'home' %}" class="back-link"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="{% url 'user_profile' %}" class="btn-nav-text"><i class="fa-solid fa-user"></i> My Profile</a>
+    <a href="{% url 'logout' %}" class="btn-nav-text"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
   </div>
 </nav>
 
@@ -178,10 +228,8 @@ body::after {
     <div class="left-bg-num">LIVE</div>
     <div class="left-inner">
       <div class="left-badge"><span class="live-dot"></span> Live Tracking</div>
-      
       <h1 class="left-headline">Request<br><em>Status</em></h1>
-      
-      <p class="left-sub">Track the progress of your help request in real-time. Do not close this page; it refreshes automatically.</p>
+      <p class="left-sub">Track the progress of your help request in real-time. This page refreshes automatically in the background.</p>
       
       <div class="tracking-summary">
         <div style="font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--neon-sage); margin-bottom: 10px;">ID: #REQ-00{{ req.id }}</div>
@@ -192,13 +240,45 @@ body::after {
   </div>
 
   <div class="right-panel">
-    <div class="form-container">
-
+    <div class="form-container" id="dynamic-tracker-area">
       <div class="form-header">
         <div class="form-eyebrow">Real-Time Update</div>
         <h2 class="form-title">Track Request</h2>
         <p class="form-sub">Watch your request progress from submission to resolution.</p>
       </div>
+
+      {% if req.status == 'Pending' and req.declined_by.all.count > 0 %}
+      <div class="vol-card" style="border-color: var(--rust); background: rgba(200, 75, 49, 0.05); animation: fade-up 0.5s ease; margin-bottom: 20px;">
+          <div class="vol-card-title" style="color: var(--rust);">System Update</div>
+          <div class="vol-info-row" style="color: var(--ink); font-size: 0.85rem;">
+              <i class="fa-solid fa-rotate-left" style="color: var(--rust);"></i> 
+              <span><strong>Action Required:</strong> The previous responder was unavailable. Please select a new volunteer from the list below.</span>
+          </div>
+      </div>
+
+      <div style="margin-bottom: 30px; animation: fade-up 0.6s ease;">
+          <div class="form-eyebrow" style="color: var(--sage);">Available Responders</div>
+          
+          {% for vol in available_volunteers %}
+          <div class="vol-card" style="border-color: var(--sage); flex-direction: row; justify-content: space-between; align-items: center; background: white;">
+              <div>
+                  <div class="vol-info-row"><i class="fa-solid fa-user-shield"></i> {{ vol.user.get_full_name|default:vol.user.username }}</div>
+                  <div class="vol-contact" style="font-size: 0.75rem;"><i class="fa-solid fa-briefcase"></i> Role: {{ vol.service_role }}</div>
+              </div>
+              
+              <form method="POST" action="">
+                  {% csrf_token %}
+                  <input type="hidden" name="new_volunteer_id" value="{{ vol.id }}">
+                  <button type="submit" class="btn-select">Select</button>
+              </form>
+          </div>
+          {% empty %}
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: #888; text-align: center; padding: 20px; border: 1px dashed #ccc; border-radius: 6px;">
+              No other volunteers are currently available. System is scanning the network.
+          </div>
+          {% endfor %}
+      </div>
+      {% endif %}
 
       <div class="tracking-wrapper">
         <div class="timeline">
@@ -221,7 +301,13 @@ body::after {
             <div class="tl-content">
               <div class="tl-title">AI Matching & Assignment</div>
               {% if req.status == 'Pending' %}
-                <div class="tl-desc" style="color: var(--rust);">Scanning the network for optimal volunteers...</div>
+                {% if req.declined_by.all.count > 0 %}
+                  <div class="tl-desc" style="color: var(--rust); font-weight: 600;">
+                    <i class="fa-solid fa-hand-pointer"></i> Please select a new responder above.
+                  </div>
+                {% else %}
+                  <div class="tl-desc" style="color: var(--rust);">Scanning the network for optimal volunteers...</div>
+                {% endif %}
               {% else %}
                 <div class="tl-desc">A suitable volunteer has been found and assigned.</div>
               {% endif %}
@@ -244,9 +330,9 @@ body::after {
                 <div class="tl-desc">Volunteer has accepted the request and is on the way!</div>
                 
                 {% if req.target_volunteer %}
-                <div class="vol-card">
+                <div class="vol-card" style="border-color: var(--sage);">
                   <div class="vol-card-title">Assigned Responder</div>
-                  <div class="vol-info-row"><i class="fa-solid fa-user-shield"></i> {{ req.target_volunteer.user.first_name|default:req.target_volunteer.user.username }}</div>
+                  <div class="vol-info-row"><i class="fa-solid fa-user-shield"></i> {{ req.target_volunteer.user.get_full_name|default:req.target_volunteer.user.username }}</div>
                   <div class="vol-contact"><i class="fa-solid fa-phone"></i> {{ req.target_volunteer.mobile_number }}</div>
                 </div>
                 {% endif %}
@@ -284,8 +370,8 @@ body::after {
       {% endif %}
 
       {% if req.status != 'Completed' %}
-      <div class="refresh-notice">
-        <i class="fa-solid fa-gear"></i> System automatically refreshing for live updates...
+      <div class="refresh-notice" id="polling-indicator">
+        <i class="fa-solid fa-gear"></i> System actively scanning for live updates...
       </div>
       {% endif %}
 
@@ -299,7 +385,7 @@ body::after {
 </div>
 
 <script>
-/* ── CURSOR SCRIPT (FIXED FOR FASTER INITIALIZATION) ── */
+/* ── SMART CURSOR SCRIPT (Event Delegation to survive DOM updates) ── */
 document.addEventListener("DOMContentLoaded", function() {
     const cursor = document.getElementById('cursor');
     const ring   = document.getElementById('cursorRing');
@@ -310,44 +396,54 @@ document.addEventListener("DOMContentLoaded", function() {
     document.addEventListener('mousemove', e => {
       mx = e.clientX; 
       my = e.clientY;
-      if(cursor) {
-          cursor.style.left = mx + 'px'; 
-          cursor.style.top = my + 'px';
-      }
+      if(cursor) { cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; }
     });
 
     function animRing(){
       rx += (mx - rx) * 0.12; 
       ry += (my - ry) * 0.12;
-      if(ring) {
-          ring.style.left = rx + 'px'; 
-          ring.style.top = ry + 'px';
-      }
+      if(ring) { ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; }
       requestAnimationFrame(animRing);
     }
     animRing();
 
-    document.querySelectorAll('a, button, input').forEach(el => {
-      el.addEventListener('mouseenter', () => { 
-          if(cursor) cursor.classList.add('expand'); 
-          if(ring) ring.classList.add('expand'); 
-      });
-      el.addEventListener('mouseleave', () => { 
-          if(cursor) cursor.classList.remove('expand'); 
-          if(ring) ring.classList.remove('expand'); 
-      });
+    document.addEventListener('mouseover', (e) => {
+        if(e.target.closest('a, button, input, .btn-nav-text')) {
+            if(cursor) cursor.classList.add('expand');
+            if(ring) ring.classList.add('expand');
+        }
+    });
+    document.addEventListener('mouseout', (e) => {
+        if(e.target.closest('a, button, input, .btn-nav-text')) {
+            if(cursor) cursor.classList.remove('expand');
+            if(ring) ring.classList.remove('expand');
+        }
     });
 });
-
 </script>
 
-<!-- AUTO REFRESH SCRIPT FOR REAL-TIME FEEL -->
 {% if req.status != 'Completed' %}
 <script>
-  setTimeout(function() {
-      window.location.reload();
-  }, 10000);
+  let refreshInterval = setInterval(function() {
+      fetch(window.location.href)
+          .then(response => response.text())
+          .then(html => {
+              let parser = new DOMParser();
+              let doc = parser.parseFromString(html, 'text/html');
+
+              let newTrackerArea = doc.querySelector('#dynamic-tracker-area');
+              if (newTrackerArea) {
+                  document.querySelector('#dynamic-tracker-area').innerHTML = newTrackerArea.innerHTML;
+                  
+                  if (!doc.querySelector('#polling-indicator')) {
+                      clearInterval(refreshInterval);
+                  }
+              }
+          })
+          .catch(err => console.log('Silent update failed:', err));
+  }, 5000); 
 </script>
 {% endif %}
+
 </body>
 </html>

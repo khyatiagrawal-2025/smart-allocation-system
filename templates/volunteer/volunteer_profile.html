@@ -29,6 +29,20 @@
             flex-direction: column;
         }
 
+        /* CUSTOM CURSOR (Desktop Only) */
+        .cursor {
+            position: fixed; width: 12px; height: 12px; background: var(--sage);
+            border-radius: 50%; pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s;
+        }
+        .cursor-ring {
+            position: fixed; width: 38px; height: 38px; border: 1.5px solid var(--sage);
+            border-radius: 50%; pointer-events: none; z-index: 9998;
+            transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, opacity 0.3s;
+            opacity: 0.5;
+        }
+        @media (max-width: 768px) { .cursor, .cursor-ring { display: none !important; } html { cursor: auto !important; } }
+
         /* NAVBAR */
         .navbar {
             position: fixed; top: 0; width: 100%; z-index: 500; height: 75px;
@@ -232,8 +246,11 @@
 </head>
 <body>
 
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
     <nav class="navbar">
-        <a href="/" class="nav-logo">Smart<span>Alloc</span></a>
+        <div class="nav-logo">Smart<span>Alloc</span></div>
         <div class="nav-actions">
             <a href="{% url 'logout' %}" style="color: #d32f2f;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
         </div>
@@ -412,6 +429,29 @@
     </footer>
 
     <script>
+        // --- CUSTOM CURSOR JS ---
+        document.addEventListener("DOMContentLoaded", function() {
+            if (window.innerWidth > 768) {
+                const cursor = document.getElementById('cursor');
+                const ring = document.getElementById('cursorRing');
+                let mouseX = window.innerWidth / 2; let mouseY = window.innerHeight / 2;
+                let ringX = mouseX, ringY = mouseY;
+
+                document.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX; mouseY = e.clientY;
+                    cursor.style.left = mouseX + 'px'; cursor.style.top = mouseY + 'px';
+                });
+
+                function animateRing() {
+                    ringX += (mouseX - ringX) * 0.15; ringY += (mouseY - ringY) * 0.15;
+                    ring.style.left = ringX + 'px'; ring.style.top = ringY + 'px';
+                    requestAnimationFrame(animateRing);
+                }
+                animateRing();
+            }
+        });
+
+        // --- UI INTERACTION JS ---
         function toggleDetails(element) {
             const currentItem = element.closest('.request-item');
             currentItem.classList.toggle('active');

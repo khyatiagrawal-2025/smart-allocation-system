@@ -30,6 +30,30 @@ body::after {
 .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: #fff; text-decoration: none; letter-spacing: 1px; cursor: none;}
 .nav-logo span { color: var(--sage); }
 
+/* NAV LINKS CONTAINER */
+.nav-links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+/* DUAL-TONE TEXT ONLY (NO BOXES) */
+.btn-nav-text {
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Half White, Half Green Gradient */
+  background: linear-gradient(to right, #ffffff 50%, var(--sage) 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
+}
+
 /* LAYOUT */
 .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; min-height: calc(100vh - 150px); display: flex; flex-direction: column; }
 .main-content { flex: 1; }
@@ -103,8 +127,11 @@ a, button, input { cursor: none !important; }
 <div class="cursor-ring" id="cursorRing"></div>
 
 <nav class="navbar">
-  <a href="{% url 'home' %}" class="nav-logo">Smart<span>Alloc</span> // Control</a>
-  <a href="{% url 'logout' %}" style="color: #fff; text-decoration: none; font-size: 0.9rem; cursor: none;"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+  <div class="nav-logo">Smart<span>Alloc</span> // Control</div>
+  <div class="nav-links">
+      <a href="{% url 'volunteer_profile' %}" class="btn-nav-text"><i class="fa-solid fa-user"></i> My Profile</a>
+      <a href="{% url 'logout' %}" class="btn-nav-text"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+  </div>
 </nav>
 
 <div class="container">
@@ -238,7 +265,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     animRing();
 
-    document.querySelectorAll('a, button, input').forEach(el => {
+    document.querySelectorAll('a, button, input, .btn-nav-text').forEach(el => {
       el.addEventListener('mouseenter', () => { 
           if(cursor) cursor.classList.add('expand'); 
           if(ring) ring.classList.add('expand'); 

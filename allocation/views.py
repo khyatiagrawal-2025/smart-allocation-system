@@ -152,22 +152,55 @@ def select_volunteer(request, request_id, volunteer_id):
 
 @login_required
 def track_request(request, request_id):
-    current_req = get_object_or_404(HelpRequest, id=request_id)
-
-    # Handle the manual 'Mark as Completed' action triggered by the user
+    # Retrieve the specific help request from the database
+    req = get_object_or_404(HelpRequest, id=request_id)
+    
+    # ==========================================
+    # 1. HANDLE POST REQUESTS (User Actions)
+    # ==========================================
     if request.method == 'POST':
+        
+        # ACTION A: User selects a new volunteer from the provided list
+        new_vol_id = request.POST.get('new_volunteer_id')
+        if new_vol_id:
+            new_vol = get_object_or_404(VolunteerProfile, id=new_vol_id)
+            req.target_volunteer = new_vol
+            req.status = 'Assigned'  # Revert the request status back to Assigned
+            req.save()
+            
+            # Reload the current page to reflect changes
+            return redirect(request.path)
+            
+        # ACTION B: User marks the mission as completed
         if request.POST.get('status') == 'Completed':
-            current_req.status = 'Completed'
-            current_req.save()
-            return redirect('track_request', request_id=current_req.id) 
+            req.status = 'Completed'
+            req.save()
+            
+            # Reload the current page
+            return redirect(request.path)
 
-    return render(request, 'accounts/user_update_status.html', {'req': current_req})
+    # ==========================================
+    # 2. HANDLE GET REQUESTS (Load Page Data)
+    # ==========================================
+    available_volunteers = None
+    
+    # Check if the request is pending and has been declined by at least one volunteer
+    if req.status == 'Pending' and req.declined_by.count() > 0:
+        
+        # Fetch a list of alternate volunteers who meet the following criteria:
+        # 1. They are currently marked as available
+        # 2. They have NOT already declined this specific request
+        available_volunteers = VolunteerProfile.objects.filter(
+            is_available=True
+        ).exclude(
+            id__in=req.declined_by.all()
+        )
 
-# from django.shortcuts import render
-# from django.contrib.auth.decorators import login_required
-
-# Agar tera HelpRequest model kisi aur app mein hai toh use yahan import kar le
-# Example: from core.models import HelpRequest
+    # Render the template with the request details and the list of available volunteers
+    return render(request, 'accounts/user_update_status.html', {
+        'req': req,
+        'available_volunteers': available_volunteers
+    })
 
 @login_required(login_url='login') 
 def user_profile(request):
