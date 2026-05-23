@@ -81,7 +81,15 @@ def role_selection(request):
 @login_required
 def create_request(request):
     if request.method == 'POST':
-        # Create a new help request and ensure location & contact data are saved
+        # 1. Retrieve map coordinates from the HTML hidden inputs
+        lat_str = request.POST.get('latitude')
+        lng_str = request.POST.get('longitude')
+
+        # 2. Convert coordinates to float securely (handling empty strings just in case)
+        latitude_val = float(lat_str) if lat_str else None
+        longitude_val = float(lng_str) if lng_str else None
+
+        # 3. Create a new help request and ensure location, contact, AND GPS data are saved
         new_req = HelpRequest.objects.create(
             requester=request.user,
             problem_category=request.POST.get('problem_category'),
@@ -89,9 +97,12 @@ def create_request(request):
             location=request.POST.get('location'),                
             contact_number=request.POST.get('phone_number'),      
             private_details=request.POST.get('private_details'),
+            latitude=latitude_val,     # ADDED: Save exact map latitude
+            longitude=longitude_val,   # ADDED: Save exact map longitude
             status='Pending'
         )
         return redirect('find_volunteers', request_id=new_req.id)
+        
     return render(request, 'accounts/request_form.html')
 
 @login_required
@@ -117,7 +128,7 @@ def find_volunteers(request, request_id):
             # Initialize the new genai SDK client
             client = genai.Client(api_key=api_key)
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-2.5-flash',
                 contents=prompt
             )
             ai_msg = response.text

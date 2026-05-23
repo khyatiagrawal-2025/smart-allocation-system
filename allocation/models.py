@@ -18,6 +18,10 @@ class HelpRequest(models.Model):
         ('Completed', 'Completed'),    # Step 5: Mission Accomplished
     ]
 
+    #add these two fields to track the location and contact details of the requester
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
     # user specific details for the request
     requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name='my_requests')
     

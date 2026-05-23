@@ -8,6 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
 <style>
 /* ─── TOKENS ─── */
 :root {
@@ -88,10 +91,6 @@ body::after {
 @keyframes fade-up {
   from { opacity:0; transform:translateY(28px) }
   to   { opacity:1; transform:translateY(0) }
-}
-@keyframes float-card {
-  0%,100%{ transform:translateY(0) }
-  50%{ transform:translateY(-8px) }
 }
 @keyframes shimmer-line {
   0%{ background-position:0% 50% }
@@ -240,7 +239,7 @@ body::after {
 }
 .left-headline em {
   font-family:'Playfair Display', serif; font-style:italic;
-  color:var(--neon-rust); text-shadow:0 0 24px rgba(255,85,51,.4);
+  color:var(--rust); text-shadow:0 0 24px rgba(255,85,51,.4);
 }
 .left-sub {
   font-size:.9rem; color:rgba(245,240,232,.42); line-height:1.75; margin-bottom:36px;
@@ -543,6 +542,12 @@ body::after {
 @media(max-width:768px){ .side-label{ display:none; } }
 @media(max-width:960px){ .left-panel{ display:none; } }
 
+/* MAP SPECIFIC FIXES */
+#location-picker-map { cursor: crosshair !important; }
+.leaflet-control-geocoder { box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important; border-radius: 4px !important; }
+/* Hide default Leaflet attribution watermark */
+.leaflet-control-attribution { display: none !important; }
+
 /* ─── FOOTER ─── */
 .site-footer {
   width: 100%; max-width: 640px; margin-top: 60px; padding-top: 20px; padding-bottom: 10px;
@@ -713,12 +718,26 @@ a,button,input,select,textarea,label { cursor:none !important; }
           <label class="form-label" for="location">
             <i class="fa-solid fa-location-dot"></i> Your Location <span class="req">*</span>
           </label>
-          <div class="input-wrap">
-            <input type="text" id="location" name="location" class="form-input" placeholder="Enter your city or locality" autocomplete="off" required/>
+          
+          <div class="input-wrap" style="margin-bottom: 12px;">
+            <input type="text" id="location" name="location" class="form-input" placeholder="Type your address or use the map below..." autocomplete="off" required/>
             <i class="fa-solid fa-map-marker-alt input-icon"></i>
           </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="font-size: 0.75rem; color: #888;">Use the map to set your exact coordinates</div>
+            <button type="button" id="btn-locate-me" style="background: var(--ink); color: #fff; padding: 6px 12px; border: none; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; text-transform: uppercase; transition: 0.3s; cursor: none; display: flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-crosshairs"></i> Auto-Detect
+            </button>
+          </div>
+
+          <div id="location-picker-map" style="height: 280px; width: 100%; border-radius: 4px; border: 1.5px solid rgba(10,10,10,0.13); z-index: 1;"></div>
+          
+          <input type="hidden" name="latitude" id="input-lat" required>
+          <input type="hidden" name="longitude" id="input-lng" required>
+
           <div class="field-msg err" id="locationErr">
-            <i class="fa-solid fa-circle-exclamation"></i> Location is required.
+            <i class="fa-solid fa-circle-exclamation"></i> A valid map location is required.
           </div>
         </div>
 
@@ -807,6 +826,9 @@ a,button,input,select,textarea,label { cursor:none !important; }
 
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
 <script>
 /* ── CURSOR ── */
 const cursor = document.getElementById('cursor');
@@ -821,9 +843,106 @@ document.addEventListener('mousemove', e => {
   ring.style.left = rx+'px'; ring.style.top = ry+'px';
   requestAnimationFrame(animRing);
 })();
-document.querySelectorAll('a,button,input,label,textarea,.type-card,.urgency-badge').forEach(el => {
+document.querySelectorAll('a,button,input,label,textarea,.type-card,.urgency-badge, .leaflet-control').forEach(el => {
   el.addEventListener('mouseenter', () => { cursor.classList.add('expand'); ring.classList.add('expand'); });
   el.addEventListener('mouseleave', () => { cursor.classList.remove('expand'); ring.classList.remove('expand'); });
+});
+
+/* ── LEAFLET MAP & GEOCODER LOGIC ── */
+document.addEventListener("DOMContentLoaded", function() {
+    // Initialize Map with default view centered on Varanasi
+    // attributionControl: false removes the Leaflet watermark completely
+    var map = L.map('location-picker-map', { attributionControl: false }).setView([25.3176, 83.0062], 12);
+    
+    // Setup light theme map tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19
+    }).addTo(map);
+
+    var currentMarker = null;
+
+    // Helper function to handle coordinates updates
+    function updateLocation(lat, lng, addressString = null) {
+        // Update hidden inputs for backend submission
+        document.getElementById('input-lat').value = lat;
+        document.getElementById('input-lng').value = lng;
+        
+        // Update standard text input if address is provided
+        if (addressString) {
+            document.getElementById('location').value = addressString;
+        }
+
+        // Manage Marker
+        if (currentMarker) {
+            map.removeLayer(currentMarker);
+        }
+        currentMarker = L.marker([lat, lng]).addTo(map);
+        map.setView([lat, lng], 15);
+        
+        // Trigger validation check
+        updateProgress();
+    }
+
+    // 1. Manual Click Feature: Allows users to tap anywhere on map
+    map.on('click', function(e) {
+        updateLocation(e.latlng.lat, e.latlng.lng, "Custom Map Location Selected");
+    });
+
+    // 2. Geocoder Feature: The 'Search' box inside the map
+    var geocoderControl = L.Control.geocoder({
+        defaultMarkGeocode: false
+    }).on('markgeocode', function(e) {
+        // Capture geocode result and pass name to text box
+        updateLocation(e.geocode.center.lat, e.geocode.center.lng, e.geocode.name);
+    }).addTo(map);
+
+    // 3. Sync Main Text Input with Map
+    var locInput = document.getElementById('location');
+    var geocoderInstance = L.Control.Geocoder.nominatim();
+
+    function searchTypedAddress() {
+        var query = locInput.value.trim();
+        if (query.length > 3) {
+            // Find coordinates for whatever the user typed in the text box
+            geocoderInstance.geocode(query, function(results) {
+                if (results.length > 0) {
+                    var res = results[0];
+                    // Pass 'null' as address so we don't overwrite what the user typed
+                    updateLocation(res.center.lat, res.center.lng, null);
+                }
+            });
+        }
+    }
+
+    // Trigger map search when user clicks outside the text box or presses Enter
+    locInput.addEventListener('blur', searchTypedAddress);
+    locInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Stop form from submitting early
+            searchTypedAddress();
+        }
+    });
+
+    // 4. Auto-Detect Location Feature using HTML5 Geolocation API
+    document.getElementById('btn-locate-me').addEventListener('click', function() {
+        var btn = this;
+        var originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating...';
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                updateLocation(position.coords.latitude, position.coords.longitude, "Auto-Detected Live Location");
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Success';
+                setTimeout(() => btn.innerHTML = originalText, 2000);
+            }, function(error) {
+                alert("Location access denied or unavailable. Please click manually or search via the map.");
+                btn.innerHTML = originalText;
+            });
+        } else {
+            alert("Geolocation is not supported by your browser.");
+            btn.innerHTML = originalText;
+        }
+    });
 });
 
 /* ── TYPE SELECTION ── */
@@ -846,13 +965,22 @@ function onUrgencyChange() {
   updateProgress();
 }
 
-/* ── PROGRESS ── */
-// 🔥 BUG FIX 2: JS logic se date aur time ka check hata diya
+/* ── PROGRESS BAR LOGIC ── */
 function updateProgress() {
   let filled = 0;
+  
+  // Requirement 1: Category Type
   if (document.getElementById('problem_category').value) filled++;
-  if (document.getElementById('location').value.trim().length > 1) filled++;
+  
+  // Requirement 2: Both Text location AND Map hidden coordinates exist
+  var locText = document.getElementById('location').value.trim();
+  var latVal = document.getElementById('input-lat').value;
+  if (locText.length > 1 && latVal !== "") filled++;
+  
+  // Requirement 3: Urgency
   if (document.querySelector('input[name="priority"]:checked')) filled++;
+  
+  // Requirement 4: Valid Phone
   if (validatePhone(document.getElementById('contact').value)) filled++;
 
   const pct = Math.round((filled / 4) * 100);
@@ -909,11 +1037,16 @@ document.getElementById('helpForm').addEventListener('submit', function(e) {
     showMsg(document.getElementById('typeErr'), true);
     valid = false;
   }
-  if (document.getElementById('location').value.trim().length < 2) {
+  
+  // Validate text input and coordinates
+  var locText = document.getElementById('location').value.trim();
+  var latVal = document.getElementById('input-lat').value;
+  if (locText.length < 2 || latVal === "") {
     showMsg(document.getElementById('locationErr'), true);
     document.getElementById('location').classList.add('error');
     valid = false;
   }
+  
   if (!document.querySelector('input[name="priority"]:checked')) {
     showMsg(document.getElementById('urgencyErr'), true);
     valid = false;
