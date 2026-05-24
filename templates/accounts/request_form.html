@@ -145,7 +145,7 @@ body::after {
 .logout-link::before {
   content:''; position:absolute; inset:0;
   background:var(--rust); transform:scaleX(0); transform-origin:right;
-  transition:transform .3s ease; z-index:0;
+  transition:transform .35s ease; z-index:0;
 }
 .logout-link:hover { 
   color:#fff; border-color:var(--rust); 
@@ -340,14 +340,35 @@ body::after {
 
 /* ─── FORM GROUPS ─── */
 .form-group { margin-bottom:20px; }
+/* ─── HIGHLIGHTED FORM LABELS ─── */
 .form-label {
-  display:flex; align-items:center; gap:6px;
-  font-size:.76rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
-  color:#555; margin-bottom:8px;
+  display: inline-flex; 
+  align-items: center; 
+  gap: 8px;
+  font-size: 0.8rem; 
+  font-weight: 700; 
+  letter-spacing: 0.08em; 
+  text-transform: uppercase;
+  color: var(--ink); /* Darker and bolder text */
+  margin-bottom: 12px;
+  padding: 6px 14px 6px 10px;
+  background: linear-gradient(90deg, rgba(200,75,49,0.08) 0%, transparent 100%); /* Subtle rust gradient */
+  border-left: 3px solid var(--rust); /* Left highlight bar */
+  border-radius: 0 4px 4px 0;
 }
-.form-label .req { color:var(--rust); font-size:.8rem; }
-.form-label i { font-size:.7rem; color:#bbb; }
 
+.form-label i { 
+  font-size: 0.85rem; 
+  color: var(--rust); /* Match icon color to theme */
+  filter: drop-shadow(0 0 5px rgba(200,75,49,0.4)); /* Neon glow effect on icon */
+}
+
+.form-label .req { 
+  color: var(--rust); 
+  font-size: 1rem; 
+  text-shadow: 0 0 8px rgba(200,75,49,0.6); /* Glowing red star for required */
+  margin-left: 2px;
+}
 .input-wrap { position:relative; }
 .input-icon {
   position:absolute; left:14px; top:50%; transform:translateY(-50%);
@@ -422,11 +443,14 @@ body::after {
 }
 .type-card.active .tc-check { opacity:1; transform:scale(1); }
 
-/* ─── URGENCY BADGES (Fixed Values) ─── */
+/* ─── URGENCY BADGES (HIGHLIGHTED WITH NEON RUST) ─── */
 .urgency-row { display:flex; gap:10px; flex-wrap:wrap; }
 .urgency-badge {
   flex:1; min-width:90px; padding:12px 10px;
-  border-radius:3px; border:1.5px solid rgba(10,10,10,.1);
+  border-radius:3px; 
+  /* NEON RUST HIGHLIGHT APPLIED HERE */
+  border:1.5px solid rgba(255, 85, 51, 0.4); 
+  box-shadow: 0 0 8px rgba(255, 85, 51, 0.15);
   background:#fff; text-align:center; cursor:none;
   transition:all .25s; user-select:none;
   position:relative; overflow:hidden;
@@ -435,25 +459,29 @@ body::after {
   content:''; position:absolute; top:0; left:0; right:0; height:2px;
   transform:scaleX(0); transform-origin:left; transition:transform .3s;
 }
-.urgency-badge:hover { transform:translateY(-2px); }
+.urgency-badge:hover { 
+  transform:translateY(-2px); 
+  box-shadow: 0 0 15px rgba(255, 85, 51, 0.35); /* Brighter hover neon */
+  border-color: rgba(255, 85, 51, 0.7);
+}
 
 .urgency-badge.urg-low:hover, .urgency-badge.urg-low.active {
   border-color:var(--sage); background:rgba(61,122,90,.05);
-  box-shadow:3px 3px 0 var(--sage), 0 0 12px rgba(61,122,90,.1);
+  box-shadow:3px 3px 0 var(--sage), 0 0 16px rgba(61,122,90,.3);
 }
 .urgency-badge.urg-low::before { background:var(--sage); }
 .urgency-badge.urg-low:hover::before, .urgency-badge.urg-low.active::before { transform:scaleX(1); }
 
 .urgency-badge.urg-med:hover, .urgency-badge.urg-med.active {
   border-color:var(--gold); background:rgba(212,160,23,.05);
-  box-shadow:3px 3px 0 var(--gold), 0 0 12px rgba(212,160,23,.12);
+  box-shadow:3px 3px 0 var(--gold), 0 0 16px rgba(212,160,23,.3);
 }
 .urgency-badge.urg-med::before { background:var(--gold); }
 .urgency-badge.urg-med:hover::before, .urgency-badge.urg-med.active::before { transform:scaleX(1); }
 
 .urgency-badge.urg-high:hover, .urgency-badge.urg-high.active {
   border-color:var(--rust); background:rgba(200,75,49,.05);
-  box-shadow:3px 3px 0 var(--rust), 0 0 12px rgba(200,75,49,.12);
+  box-shadow:3px 3px 0 var(--rust), 0 0 20px rgba(200,75,49,.4); /* Strongest Neon for High */
 }
 .urgency-badge.urg-high::before { background:var(--rust); }
 .urgency-badge.urg-high:hover::before, .urgency-badge.urg-high.active::before { transform:scaleX(1); }
@@ -545,7 +573,6 @@ body::after {
 /* MAP SPECIFIC FIXES */
 #location-picker-map { cursor: crosshair !important; }
 .leaflet-control-geocoder { box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important; border-radius: 4px !important; }
-/* Hide default Leaflet attribution watermark */
 .leaflet-control-attribution { display: none !important; }
 
 /* ─── FOOTER ─── */
@@ -850,80 +877,74 @@ document.querySelectorAll('a,button,input,label,textarea,.type-card,.urgency-bad
 
 /* ── LEAFLET MAP & GEOCODER LOGIC ── */
 document.addEventListener("DOMContentLoaded", function() {
-    // Initialize Map with default view centered on Varanasi
-    // attributionControl: false removes the Leaflet watermark completely
     var map = L.map('location-picker-map', { attributionControl: false }).setView([25.3176, 83.0062], 12);
     
-    // Setup light theme map tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19
-    }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
     var currentMarker = null;
 
-    // Helper function to handle coordinates updates
     function updateLocation(lat, lng, addressString = null) {
-        // Update hidden inputs for backend submission
         document.getElementById('input-lat').value = lat;
         document.getElementById('input-lng').value = lng;
         
-        // Update standard text input if address is provided
         if (addressString) {
             document.getElementById('location').value = addressString;
         }
 
-        // Manage Marker
-        if (currentMarker) {
-            map.removeLayer(currentMarker);
-        }
+        if (currentMarker) map.removeLayer(currentMarker);
         currentMarker = L.marker([lat, lng]).addTo(map);
-        map.setView([lat, lng], 15);
         
-        // Trigger validation check
+        // 🔴 THE FIX: Fly to the newly searched location with smooth animation
+        map.flyTo([lat, lng], 15, { animate: true, duration: 1.5 });
+        
         updateProgress();
     }
 
-    // 1. Manual Click Feature: Allows users to tap anywhere on map
     map.on('click', function(e) {
         updateLocation(e.latlng.lat, e.latlng.lng, "Custom Map Location Selected");
     });
 
-    // 2. Geocoder Feature: The 'Search' box inside the map
-    var geocoderControl = L.Control.geocoder({
-        defaultMarkGeocode: false
-    }).on('markgeocode', function(e) {
-        // Capture geocode result and pass name to text box
+    var geocoderControl = L.Control.geocoder({ defaultMarkGeocode: false })
+    .on('markgeocode', function(e) {
         updateLocation(e.geocode.center.lat, e.geocode.center.lng, e.geocode.name);
     }).addTo(map);
 
-    // 3. Sync Main Text Input with Map
+    /* 🔴 THE FIX: Powerful & Reliable Fetch API for Text Search */
     var locInput = document.getElementById('location');
-    var geocoderInstance = L.Control.Geocoder.nominatim();
+    var mapIcon = document.querySelector('.input-wrap .fa-map-marker-alt');
 
     function searchTypedAddress() {
         var query = locInput.value.trim();
         if (query.length > 3) {
-            // Find coordinates for whatever the user typed in the text box
-            geocoderInstance.geocode(query, function(results) {
-                if (results.length > 0) {
-                    var res = results[0];
-                    // Pass 'null' as address so we don't overwrite what the user typed
-                    updateLocation(res.center.lat, res.center.lng, null);
+            // Visual loading feedback
+            mapIcon.className = 'fa-solid fa-spinner fa-spin input-icon';
+            
+            // Direct OpenStreetMap API call (100% reliable)
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.length > 0) {
+                    updateLocation(data[0].lat, data[0].lon, null);
                 }
+                mapIcon.className = 'fa-solid fa-map-marker-alt input-icon';
+            })
+            .catch(err => {
+                console.error('Map Search Error:', err);
+                mapIcon.className = 'fa-solid fa-map-marker-alt input-icon';
             });
         }
     }
 
-    // Trigger map search when user clicks outside the text box or presses Enter
+    // Trigger on blur (click away) and Enter key
     locInput.addEventListener('blur', searchTypedAddress);
     locInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
-            e.preventDefault(); // Stop form from submitting early
+            e.preventDefault(); 
             searchTypedAddress();
         }
     });
 
-    // 4. Auto-Detect Location Feature using HTML5 Geolocation API
+    // Auto Detect
     document.getElementById('btn-locate-me').addEventListener('click', function() {
         var btn = this;
         var originalText = btn.innerHTML;
@@ -968,19 +989,13 @@ function onUrgencyChange() {
 /* ── PROGRESS BAR LOGIC ── */
 function updateProgress() {
   let filled = 0;
-  
-  // Requirement 1: Category Type
   if (document.getElementById('problem_category').value) filled++;
   
-  // Requirement 2: Both Text location AND Map hidden coordinates exist
   var locText = document.getElementById('location').value.trim();
   var latVal = document.getElementById('input-lat').value;
   if (locText.length > 1 && latVal !== "") filled++;
   
-  // Requirement 3: Urgency
   if (document.querySelector('input[name="priority"]:checked')) filled++;
-  
-  // Requirement 4: Valid Phone
   if (validatePhone(document.getElementById('contact').value)) filled++;
 
   const pct = Math.round((filled / 4) * 100);
@@ -1038,7 +1053,6 @@ document.getElementById('helpForm').addEventListener('submit', function(e) {
     valid = false;
   }
   
-  // Validate text input and coordinates
   var locText = document.getElementById('location').value.trim();
   var latVal = document.getElementById('input-lat').value;
   if (locText.length < 2 || latVal === "") {

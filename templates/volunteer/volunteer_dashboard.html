@@ -110,7 +110,7 @@ body::after {
 .btn-complete:hover { background: var(--ink); transform: translateY(-2px); box-shadow: 3px 3px 0 rgba(10,10,10,0.1);}
 
 /* ─── MAP CONTROLS & FULLSCREEN ─── */
-.map-wrapper { position: relative; margin-bottom: 20px; overflow: hidden; border-radius: 6px;}
+.map-wrapper { position: relative; margin-bottom: 20px; overflow: hidden; border-radius: 6px; border: 1.5px solid rgba(10,10,10,0.1); box-shadow: 4px 4px 0 rgba(10,10,10,0.05);}
 
 /* Native Fullscreen CSS Fixes */
 :fullscreen { background-color: var(--ink); }
@@ -164,6 +164,38 @@ body::after {
 .leaflet-bar { border: none !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; }
 .leaflet-bar a { background: #0A0A0A !important; color: var(--neon-green) !important; border: 1px solid rgba(0,255,136,0.3) !important;}
 .leaflet-bar a:hover { background: var(--neon-green) !important; color: #000 !important; }
+
+/* ─── CUSTOM MAP PINS (PLUS & NORMAL PIN) ─── */
+.pin-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+.pin-icon {
+    font-size: 28px;
+    margin-bottom: 2px;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));
+}
+.pin-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.8rem;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #fff;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+/* Volunteer Pin Colors (Green with Plus Icon) */
+.pin-vol .pin-icon { color: var(--neon-green); text-shadow: 0 0 15px var(--neon-green); }
+.pin-vol .pin-label { background: var(--sage); border: 1px solid var(--neon-green); }
+
+/* User Pin Colors (Rust with Location Dot) */
+.pin-user .pin-icon { color: var(--rust); text-shadow: 0 0 15px var(--rust); }
+.pin-user .pin-label { background: var(--rust); border: 1px solid #fff; }
 
 .empty-state { text-align: center; padding: 40px 20px; color: #888; font-size: 0.9rem; border: 1.5px dashed #ccc; border-radius: 6px; }
 
@@ -372,17 +404,14 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     });
 
-    /* ── MAP INITIALIZATION (PURE JS - FIXES VS CODE ERRORS) ── */
-    // Instead of using Django logic inside Javascript, we pull from HTML data attributes
+    /* ── MAP INITIALIZATION ── */
     document.querySelectorAll('.volunteer-map-container').forEach(function(container) {
         var reqId = container.getAttribute('data-req-id');
         var lat = parseFloat(container.getAttribute('data-lat'));
         var lng = parseFloat(container.getAttribute('data-lng'));
 
-        // attributionControl: false removes the watermark at the bottom right
         var map = L.map(container.id, { zoomControl: false, attributionControl: false }).setView([lat, lng], 13);
         
-        // Dark Matter map tiles
         L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
             subdomains: 'abcd',
             maxZoom: 20
@@ -396,47 +425,65 @@ document.addEventListener("DOMContentLoaded", function() {
 
 /* ── UI CONTROL FUNCTIONS ── */
 
-// Calculates the route using Live GPS, with an automatic fallback to the Main Place if permission is denied
+// Calculates the route using Live GPS (or Default) and drops exact same pins as the User side
 function calculateRoute(reqId) {
     var map = window.appMaps[reqId];
     if (!map) return;
 
-    // Prevent calculating multiple routes
     if (map.routeControl) return; 
 
-    // Retrieve the target (victim) coordinates from the container's data attributes
+    // Retrieve the target (victim) coordinates
     var container = document.getElementById('map-' + reqId);
     var targetLat = parseFloat(container.getAttribute('data-lat'));
     var targetLng = parseFloat(container.getAttribute('data-lng'));
     var targetLoc = L.latLng(targetLat, targetLng);      
 
-    // Find the button that was clicked to show a loading animation
     var routeBtn = event.currentTarget;
     var originalText = routeBtn.innerHTML;
     routeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating...';
 
-    // DEFINE YOUR MAIN/DEFAULT PLACE COORDINATES HERE
-    // This will be used if the volunteer denies GPS permission
+    // Same fallback location used for the user map
     var defaultMainLat = 25.3300;
     var defaultMainLng = 82.9900;
 
-    // Reusable function to render the map route layout
+    // Rendering Function with Custom Pins
     function renderRoute(responderCoords, isFallbackMode) {
         map.routeControl = L.Routing.control({
             waypoints: [ responderCoords, targetLoc ],
             routeWhileDragging: false,
             addWaypoints: false,
-            fitSelectedRoutes: true,
+            fitSelectedRoutes: false, // We will manually handle this to ensure smooth zoom
             showAlternatives: false,
             collapsible: false, 
             lineOptions: {
                 styles: [ {color: '#00FF88', opacity: 0.9, weight: 6} ]
             },
+            
+            // 🔴 EXACT SAME CUSTOM UI PINS (Plus for Volunteer, Normal Pin for Target)
             createMarker: function(i, waypoint, n) {
-                var markerLabel = (i === 0) ? (isFallbackMode ? "Main Base (Default)" : "You (Live GPS)") : "Target";
-                return L.marker(waypoint.latLng, {title: markerLabel});
+                var isVolunteer = (i === 0);
+                var pinClass = isVolunteer ? 'pin-vol' : 'pin-user';
+                
+                // Plus sign for volunteer, Location dot (pin) for user
+                var iconType = isVolunteer ? 'fa-plus' : 'fa-location-dot';
+                var label = isVolunteer ? 'YOU (VOLUNTEER)' : 'TARGET (USER)';
+
+                var customIcon = L.divIcon({
+                    className: 'pin-wrapper ' + pinClass,
+                    html: '<div class="pin-icon"><i class="fa-solid ' + iconType + '"></i></div>' +
+                          '<div class="pin-label">' + label + '</div>',
+                    iconSize: [120, 50],
+                    iconAnchor: [60, 50] // Adjusted slightly for wider label
+                });
+
+                return L.marker(waypoint.latLng, {icon: customIcon});
             }
         }).addTo(map);
+
+        // Auto-adjust map bounds to smoothly fit both pins together on screen
+        setTimeout(() => {
+            map.fitBounds([responderCoords, targetLoc], { padding: [50, 50] });
+        }, 500);
 
         // Restore button state and reveal directions toggle
         routeBtn.innerHTML = originalText;
@@ -447,28 +494,26 @@ function calculateRoute(reqId) {
         if (wrapper) wrapper.classList.remove('routing-hidden');
     }
 
-    // Execution Logic: Try Live GPS first, fallback to Main Place on failure
+    // Execution Logic: Live GPS -> Fallback
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             function(position) {
-                // Scenario A: Permission granted, use Live GPS
                 var liveLoc = L.latLng(position.coords.latitude, position.coords.longitude);
                 renderRoute(liveLoc, false);
             },
             function(error) {
-                // Scenario B: Permission denied or timeout, fallback to Main Place smoothly
                 console.warn("GPS access denied. Falling back to default main place coordinates.");
                 var fallbackLoc = L.latLng(defaultMainLat, defaultMainLng);
                 renderRoute(fallbackLoc, true);
             }
         );
     } else {
-        // Scenario C: Browser doesn't support Geolocation at all
         var fallbackLoc = L.latLng(defaultMainLat, defaultMainLng);
         renderRoute(fallbackLoc, true);
     }
 }
-// Custom function to toggle the text itinerary box visibility
+
+// Toggle text itinerary box
 function toggleDirections(reqId) {
     var wrapper = document.getElementById('map-wrapper-' + reqId);
     if (wrapper) wrapper.classList.toggle('routing-hidden');
