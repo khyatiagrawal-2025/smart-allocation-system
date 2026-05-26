@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Get Support — SmartAlloc</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+
+    <style>
+        /* ─── DESIGN TOKENS ─── */
+        :root {
+            --cream: #F5F0E8;
+            --ink: #0A0A0A;
+            --rust: #C84B31;
+            --sage: #3D7A5A;
+            --glow-rust: 0 0 15px rgba(200, 75, 49, 0.4);
+        }
+
+        /* ─── BASE RESET ─── */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; cursor: none; }
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── GRAIN OVERLAY ─── */
+        body::after {
+            content: ''; position: fixed; inset: 0; z-index: 9990; pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+        }
+
+        /* ─── CUSTOM CURSOR ─── */
+        .cursor {
+            position: fixed; width: 12px; height: 12px; background: var(--rust);
+            border-radius: 50%; pointer-events: none; z-index: 9999;
+            transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s;
+        }
+        .cursor-ring {
+            position: fixed; width: 38px; height: 38px; border: 1.5px solid var(--rust);
+            border-radius: 50%; pointer-events: none; z-index: 9998;
+            transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, opacity 0.3s;
+            opacity: 0.5;
+        }
+        .cursor.expand { width: 50px; height: 50px; background: transparent; border: 1.5px solid var(--rust); }
+        .cursor-ring.expand { width: 65px; height: 65px; opacity: 0.2; }
+
+        /* Hide custom cursor on mobile for better native UX */
+        @media (max-width: 768px) {
+            html, a, button, summary { cursor: auto !important; }
+            .cursor, .cursor-ring { display: none !important; }
+        }
+
+        /* ─── NAVBAR ─── */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 500; height: 70px;
+            display: flex; align-items: center; justify-content: space-between; padding: 0 5%;
+            background: rgba(245, 240, 232, 0.9); backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(10, 10, 10, 0.1);
+        }
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.05em;
+            color: var(--ink); text-decoration: none; display: flex; align-items: center; gap: 8px;
+        }
+        .nav-logo span { color: var(--rust); }
+        .back-btn {
+            font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink);
+            text-decoration: none; padding: 8px 16px; border: 1px solid rgba(10, 10, 10, 0.2);
+            border-radius: 4px; transition: all 0.3s;
+        }
+        .back-btn:hover { background: var(--ink); color: var(--cream); box-shadow: var(--glow-rust); }
+
+        /* ─── PAGE CONTAINER ─── */
+        .page-wrapper {
+            max-width: 900px; margin: 120px auto 60px; padding: 0 20px;
+            position: relative; z-index: 10;
+        }
+
+        /* ─── HERO SECTION ─── */
+        .hero-section { text-align: center; margin-bottom: 60px; }
+        .eyebrow {
+            font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: var(--rust);
+            text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 15px; display: block;
+        }
+        .main-title {
+            font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.5rem, 6vw, 4.5rem);
+            line-height: 1; color: var(--ink); margin-bottom: 20px; text-transform: uppercase;
+        }
+        .main-description {
+            font-size: 1.1rem; color: #555; max-width: 600px; margin: 0 auto; line-height: 1.6;
+        }
+
+        /* ─── FAQ ACCORDION SECTION ─── */
+        .faq-container {
+            background: #fff; border: 1px solid rgba(10, 10, 10, 0.1);
+            border-radius: 8px; box-shadow: 4px 4px 0 rgba(10, 10, 10, 0.05);
+            overflow: hidden; margin-bottom: 60px;
+        }
+        .faq-item {
+            border-bottom: 1px solid rgba(10, 10, 10, 0.1);
+        }
+        .faq-item:last-child { border-bottom: none; }
+        
+        .faq-question {
+            width: 100%; text-align: left; background: transparent; border: none;
+            padding: 25px 30px; font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.1rem; font-weight: 600; color: var(--ink);
+            display: flex; justify-content: space-between; align-items: center;
+            transition: background 0.3s; cursor: none;
+        }
+        .faq-question:hover { background: rgba(200, 75, 49, 0.03); }
+        
+        .faq-icon {
+            font-size: 1.2rem; color: var(--rust); transition: transform 0.4s ease;
+        }
+        
+        /* Interactive States for Accordion */
+        .faq-item.active .faq-question { background: rgba(200, 75, 49, 0.05); color: var(--rust); }
+        .faq-item.active .faq-icon { transform: rotate(180deg); }
+        
+        /* Dynamic Height managed by JS, start at 0 */
+        .faq-answer {
+            max-height: 0; overflow: hidden; 
+            transition: max-height 0.4s ease-in-out;
+            background: #fafafa;
+        }
+        .faq-answer-inner {
+            padding: 0 30px 25px 30px; font-size: 0.95rem; color: #555; line-height: 1.7;
+        }
+
+        /* ─── DIRECT CONTACT SECTION ─── */
+        .direct-contact {
+            background: var(--ink); color: var(--cream); padding: 50px 40px;
+            border-radius: 8px; text-align: center; position: relative; overflow: hidden;
+        }
+        .direct-contact::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background-image: radial-gradient(rgba(255, 85, 51, 0.15) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .dc-content { position: relative; z-index: 2; }
+        .dc-title {
+            font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem;
+            margin-bottom: 15px; letter-spacing: 0.05em;
+        }
+        .dc-text { font-size: 1rem; color: #bbb; margin-bottom: 25px; line-height: 1.5; }
+        
+        .email-btn {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: var(--rust); color: #fff; font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em;
+            padding: 15px 30px; border-radius: 4px; text-decoration: none;
+            transition: all 0.3s; border: 2px solid var(--rust); cursor: none;
+        }
+        .email-btn:hover {
+            background: transparent; color: var(--rust);
+            transform: translateY(-3px); box-shadow: 0 5px 15px rgba(200, 75, 49, 0.2);
+        }
+
+        /* ─── FOOTER ─── */
+        .footer-line { width: 100%; height: 1px; background: rgba(10, 10, 10, 0.1); margin: 60px 0 20px; }
+        .footer-content {
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: #888;
+            text-transform: uppercase; letter-spacing: 0.05em; flex-wrap: wrap; gap: 10px;
+        }
+
+        /* ─── RESPONSIVE MEDIA QUERIES ─── */
+        @media (max-width: 768px) {
+            .navbar { padding: 0 20px; height: 60px; }
+            .nav-logo { font-size: 1.3rem; }
+            .back-btn { font-size: 0.7rem; padding: 6px 12px; }
+            
+            .page-wrapper { margin-top: 90px; }
+            .hero-section { margin-bottom: 40px; }
+            .main-description { font-size: 1rem; padding: 0 10px; }
+            
+            .faq-question { padding: 20px 20px; font-size: 1rem; }
+            .faq-answer-inner { padding: 0 20px 20px 20px; }
+            
+            .direct-contact { padding: 40px 20px; }
+            .dc-title { font-size: 2rem; }
+            .email-btn { width: 100%; justify-content: center; padding: 14px 20px; }
+            
+            .footer-content { flex-direction: column; text-align: center; gap: 15px; }
+        }
+
+        /* Disable default cursors for desktop */
+        @media (min-width: 769px) {
+            a, button, summary { cursor: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-ring" id="cursorRing"></div>
+
+    <nav class="navbar">
+        <div class="nav-logo">
+            <i class="fa-solid fa-satellite-dish" style="color: var(--rust);"></i>
+            Smart<span>Alloc</span>
+        </div>
+        <a href="{% url 'home' %}" class="back-btn"><i class="fa-solid fa-arrow-left"></i> Return Home</a>
+    </nav>
+
+    <div class="page-wrapper">
+
+        <section class="hero-section">
+            <span class="eyebrow">Help Center</span>
+            <h1 class="main-title">How Can We Help You?</h1>
+            <p class="main-description">Browse our most frequently asked questions to understand how the Smart Allocation System works.</p>
+        </section>
+
+        <div class="faq-container">
+            
+            <div class="faq-item">
+                <button class="faq-question">
+                    1. How does the AI match me with a volunteer?
+                    <i class="fa-solid fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Our system utilizes a customized Google Gemini AI model. When you submit a request, the AI analyzes the required help category, priority level, and your location. It then scans our database of active, online volunteers and instantly alerts the best matches within seconds.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    2. Is my personal information and exact location safe?
+                    <i class="fa-solid fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Absolutely. We take data privacy very seriously. Your exact address, phone number, and private instructions are kept entirely encrypted and hidden. They are only unlocked and revealed to a specific volunteer *after* they have officially accepted your request.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    3. How long does it normally take to get help?
+                    <i class="fa-solid fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Our AI matching process takes less than 60 seconds. However, the actual arrival time depends on the volunteer's proximity to your location and the current traffic conditions. You can track the status live on your dashboard.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    4. What if the assigned volunteer cancels or doesn't respond?
+                    <i class="fa-solid fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        If a volunteer cancels or fails to update the status within a specific timeframe, our smart engine automatically re-routes your request back into the network to find the next available match immediately.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    5. Do I need to create an account to request help?
+                    <i class="fa-solid fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Yes, a basic registration is required. This helps us prevent spam, verify genuine requests, and allows you to securely track your active requests and communicate with the assigned volunteer.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    6. How can I register to become a volunteer?
+                    <i class="fa-solid fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        We are always looking for people willing to help! Simply go to the homepage, sign up, and select the "Volunteer" role during the setup process. You will need to provide your skills, service area, and contact details.
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    7. Is this service completely free to use?
+                    <i class="fa-solid fa-chevron-down faq-icon"></i>
+                </button>
+                <div class="faq-answer">
+                    <div class="faq-answer-inner">
+                        Yes. SmartAlloc is a community-driven initiative. The platform and the matchmaking service are 100% free for both users requesting help and the volunteers providing it.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="direct-contact">
+            <div class="dc-content">
+                <h2 class="dc-title">Still Need Assistance?</h2>
+                <p class="dc-text">If your question isn't answered above, or if you are facing a technical issue, feel free to drop an email directly to our support team.</p>
+                
+                <a href="mailto:contactsupport.smartallocation@gmail.com" class="email-btn">
+                    <i class="fa-solid fa-envelope"></i> Email Support Team
+                </a>
+            </div>
+        </div>
+
+        <div class="footer-line"></div>
+        <div class="footer-content">
+            <div>© 2026 Smart Allocation System. Built for the community.</div>
+            <div>SmartAlloc Support Desk</div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // --- Custom Cursor Logic (Only active on desktop) ---
+            if (window.innerWidth > 768) {
+                const cursor = document.getElementById('cursor');
+                const ring = document.getElementById('cursorRing');
+                let mouseX = window.innerWidth / 2; 
+                let mouseY = window.innerHeight / 2;
+                let ringX = mouseX, ringY = mouseY;
+
+                document.addEventListener('mousemove', (e) => {
+                    mouseX = e.clientX; mouseY = e.clientY;
+                    if(cursor) { cursor.style.left = mouseX + 'px'; cursor.style.top = mouseY + 'px'; }
+                });
+
+                function animateRing() {
+                    ringX += (mouseX - ringX) * 0.15; ringY += (mouseY - ringY) * 0.15;
+                    if(ring) { ring.style.left = ringX + 'px'; ring.style.top = ringY + 'px'; }
+                    requestAnimationFrame(animateRing);
+                }
+                animateRing();
+
+                const interactiveElements = document.querySelectorAll('a, button');
+                interactiveElements.forEach(el => {
+                    el.addEventListener('mouseenter', () => { 
+                        if(cursor) cursor.classList.add('expand'); 
+                        if(ring) ring.classList.add('expand'); 
+                    });
+                    el.addEventListener('mouseleave', () => { 
+                        if(cursor) cursor.classList.remove('expand'); 
+                        if(ring) ring.classList.remove('expand'); 
+                    });
+                });
+            }
+
+            // --- TRUE DYNAMIC Accordion Logic ---
+            const faqItems = document.querySelectorAll('.faq-item');
+            
+            faqItems.forEach(item => {
+                const questionBtn = item.querySelector('.faq-question');
+                const answerWrap = item.querySelector('.faq-answer');
+                
+                questionBtn.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
+                    
+                    // Close all other accordions smoothly
+                    faqItems.forEach(otherItem => {
+                        otherItem.classList.remove('active');
+                        otherItem.querySelector('.faq-answer').style.maxHeight = null;
+                    });
+                    
+                    // Open the clicked one based on its exact scrollHeight content
+                    if (!isActive) {
+                        item.classList.add('active');
+                        answerWrap.style.maxHeight = answerWrap.scrollHeight + "px";
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

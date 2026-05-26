@@ -11,12 +11,16 @@ class HelpRequest(models.Model):
     
     # 🔥 FIX: show status on user screen 
     STATUS_CHOICES = [
-        ('Pending', 'Pending'),        # Step 1: User ne form submit kiya
-        ('Selected', 'Selected'),      # Step 2: User ne kisi ko select kiya
-        ('Assigned', 'Assigned'),      # Step 3: Volunteer ke incoming list me gaya
-        ('Accepted', 'Accepted'),      # Step 4: Volunteer ne Accept dabaya (Lock Opens)
+        ('Pending', 'Pending'),        # Step 1: User form submited
+        ('Selected', 'Selected'),      # Step 2: User selectected someone
+        ('Assigned', 'Assigned'),      # Step 3: Volunteer incoming lists
+        ('Accepted', 'Accepted'),      # Step 4: Volunteer pressed Accept  (Lock Opens)
         ('Completed', 'Completed'),    # Step 5: Mission Accomplished
     ]
+
+    #add these two fields to track the location and contact details of the requester
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
 
     # user specific details for the request
     requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name='my_requests')
@@ -29,7 +33,6 @@ class HelpRequest(models.Model):
     # 🔥 logic for contact
     location = models.CharField(max_length=255, null=True, blank=True)
     contact_number = models.CharField(max_length=15, null=True, blank=True)
-    
     # ==========================================
     # 🔒 PRIVACY LOCK: this field id is lock when volunteer accepts the request then show all details
     private_details = models.TextField(help_text="Encrypted: Extra instructions, exact situation.", null=True, blank=True)
@@ -37,6 +40,8 @@ class HelpRequest(models.Model):
     
     # save details of assigned volunteer (agar assigned hai to)
     target_volunteer = models.ForeignKey(VolunteerProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_requests')
+    declined_by = models.ManyToManyField(VolunteerProfile, blank=True, related_name='declined_requests')
+    status_message = models.CharField(max_length=255, null=True, blank=True)  # Optional field for status updates or messages
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

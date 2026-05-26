@@ -217,6 +217,18 @@ def fp_reset_password(request):
 @login_required
 def create_request(request):
     if request.method == 'POST':
+<<<<<<< HEAD
+=======
+        # 1. Retrieve map coordinates from the HTML hidden inputs
+        lat_str = request.POST.get('latitude')
+        lng_str = request.POST.get('longitude')
+
+        # 2. Convert coordinates to float securely (handling empty strings just in case)
+        latitude_val = float(lat_str) if lat_str else None
+        longitude_val = float(lng_str) if lng_str else None
+
+        # 3. Create a new help request and ensure location, contact, AND GPS data are saved
+>>>>>>> 5f25c9d4f378d9e812bd61bc99511c410106aeaa
         new_req = HelpRequest.objects.create(
             requester=request.user,
             problem_category=request.POST.get('problem_category'),
@@ -224,9 +236,12 @@ def create_request(request):
             location=request.POST.get('location'),
             contact_number=request.POST.get('phone_number'),
             private_details=request.POST.get('private_details'),
+            latitude=latitude_val,     # ADDED: Save exact map latitude
+            longitude=longitude_val,   # ADDED: Save exact map longitude
             status='Pending'
         )
         return redirect('find_volunteers', request_id=new_req.id)
+        
     return render(request, 'accounts/request_form.html')
 
 
@@ -253,7 +268,7 @@ def find_volunteers(request, request_id):
             api_key = os.getenv("GEMINI_API_KEY")
             client  = genai.Client(api_key=api_key)
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-2.5-flash',
                 contents=prompt
             )
             ai_msg = response.text
@@ -286,12 +301,74 @@ def select_volunteer(request, request_id, volunteer_id):
 
 @login_required
 def track_request(request, request_id):
+<<<<<<< HEAD
     current_req = get_object_or_404(HelpRequest, id=request_id)
 
+=======
+    # Retrieve the specific help request from the database
+    req = get_object_or_404(HelpRequest, id=request_id)
+    
+    # ==========================================
+    # 1. HANDLE POST REQUESTS (User Actions)
+    # ==========================================
+>>>>>>> 5f25c9d4f378d9e812bd61bc99511c410106aeaa
     if request.method == 'POST':
+        
+        # ACTION A: User selects a new volunteer from the provided list
+        new_vol_id = request.POST.get('new_volunteer_id')
+        if new_vol_id:
+            new_vol = get_object_or_404(VolunteerProfile, id=new_vol_id)
+            req.target_volunteer = new_vol
+            req.status = 'Assigned'  # Revert the request status back to Assigned
+            req.save()
+            
+            # Reload the current page to reflect changes
+            return redirect(request.path)
+            
+        # ACTION B: User marks the mission as completed
         if request.POST.get('status') == 'Completed':
+<<<<<<< HEAD
             current_req.status = 'Completed'
             current_req.save()
             return redirect('track_request', request_id=current_req.id)
+=======
+            req.status = 'Completed'
+            req.save()
+            
+            # Reload the current page
+            return redirect(request.path)
+>>>>>>> 5f25c9d4f378d9e812bd61bc99511c410106aeaa
 
-    return render(request, 'accounts/user_update_status.html', {'req': current_req})
+    # ==========================================
+    # 2. HANDLE GET REQUESTS (Load Page Data)
+    # ==========================================
+    available_volunteers = None
+    
+    # Check if the request is pending and has been declined by at least one volunteer
+    if req.status == 'Pending' and req.declined_by.count() > 0:
+        
+        # Fetch a list of alternate volunteers who meet the following criteria:
+        # 1. They are currently marked as available
+        # 2. They have NOT already declined this specific request
+        available_volunteers = VolunteerProfile.objects.filter(
+            is_available=True
+        ).exclude(
+            id__in=req.declined_by.all()
+        )
+
+    # Render the template with the request details and the list of available volunteers
+    return render(request, 'accounts/user_update_status.html', {
+        'req': req,
+        'available_volunteers': available_volunteers
+    })
+
+@login_required(login_url='login') 
+def user_profile(request):
+    my_requests = HelpRequest.objects.filter(requester=request.user).order_by('-created_at')
+    user_profile_data = getattr(request.user, 'volunteer_profile', None)  # VolunteerProfile data agar exist karta hai toh
+    context = {
+        'user' : request.user,
+        'profile': user_profile_data,
+        'requests': my_requests,
+    }
+    return render(request, 'accounts/user_profile.html', context)

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Volunteer Profile - SmartAlloc</title>
+    <title>{{ user.get_full_name|default:user.username }}'s Profile - SmartAlloc</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
@@ -12,31 +12,33 @@
         :root {
             --cream: #F5F0E8;
             --ink: #0A0A0A;
-            --rust: #C84B31;
-            --sage: #3D7A5A; 
-            --neon-glow: 0 0 20px rgba(61, 122, 90, 0.5);
+            --rust: #C84B31; /* User Theme Accent */
+            --sage: #3D7A5A;
+            --neon-glow: 0 0 20px rgba(200, 75, 49, 0.5);
             --card-bg: #ffffff;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: 'Space Grotesk', sans-serif;
-            background: var(--cream); color: var(--ink);
-            min-height: 100vh; overflow-x: hidden;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
+            overflow-x: hidden;
             background-image: radial-gradient(rgba(10,10,10,0.03) 1px, transparent 1px);
             background-size: 20px 20px;
             display: flex;
             flex-direction: column;
         }
 
-        /* CUSTOM CURSOR (Desktop Only) */
+        /* CUSTOM CURSOR (User Theme - Rust) */
         .cursor {
-            position: fixed; width: 12px; height: 12px; background: var(--sage);
+            position: fixed; width: 12px; height: 12px; background: var(--rust);
             border-radius: 50%; pointer-events: none; z-index: 9999;
             transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s;
         }
         .cursor-ring {
-            position: fixed; width: 38px; height: 38px; border: 1.5px solid var(--sage);
+            position: fixed; width: 38px; height: 38px; border: 1.5px solid var(--rust);
             border-radius: 50%; pointer-events: none; z-index: 9998;
             transform: translate(-50%, -50%); transition: width 0.3s, height 0.3s, opacity 0.3s;
             opacity: 0.5;
@@ -51,13 +53,14 @@
             border-bottom: 1px solid rgba(10, 10, 10, 0.1);
         }
         .nav-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--ink); text-decoration: none; }
-        .nav-logo span { color: var(--sage); }
+        .nav-logo span { color: var(--rust); }
         .nav-actions a {
             font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem; text-transform: uppercase;
             text-decoration: none; color: var(--ink); margin-left: 20px; font-weight: 600;
         }
-        .nav-actions a:hover { color: var(--sage); }
+        .nav-actions a:hover { color: var(--rust); }
 
+        /* MAIN WRAPPER */
         .dashboard-wrapper { max-width: 94%; margin: 110px auto 60px; flex: 1; width: 100%; }
 
         /* HEADER */
@@ -66,27 +69,27 @@
             padding: 40px 50px; border-radius: 14px; position: relative; overflow: hidden;
             box-shadow: 0 15px 40px rgba(10,10,10,0.15);
             display: flex; justify-content: space-between; align-items: center;
-            border: 1px solid rgba(61, 122, 90, 0.3);
+            border: 1px solid rgba(200, 75, 49, 0.3);
         }
         .profile-header::before {
             content: ''; position: absolute; right: -50px; top: -50px;
             width: 250px; height: 250px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(61,122,90,0.2) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(200,75,49,0.2) 0%, transparent 70%);
             z-index: 1;
         }
         .user-info { display: flex; align-items: center; gap: 25px; z-index: 2; position: relative; }
         
         .avatar {
-            width: 100px; height: 100px; background: var(--sage); border-radius: 50%;
+            width: 100px; height: 100px; background: var(--rust); border-radius: 50%;
             display: flex; justify-content: center; align-items: center;
             font-family: 'Bebas Neue', sans-serif; font-size: 3.2rem; color: #fff;
-            box-shadow: var(--neon-glow); border: 3px solid #fff; text-transform: uppercase;
+            box-shadow: var(--neon-glow); border: 3px solid #fff;
+            text-transform: uppercase;
         }
         
         .details h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3.2rem; letter-spacing: 1px; margin-bottom: 5px; }
         .details p { font-family: 'IBM Plex Mono', monospace; font-size: 0.95rem; color: #bbb; margin-bottom: 8px; }
-        
-        .duty-badge {
+        .status-badge {
             display: inline-flex; align-items: center; gap: 8px;
             background: rgba(61, 122, 90, 0.2); color: #6ee7b7;
             padding: 6px 12px; border-radius: 20px; font-size: 0.8rem;
@@ -99,12 +102,14 @@
             padding: 12px 24px; border: 1px solid rgba(245, 240, 232, 0.4);
             color: var(--cream); text-decoration: none; border-radius: 6px;
             font-family: 'IBM Plex Mono', monospace; font-size: 0.9rem; transition: 0.3s;
-            display: inline-flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05);
+            cursor: pointer; display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.05);
         }
         .btn-outline:hover { background: rgba(245, 240, 232, 0.15); border-color: var(--cream); }
 
+        /* MARQUEE */
         .marquee-container {
-            background: var(--sage); color: #fff; padding: 12px 0;
+            background: var(--rust); color: #fff; padding: 12px 0;
             overflow: hidden; white-space: nowrap; margin: 25px 0 40px;
             font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; font-weight: 500;
             text-transform: uppercase; border-radius: 6px; letter-spacing: 1px;
@@ -119,35 +124,42 @@
             background: var(--card-bg); border-radius: 12px; padding: 35px;
             border: 1px solid rgba(10,10,10,0.08); box-shadow: 6px 6px 0 rgba(10,10,10,0.04);
         }
+        .card-header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid rgba(10,10,10,0.05); padding-bottom: 15px; }
 
         /* TABS NAVIGATION */
-        .tab-header {
-            display: flex; gap: 20px; border-bottom: 2px solid rgba(10,10,10,0.05);
-            margin-bottom: 25px; padding-bottom: 10px; overflow-x: auto;
-        }
+        .tab-header { display: flex; gap: 20px; overflow-x: auto; }
         .tab-btn {
             background: transparent; border: none; font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.4rem; color: #888; cursor: pointer; padding: 5px 10px;
+            font-size: 1.5rem; color: #888; cursor: pointer; padding: 5px 10px;
             position: relative; transition: 0.3s; letter-spacing: 1px; white-space: nowrap;
         }
         .tab-btn:hover { color: var(--ink); }
-        .tab-btn.active { color: var(--sage); }
+        .tab-btn.active { color: var(--rust); }
         .tab-btn.active::after {
-            content: ''; position: absolute; bottom: -12px; left: 0;
-            width: 100%; height: 3px; background: var(--sage); border-radius: 3px;
+            content: ''; position: absolute; bottom: -8px; left: 0;
+            width: 100%; height: 3px; background: var(--rust); border-radius: 3px;
         }
 
         .tab-content { display: none; animation: fadeIn 0.4s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ACCORDION REQUEST LIST */
+        /* BUTTONS */
+        .btn-ticket {
+            font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem;
+            background: rgba(220, 38, 38, 0.1); color: #dc2626;
+            padding: 8px 16px; border-radius: 6px; text-decoration: none;
+            font-weight: 600; transition: 0.3s; display: flex; align-items: center; gap: 8px;
+        }
+        .btn-ticket:hover { background: #dc2626; color: #fff; }
+
+        /* REQUEST LIST */
         .request-list { list-style: none; padding: 0; margin: 0; }
         .request-item {
             border: 1px solid rgba(10,10,10,0.1); border-radius: 8px;
             margin-bottom: 18px; transition: 0.3s; overflow: hidden; background: var(--card-bg);
         }
-        .request-item:hover { border-color: var(--sage); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .request-item:hover { border-color: var(--rust); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
 
         .request-summary {
             padding: 18px 20px; display: flex; justify-content: space-between;
@@ -162,16 +174,14 @@
             font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; font-weight: 600;
             padding: 6px 12px; border-radius: 4px; text-transform: uppercase;
         }
-        
-        .status-assigned { background: rgba(212, 160, 23, 0.1); color: #b45309; } 
-        .status-accepted { background: rgba(59, 130, 246, 0.1); color: #2563eb; } 
+        .status-pending { background: rgba(212, 160, 23, 0.1); color: #b45309; }
+        .status-assigned { background: rgba(139, 92, 246, 0.1); color: #7c3aed; }
+        .status-accepted { background: rgba(59, 130, 246, 0.1); color: #2563eb; }
         .status-completed { background: rgba(61, 122, 90, 0.1); color: var(--sage); }
-        .status-declined { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
 
         .toggle-icon { transition: transform 0.3s ease; color: #888; font-size: 1rem; }
-        .request-item.active .toggle-icon { transform: rotate(180deg); color: var(--sage); }
+        .request-item.active .toggle-icon { transform: rotate(180deg); color: var(--rust); }
 
-        /* DETAILS CONTAINER */
         .request-details {
             max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.4s ease;
             background: #fafafa; border-top: 1px solid transparent;
@@ -182,18 +192,23 @@
 
         .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 18px; font-size: 0.9rem; }
         .detail-grid strong { color: var(--ink); font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; text-transform: uppercase; }
-        .detail-notes { background: #fff; padding: 12px; border-radius: 6px; border: 1px dashed #ccc; margin-bottom: 18px; color: #555; font-size: 0.9rem; }
+        .detail-notes { background: #fff; padding: 12px; border-radius: 6px; border: 1px dashed #ccc; margin-bottom: 18px; color: #555; font-size: 0.9rem; line-height: 1.5; }
         
         .btn-track {
             display: inline-block; background: var(--ink); color: #fff;
             padding: 10px 20px; border-radius: 6px; font-size: 0.85rem; text-decoration: none;
-            font-family: 'IBM Plex Mono', monospace; transition: 0.3s; font-weight: 500; margin-top: 10px;
+            font-family: 'IBM Plex Mono', monospace; transition: 0.3s; font-weight: 500;
         }
-        .btn-track:hover { background: var(--sage); }
+        .btn-track:hover { background: var(--rust); box-shadow: 0 5px 15px rgba(200,75,49,0.3); }
         
         .empty-state { text-align: center; color: #888; padding: 40px 0; font-family: 'IBM Plex Mono', monospace; font-size: 1rem; }
 
-        /* RIGHT PANEL: RADAR & MAP */
+        /* RIGHT PANEL: MAP & PROMO */
+        .card-header-basic {
+            font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--ink);
+            border-bottom: 2px solid rgba(10,10,10,0.05); padding-bottom: 15px; margin-bottom: 25px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
         .map-container {
             width: 100%; height: 250px; background: #e5e7eb; border-radius: 10px;
             position: relative; overflow: hidden; margin-bottom: 30px;
@@ -204,41 +219,43 @@
             background-image: linear-gradient(#d1d5db 1px, transparent 1px), linear-gradient(90deg, #d1d5db 1px, transparent 1px);
             background-size: 20px 20px; opacity: 0.5;
         }
-        .radar-ping { position: absolute; width: 50px; height: 50px; background: var(--sage); border-radius: 50%; opacity: 0; animation: ping 2s infinite cubic-bezier(0, 0, 0.2, 1); }
-        .radar-center { position: absolute; width: 14px; height: 14px; background: var(--sage); border-radius: 50%; z-index: 2; box-shadow: var(--neon-glow); }
+        .radar-ping { position: absolute; width: 50px; height: 50px; background: var(--rust); border-radius: 50%; opacity: 0; animation: ping 2s infinite cubic-bezier(0, 0, 0.2, 1); }
+        .radar-center { position: absolute; width: 14px; height: 14px; background: var(--rust); border-radius: 50%; z-index: 2; box-shadow: var(--neon-glow); }
         @keyframes ping { 75%, 100% { transform: scale(3); opacity: 0; } }
         .map-label { position: absolute; bottom: 12px; right: 12px; font-family: 'IBM Plex Mono'; font-size: 0.75rem; color: #555; background: rgba(255,255,255,0.9); padding: 4px 8px; border-radius: 4px; z-index: 3; font-weight: 600;}
 
-        .stats-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .stat-box { background: rgba(61, 122, 90, 0.05); padding: 20px; border-radius: 8px; text-align: center; border: 1px dashed rgba(61, 122, 90, 0.3); }
-        .stat-num { font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; color: var(--sage); line-height: 1; margin-bottom: 5px; }
-        .stat-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--ink); text-transform: uppercase; font-weight: 600;}
+        .volunteer-promo {
+            background: rgba(200, 75, 49, 0.05); border: 2px dashed rgba(200, 75, 49, 0.3);
+            padding: 30px; border-radius: 10px; text-align: center;
+        }
+        .volunteer-promo h3 { font-family: 'Space Grotesk', sans-serif; font-size: 1.3rem; margin-bottom: 12px; color: var(--ink); }
+        .volunteer-promo p { font-size: 0.95rem; color: #555; margin-bottom: 25px; line-height: 1.6; }
+        .btn-primary {
+            display: inline-block; background: var(--rust); color: #fff; font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem; font-weight: 600; text-transform: uppercase; padding: 14px 28px;
+            border-radius: 6px; text-decoration: none; transition: 0.3s; border: none; cursor: pointer;
+        }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 6px 6px 0 rgba(200,75,49,0.3); }
 
         /* FOOTER */
         .footer {
-            background: rgba(245, 240, 232, 0.95);
-            backdrop-filter: blur(12px);
-            border-top: 1px solid rgba(10, 10, 10, 0.1);
-            padding: 30px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: auto;
-            font-family: 'IBM Plex Mono', monospace;
-            font-size: 0.85rem;
-            color: #666;
+            background: rgba(245, 240, 232, 0.95); backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(10, 10, 10, 0.1); padding: 30px 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: auto; font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: #666;
         }
         .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--ink); text-decoration: none; }
-        .footer-logo span { color: var(--sage); }
+        .footer-logo span { color: var(--rust); }
         .footer-links a { color: var(--ink); text-decoration: none; margin-left: 20px; font-weight: 500; transition: 0.3s; }
-        .footer-links a:hover { color: var(--sage); }
+        .footer-links a:hover { color: var(--rust); }
 
         @media (max-width: 1024px) { .dashboard-grid { grid-template-columns: 1fr; gap: 30px; } }
         @media (max-width: 768px) {
-            .profile-header { flex-direction: column; text-align: center; padding: 30px 20px; }
-            .user-info { flex-direction: column; }
-            .tab-header { justify-content: space-between; }
-            .tab-btn { font-size: 1.1rem; }
+            .profile-header { flex-direction: column; text-align: center; gap: 20px; padding: 30px 20px; }
+            .user-info { flex-direction: column; gap: 15px; }
+            .card-header-flex { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .tab-header { justify-content: flex-start; width: 100%; }
+            .detail-grid { grid-template-columns: 1fr; gap: 10px; }
             .footer { flex-direction: column; gap: 15px; text-align: center; }
             .footer-links a { margin: 0 10px; }
         }
@@ -260,69 +277,82 @@
         
         <div class="profile-header">
             <div class="user-info">
-                <div class="avatar">{{ user.first_name.0|upper|default:"V" }}</div>
+                <div class="avatar">{{ user.first_name.0|upper|default:"U" }}</div>
                 <div class="details">
                     <h1>{{ user.get_full_name|default:user.username|title }}</h1>
-                    <p><i class="fa-solid fa-shield-halved"></i> {{ profile.service_role|default:"Volunteer Responder" }} &nbsp;|&nbsp; <i class="fa-solid fa-location-dot"></i> {{ profile.location_description|default:"Base Not Set" }}</p>
-                    <div class="duty-badge">
-                        <div class="status-dot"></div> VOLUNTEER PROFILE
+                    <p><i class="fa-solid fa-at"></i> {{ user.username }} &nbsp;|&nbsp; <i class="fa-solid fa-location-dot"></i> {{ profile.location|default:"Location Not Set" }}</p>
+                    <div class="status-badge">
+                        <div class="status-dot"></div> Online
                     </div>
                 </div>
             </div>
             <div class="profile-actions">
-                <a href="{% url 'volunteer_dashboard' %}" class="btn-outline"><i class="fa-solid fa-tower-broadcast"></i> Open Dashboard</a>
+                <a href="{% url 'create_request' %}" class="btn-outline"><i class="fa-solid fa-plus"></i> New Request</a>
             </div>
         </div>
 
         <div class="marquee-container">
             <div class="marquee-content">
-                /// VOLUNTEER MISSION HISTORY /// THANK YOU FOR SERVING THE COMMUNITY /// STAY SAFE ///
+                /// SYSTEM UPDATE: AI MATCHING ENGINE ONLINE /// NO ACTIVE ALERTS IN YOUR AREA /// STAY SAFE, STAY CONNECTED ///
             </div>
         </div>
 
         <div class="dashboard-grid">
             
             <div class="card">
-                
-                <div class="tab-header">
-                    <button class="tab-btn active" onclick="openTab(event, 'tab-active')">Active / Pending</button>
-                    <button class="tab-btn" onclick="openTab(event, 'tab-completed')">Completed</button>
-                    <button class="tab-btn" onclick="openTab(event, 'tab-declined')">Declined</button>
+                <div class="card-header-flex">
+                    <div class="tab-header">
+                        <button class="tab-btn active" onclick="openTab(event, 'tab-active')">Active Requests</button>
+                        <button class="tab-btn" onclick="openTab(event, 'tab-completed')">History</button>
+                    </div>
+                    <a href="#" class="btn-ticket"><i class="fa-solid fa-triangle-exclamation"></i> Raise Ticket</a>
                 </div>
                 
                 <div id="tab-active" class="tab-content active">
                     <ul class="request-list">
-                        {% if active_requests %}
-                            {% for req in active_requests %}
-                            <li class="request-item">
-                                <div class="request-summary" onclick="toggleDetails(this)">
-                                    <div class="req-info">
-                                        <h4>{{ req.problem_category }}</h4>
-                                        <p><i class="fa-regular fa-calendar"></i> {{ req.created_at|date:"d M Y, h:i A" }}</p>
+                        {% if requests %}
+                            {% for req in requests %}
+                                {% if req.status != 'Completed' %}
+                                <li class="request-item">
+                                    <div class="request-summary" onclick="toggleDetails(this)">
+                                        <div class="req-info">
+                                            <h4>{{ req.problem_category }}</h4>
+                                            <p><i class="fa-regular fa-calendar"></i> {{ req.created_at|date:"d M Y, h:i A" }}</p>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 15px;">
+                                            <div class="req-status status-{{ req.status|lower }}">{{ req.status }}</div>
+                                            <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                                        </div>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                        <div class="req-status status-{{ req.status|lower }}">{{ req.status }}</div>
-                                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
+
+                                    <div class="request-details">
+                                        <div class="detail-grid">
+                                            <div><strong>Priority Level:</strong> <br>{{ req.priority }}</div>
+                                            <div><strong>Location:</strong> <br>{{ req.location|default:"Not specified" }}</div>
+                                            <div><strong>Contact Info:</strong> <br>{{ req.contact_number|default:"No number provided" }}</div>
+                                            <div>
+                                                <strong>Assigned To:</strong> <br>
+                                                {% if req.target_volunteer %}
+                                                    {{ req.target_volunteer.user.get_full_name|default:req.target_volunteer.user.username }}
+                                                {% else %}
+                                                    <span style="color: #888;">Waiting for volunteer...</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% if req.private_details %}
+                                        <div class="detail-notes"><strong>Private Notes:</strong><br>{{ req.private_details }}</div>
+                                        {% endif %}
+                                        <div style="margin-top: 15px;">
+                                            <a href="{% url 'track_request' req.id %}" class="btn-track">Live Track / Update Status</a>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="request-details">
-                                    <div class="detail-grid">
-                                        <div><strong>Priority:</strong> <br>{{ req.priority }}</div>
-                                        <div><strong>Location:</strong> <br>{{ req.location|default:"Not specified" }}</div>
-                                        <div><strong>Victim Contact:</strong> <br>{{ req.contact_number|default:"Hidden" }}</div>
-                                    </div>
-                                    {% if req.private_details %}
-                                    <div class="detail-notes"><strong>Notes:</strong><br>{{ req.private_details }}</div>
-                                    {% endif %}
-                                    
-                                    <a href="{% url 'volunteer_dashboard' %}" class="btn-track"><i class="fa-solid fa-location-crosshairs"></i> Live Track Target</a>
-                                </div>
-                            </li>
+                                </li>
+                                {% endif %}
                             {% endfor %}
                         {% else %}
                             <div class="empty-state">
-                                <i class="fa-solid fa-hourglass-empty" style="font-size: 2.5rem; margin-bottom: 15px; color: #ccc;"></i><br>
-                                No active or pending missions right now.
+                                <i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 15px; color: #ccc;"></i><br>
+                                You haven't made any requests yet.
                             </div>
                         {% endif %}
                     </ul>
@@ -330,64 +360,45 @@
 
                 <div id="tab-completed" class="tab-content">
                     <ul class="request-list">
-                        {% if completed_requests %}
-                            {% for req in completed_requests %}
-                            <li class="request-item">
-                                <div class="request-summary" onclick="toggleDetails(this)">
-                                    <div class="req-info">
-                                        <h4>{{ req.problem_category }}</h4>
-                                        <p><i class="fa-regular fa-calendar"></i> {{ req.created_at|date:"d M Y, h:i A" }}</p>
+                        {% if requests %}
+                            {% for req in requests %}
+                                {% if req.status == 'Completed' %}
+                                <li class="request-item">
+                                    <div class="request-summary" onclick="toggleDetails(this)">
+                                        <div class="req-info">
+                                            <h4>{{ req.problem_category }}</h4>
+                                            <p><i class="fa-regular fa-calendar"></i> {{ req.created_at|date:"d M Y, h:i A" }}</p>
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 15px;">
+                                            <div class="req-status status-completed">{{ req.status }}</div>
+                                            <i class="fa-solid fa-chevron-down toggle-icon"></i>
+                                        </div>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                        <div class="req-status status-completed">Completed</div>
-                                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
+
+                                    <div class="request-details">
+                                        <div class="detail-grid">
+                                            <div><strong>Priority Level:</strong> <br>{{ req.priority }}</div>
+                                            <div><strong>Location:</strong> <br>{{ req.location|default:"Not specified" }}</div>
+                                            <div>
+                                                <strong>Assisted By:</strong> <br>
+                                                {% if req.target_volunteer %}
+                                                    {{ req.target_volunteer.user.get_full_name|default:req.target_volunteer.user.username }}
+                                                {% else %}
+                                                    N/A
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="detail-notes" style="background: rgba(61,122,90,0.05); border-color: var(--sage); color: var(--sage);">
+                                            <strong><i class="fa-solid fa-check-circle"></i> Issue has been successfully resolved.</strong>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="request-details">
-                                    <div class="detail-grid">
-                                        <div><strong>Priority:</strong> <br>{{ req.priority }}</div>
-                                        <div><strong>Location:</strong> <br>{{ req.location|default:"Not specified" }}</div>
-                                        <div><strong>Victim Name:</strong> <br>{{ req.requester.get_full_name|default:req.requester.username }}</div>
-                                    </div>
-                                    <div class="detail-notes" style="background: rgba(61,122,90,0.05); border-color: var(--sage); color: var(--sage);">
-                                        <strong><i class="fa-solid fa-check-circle"></i> Mission Accomplished Successfully.</strong>
-                                    </div>
-                                </div>
-                            </li>
+                                </li>
+                                {% endif %}
                             {% endfor %}
                         {% else %}
                             <div class="empty-state">
                                 <i class="fa-solid fa-medal" style="font-size: 2.5rem; margin-bottom: 15px; color: #ccc;"></i><br>
-                                You haven't completed any missions yet.
-                            </div>
-                        {% endif %}
-                    </ul>
-                </div>
-
-                <div id="tab-declined" class="tab-content">
-                    <ul class="request-list">
-                        {% if declined_requests %}
-                            {% for req in declined_requests %}
-                            <li class="request-item">
-                                <div class="request-summary" onclick="toggleDetails(this)">
-                                    <div class="req-info">
-                                        <h4>{{ req.problem_category }}</h4>
-                                        <p><i class="fa-regular fa-calendar"></i> {{ req.created_at|date:"d M Y, h:i A" }}</p>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                        <div class="req-status status-declined">Declined</div>
-                                        <i class="fa-solid fa-chevron-down toggle-icon"></i>
-                                    </div>
-                                </div>
-                                <div class="request-details">
-                                    <p style="font-family: 'IBM Plex Mono', monospace; font-size: 0.85rem; color: #555;">This mission was declined and passed to other active volunteers.</p>
-                                </div>
-                            </li>
-                            {% endfor %}
-                        {% else %}
-                            <div class="empty-state">
-                                <i class="fa-solid fa-ban" style="font-size: 2.5rem; margin-bottom: 15px; color: #ccc;"></i><br>
-                                No declined missions. Great job staying active!
+                                No completed requests history.
                             </div>
                         {% endif %}
                     </ul>
@@ -395,23 +406,23 @@
 
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <span>Live Tracking</span>
-                    <i class="fa-solid fa-satellite-dish" style="font-size: 1.3rem; color: var(--sage);"></i>
-                </div>
-                
-                <div class="map-container">
-                    <div class="radar-ping"></div>
-                    <div class="radar-center"></div>
-                    <div class="map-label">SYNC: ACTIVE</div>
+            <div>
+                <div class="card" style="margin-bottom: 30px;">
+                    <div class="card-header-basic">
+                        <span>Live Tracking</span>
+                        <i class="fa-solid fa-satellite-dish" style="font-size: 1.3rem; color: var(--sage);"></i>
+                    </div>
+                    <div class="map-container">
+                        <div class="radar-ping"></div>
+                        <div class="radar-center"></div>
+                        <div class="map-label">SYNC: ACTIVE</div>
+                    </div>
                 </div>
 
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-num">{{ completed_requests.count }} <i class="fa-solid fa-medal" style="font-size: 1.5rem;"></i></div>
-                        <div class="stat-label">Missions Completed</div>
-                    </div>
+                <div class="volunteer-promo">
+                    <h3>Step Up for Your Community</h3>
+                    <p>Upgrade your account to a Volunteer profile. Use your skills to help those in critical need and track real-time emergency pings in your sector.</p>
+                    <a href="{% url 'register_volunteer' %}" class="btn-primary">Become a Volunteer</a>
                 </div>
             </div>
 
@@ -451,7 +462,7 @@
             }
         });
 
-        // --- UI INTERACTION JS ---
+        // --- ACCORDION & TABS JS ---
         function toggleDetails(element) {
             const currentItem = element.closest('.request-item');
             currentItem.classList.toggle('active');

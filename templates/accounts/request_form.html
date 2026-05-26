@@ -8,6 +8,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@1,400;1,700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
 <style>
 /* ─── TOKENS ─── */
 :root {
@@ -89,10 +92,6 @@ body::after {
   from { opacity:0; transform:translateY(28px) }
   to   { opacity:1; transform:translateY(0) }
 }
-@keyframes float-card {
-  0%,100%{ transform:translateY(0) }
-  50%{ transform:translateY(-8px) }
-}
 @keyframes shimmer-line {
   0%{ background-position:0% 50% }
   100%{ background-position:200% 50% }
@@ -146,7 +145,7 @@ body::after {
 .logout-link::before {
   content:''; position:absolute; inset:0;
   background:var(--rust); transform:scaleX(0); transform-origin:right;
-  transition:transform .3s ease; z-index:0;
+  transition:transform .35s ease; z-index:0;
 }
 .logout-link:hover { 
   color:#fff; border-color:var(--rust); 
@@ -240,7 +239,7 @@ body::after {
 }
 .left-headline em {
   font-family:'Playfair Display', serif; font-style:italic;
-  color:var(--neon-rust); text-shadow:0 0 24px rgba(255,85,51,.4);
+  color:var(--rust); text-shadow:0 0 24px rgba(255,85,51,.4);
 }
 .left-sub {
   font-size:.9rem; color:rgba(245,240,232,.42); line-height:1.75; margin-bottom:36px;
@@ -341,14 +340,35 @@ body::after {
 
 /* ─── FORM GROUPS ─── */
 .form-group { margin-bottom:20px; }
+/* ─── HIGHLIGHTED FORM LABELS ─── */
 .form-label {
-  display:flex; align-items:center; gap:6px;
-  font-size:.76rem; font-weight:600; letter-spacing:.06em; text-transform:uppercase;
-  color:#555; margin-bottom:8px;
+  display: inline-flex; 
+  align-items: center; 
+  gap: 8px;
+  font-size: 0.8rem; 
+  font-weight: 700; 
+  letter-spacing: 0.08em; 
+  text-transform: uppercase;
+  color: var(--ink); /* Darker and bolder text */
+  margin-bottom: 12px;
+  padding: 6px 14px 6px 10px;
+  background: linear-gradient(90deg, rgba(200,75,49,0.08) 0%, transparent 100%); /* Subtle rust gradient */
+  border-left: 3px solid var(--rust); /* Left highlight bar */
+  border-radius: 0 4px 4px 0;
 }
-.form-label .req { color:var(--rust); font-size:.8rem; }
-.form-label i { font-size:.7rem; color:#bbb; }
 
+.form-label i { 
+  font-size: 0.85rem; 
+  color: var(--rust); /* Match icon color to theme */
+  filter: drop-shadow(0 0 5px rgba(200,75,49,0.4)); /* Neon glow effect on icon */
+}
+
+.form-label .req { 
+  color: var(--rust); 
+  font-size: 1rem; 
+  text-shadow: 0 0 8px rgba(200,75,49,0.6); /* Glowing red star for required */
+  margin-left: 2px;
+}
 .input-wrap { position:relative; }
 .input-icon {
   position:absolute; left:14px; top:50%; transform:translateY(-50%);
@@ -423,11 +443,14 @@ body::after {
 }
 .type-card.active .tc-check { opacity:1; transform:scale(1); }
 
-/* ─── URGENCY BADGES (Fixed Values) ─── */
+/* ─── URGENCY BADGES (HIGHLIGHTED WITH NEON RUST) ─── */
 .urgency-row { display:flex; gap:10px; flex-wrap:wrap; }
 .urgency-badge {
   flex:1; min-width:90px; padding:12px 10px;
-  border-radius:3px; border:1.5px solid rgba(10,10,10,.1);
+  border-radius:3px; 
+  /* NEON RUST HIGHLIGHT APPLIED HERE */
+  border:1.5px solid rgba(255, 85, 51, 0.4); 
+  box-shadow: 0 0 8px rgba(255, 85, 51, 0.15);
   background:#fff; text-align:center; cursor:none;
   transition:all .25s; user-select:none;
   position:relative; overflow:hidden;
@@ -436,25 +459,29 @@ body::after {
   content:''; position:absolute; top:0; left:0; right:0; height:2px;
   transform:scaleX(0); transform-origin:left; transition:transform .3s;
 }
-.urgency-badge:hover { transform:translateY(-2px); }
+.urgency-badge:hover { 
+  transform:translateY(-2px); 
+  box-shadow: 0 0 15px rgba(255, 85, 51, 0.35); /* Brighter hover neon */
+  border-color: rgba(255, 85, 51, 0.7);
+}
 
 .urgency-badge.urg-low:hover, .urgency-badge.urg-low.active {
   border-color:var(--sage); background:rgba(61,122,90,.05);
-  box-shadow:3px 3px 0 var(--sage), 0 0 12px rgba(61,122,90,.1);
+  box-shadow:3px 3px 0 var(--sage), 0 0 16px rgba(61,122,90,.3);
 }
 .urgency-badge.urg-low::before { background:var(--sage); }
 .urgency-badge.urg-low:hover::before, .urgency-badge.urg-low.active::before { transform:scaleX(1); }
 
 .urgency-badge.urg-med:hover, .urgency-badge.urg-med.active {
   border-color:var(--gold); background:rgba(212,160,23,.05);
-  box-shadow:3px 3px 0 var(--gold), 0 0 12px rgba(212,160,23,.12);
+  box-shadow:3px 3px 0 var(--gold), 0 0 16px rgba(212,160,23,.3);
 }
 .urgency-badge.urg-med::before { background:var(--gold); }
 .urgency-badge.urg-med:hover::before, .urgency-badge.urg-med.active::before { transform:scaleX(1); }
 
 .urgency-badge.urg-high:hover, .urgency-badge.urg-high.active {
   border-color:var(--rust); background:rgba(200,75,49,.05);
-  box-shadow:3px 3px 0 var(--rust), 0 0 12px rgba(200,75,49,.12);
+  box-shadow:3px 3px 0 var(--rust), 0 0 20px rgba(200,75,49,.4); /* Strongest Neon for High */
 }
 .urgency-badge.urg-high::before { background:var(--rust); }
 .urgency-badge.urg-high:hover::before, .urgency-badge.urg-high.active::before { transform:scaleX(1); }
@@ -543,6 +570,11 @@ body::after {
 @media(max-width:768px){ .side-label{ display:none; } }
 @media(max-width:960px){ .left-panel{ display:none; } }
 
+/* MAP SPECIFIC FIXES */
+#location-picker-map { cursor: crosshair !important; }
+.leaflet-control-geocoder { box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important; border-radius: 4px !important; }
+.leaflet-control-attribution { display: none !important; }
+
 /* ─── FOOTER ─── */
 .site-footer {
   width: 100%; max-width: 640px; margin-top: 60px; padding-top: 20px; padding-bottom: 10px;
@@ -585,12 +617,12 @@ a,button,input,select,textarea,label { cursor:none !important; }
 </div>
 
 <nav class="navbar">
-  <a href="{% url 'home' %}" class="nav-logo">
+  <div class="nav-logo">
     <span class="nav-logo-dot"></span>
     Smart<span style="color:var(--rust)">Alloc</span>
-  </a>
+  </div>
   <div class="nav-right">
-    <a href="{% url 'home' %}" class="back-link"><i class="fa-solid fa-arrow-left"></i> Home</a>
+    <a href="{% url 'user_profile' %}" class="back-link"><i class="fa-solid fa-arrow-up"></i> Profile</a>
     <a href="{% url 'logout' %}" class="logout-link">
       <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
     </a>
@@ -713,12 +745,26 @@ a,button,input,select,textarea,label { cursor:none !important; }
           <label class="form-label" for="location">
             <i class="fa-solid fa-location-dot"></i> Your Location <span class="req">*</span>
           </label>
-          <div class="input-wrap">
-            <input type="text" id="location" name="location" class="form-input" placeholder="Enter your city or locality" autocomplete="off" required/>
+          
+          <div class="input-wrap" style="margin-bottom: 12px;">
+            <input type="text" id="location" name="location" class="form-input" placeholder="Type your address or use the map below..." autocomplete="off" required/>
             <i class="fa-solid fa-map-marker-alt input-icon"></i>
           </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div style="font-size: 0.75rem; color: #888;">Use the map to set your exact coordinates</div>
+            <button type="button" id="btn-locate-me" style="background: var(--ink); color: #fff; padding: 6px 12px; border: none; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; text-transform: uppercase; transition: 0.3s; cursor: none; display: flex; align-items: center; gap: 5px;">
+                <i class="fa-solid fa-crosshairs"></i> Auto-Detect
+            </button>
+          </div>
+
+          <div id="location-picker-map" style="height: 280px; width: 100%; border-radius: 4px; border: 1.5px solid rgba(10,10,10,0.13); z-index: 1;"></div>
+          
+          <input type="hidden" name="latitude" id="input-lat" required>
+          <input type="hidden" name="longitude" id="input-lng" required>
+
           <div class="field-msg err" id="locationErr">
-            <i class="fa-solid fa-circle-exclamation"></i> Location is required.
+            <i class="fa-solid fa-circle-exclamation"></i> A valid map location is required.
           </div>
         </div>
 
@@ -807,6 +853,9 @@ a,button,input,select,textarea,label { cursor:none !important; }
 
 </div>
 
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
 <script>
 /* ── CURSOR ── */
 const cursor = document.getElementById('cursor');
@@ -821,9 +870,100 @@ document.addEventListener('mousemove', e => {
   ring.style.left = rx+'px'; ring.style.top = ry+'px';
   requestAnimationFrame(animRing);
 })();
-document.querySelectorAll('a,button,input,label,textarea,.type-card,.urgency-badge').forEach(el => {
+document.querySelectorAll('a,button,input,label,textarea,.type-card,.urgency-badge, .leaflet-control').forEach(el => {
   el.addEventListener('mouseenter', () => { cursor.classList.add('expand'); ring.classList.add('expand'); });
   el.addEventListener('mouseleave', () => { cursor.classList.remove('expand'); ring.classList.remove('expand'); });
+});
+
+/* ── LEAFLET MAP & GEOCODER LOGIC ── */
+document.addEventListener("DOMContentLoaded", function() {
+    var map = L.map('location-picker-map', { attributionControl: false }).setView([25.3176, 83.0062], 12);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+    var currentMarker = null;
+
+    function updateLocation(lat, lng, addressString = null) {
+        document.getElementById('input-lat').value = lat;
+        document.getElementById('input-lng').value = lng;
+        
+        if (addressString) {
+            document.getElementById('location').value = addressString;
+        }
+
+        if (currentMarker) map.removeLayer(currentMarker);
+        currentMarker = L.marker([lat, lng]).addTo(map);
+        
+        // 🔴 THE FIX: Fly to the newly searched location with smooth animation
+        map.flyTo([lat, lng], 15, { animate: true, duration: 1.5 });
+        
+        updateProgress();
+    }
+
+    map.on('click', function(e) {
+        updateLocation(e.latlng.lat, e.latlng.lng, "Custom Map Location Selected");
+    });
+
+    var geocoderControl = L.Control.geocoder({ defaultMarkGeocode: false })
+    .on('markgeocode', function(e) {
+        updateLocation(e.geocode.center.lat, e.geocode.center.lng, e.geocode.name);
+    }).addTo(map);
+
+    /* 🔴 THE FIX: Powerful & Reliable Fetch API for Text Search */
+    var locInput = document.getElementById('location');
+    var mapIcon = document.querySelector('.input-wrap .fa-map-marker-alt');
+
+    function searchTypedAddress() {
+        var query = locInput.value.trim();
+        if (query.length > 3) {
+            // Visual loading feedback
+            mapIcon.className = 'fa-solid fa-spinner fa-spin input-icon';
+            
+            // Direct OpenStreetMap API call (100% reliable)
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.length > 0) {
+                    updateLocation(data[0].lat, data[0].lon, null);
+                }
+                mapIcon.className = 'fa-solid fa-map-marker-alt input-icon';
+            })
+            .catch(err => {
+                console.error('Map Search Error:', err);
+                mapIcon.className = 'fa-solid fa-map-marker-alt input-icon';
+            });
+        }
+    }
+
+    // Trigger on blur (click away) and Enter key
+    locInput.addEventListener('blur', searchTypedAddress);
+    locInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); 
+            searchTypedAddress();
+        }
+    });
+
+    // Auto Detect
+    document.getElementById('btn-locate-me').addEventListener('click', function() {
+        var btn = this;
+        var originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Locating...';
+        
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                updateLocation(position.coords.latitude, position.coords.longitude, "Auto-Detected Live Location");
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Success';
+                setTimeout(() => btn.innerHTML = originalText, 2000);
+            }, function(error) {
+                alert("Location access denied or unavailable. Please click manually or search via the map.");
+                btn.innerHTML = originalText;
+            });
+        } else {
+            alert("Geolocation is not supported by your browser.");
+            btn.innerHTML = originalText;
+        }
+    });
 });
 
 /* ── TYPE SELECTION ── */
@@ -846,12 +986,15 @@ function onUrgencyChange() {
   updateProgress();
 }
 
-/* ── PROGRESS ── */
-// 🔥 BUG FIX 2: JS logic se date aur time ka check hata diya
+/* ── PROGRESS BAR LOGIC ── */
 function updateProgress() {
   let filled = 0;
   if (document.getElementById('problem_category').value) filled++;
-  if (document.getElementById('location').value.trim().length > 1) filled++;
+  
+  var locText = document.getElementById('location').value.trim();
+  var latVal = document.getElementById('input-lat').value;
+  if (locText.length > 1 && latVal !== "") filled++;
+  
   if (document.querySelector('input[name="priority"]:checked')) filled++;
   if (validatePhone(document.getElementById('contact').value)) filled++;
 
@@ -909,11 +1052,15 @@ document.getElementById('helpForm').addEventListener('submit', function(e) {
     showMsg(document.getElementById('typeErr'), true);
     valid = false;
   }
-  if (document.getElementById('location').value.trim().length < 2) {
+  
+  var locText = document.getElementById('location').value.trim();
+  var latVal = document.getElementById('input-lat').value;
+  if (locText.length < 2 || latVal === "") {
     showMsg(document.getElementById('locationErr'), true);
     document.getElementById('location').classList.add('error');
     valid = false;
   }
+  
   if (!document.querySelector('input[name="priority"]:checked')) {
     showMsg(document.getElementById('urgencyErr'), true);
     valid = false;
