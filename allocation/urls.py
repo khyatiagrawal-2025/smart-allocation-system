@@ -6,6 +6,10 @@ urlpatterns = [
     path('register/', views.register_user, name='user_register'),
     path('login/', views.login_user, name='login'),
     path('logout/', views.logout_user, name='logout'),
+    path('forgot-password/',   views.forgot_password,   name='forgot_password'),
+    path('fp/send-otp/',       views.fp_send_otp,       name='fp_send_otp'),
+    path('fp/verify-otp/',     views.fp_verify_otp,     name='fp_verify_otp'),
+    path('fp/reset-password/', views.fp_reset_password, name='fp_reset_password'),
     
     # Core Flow URLs (Ab yeh active hain!)
     path('role-selection/', views.role_selection, name='role_selection'),
