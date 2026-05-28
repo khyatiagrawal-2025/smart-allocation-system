@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { margin: 0; padding: 0; background-color: #050505; font-family: 'Courier New', Courier, monospace; }
+        .container { max-width: 600px; margin: 30px auto; background: #0A0A0A; border: 1px solid #00FF88; border-radius: 8px; padding: 40px; box-shadow: 0 0 30px rgba(0, 255, 136, 0.1); }
+        .header { text-align: center; border-bottom: 1px solid #1A1A1A; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { color: #00FF88; font-size: 28px; font-weight: bold; letter-spacing: 5px; }
+        .otp-box { text-align: center; background: #111; padding: 30px; border: 1px dashed #00FF88; margin: 30px 0; }
+        .otp-code { font-size: 42px; color: #FFFFFF; letter-spacing: 15px; font-weight: bold; }
+        .msg-text { color: #CCCCCC; font-size: 14px; line-height: 1.6; }
+        .footer { margin-top: 40px; font-size: 11px; color: #555; text-align: center; border-top: 1px solid #1A1A1A; padding-top: 20px; }
+        .highlight { color: #00FF88; }
+
+        .otp-box {
+            text-align: center;
+            background:#111;
+            padding:  20px 10px;
+            border: 1px dashed #00FF88;
+            margin: 30px 0;
+        }
+
+        .otp-code {
+            font-size: 32px;
+            color:#FFFFFF;
+            letter-spacing: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">SMART<span style="color:#FFF;">ALLOC</span></div>
+            <p style="color: #444; font-size: 10px; margin-top: 5px;">PROTOCOL_VERIFICATION_v1.0</p>
+        </div>
+
+        <p class="msg-text">
+            [<span class="highlight">STATUS:</span> INITIATED]<br>
+            [<span class="highlight">USER:</span> {{ email }}]<br>
+            <br>
+            A password reset request has been triggered for your SmartAlloc account. If you did not initiate this request, please contact our security team immediately to lock your credentials.
+        </p>
+
+        <div class="otp-box">
+            <div class="otp-code" style="white-space: nowrap;">{{ otp }}</div>
+        </div>
+
+        <p class="msg-text">
+            <span class="highlight">> INSTRUCTIONS:</span><br>
+            1. Enter this token in the verification window.<br>
+            2. Token will auto-destruct in <span class="highlight">10 minutes</span>.<br>
+            3. Do not share this token with anyone outside the authorized domain.
+        </p>
+
+        <div class="footer">
+            <p>THIS IS AN AUTOMATED SECURITY DISPATCH. DO NOT REPLY.</p>
+            <p>SMART ALLOCATION SYSTEM © 2026</p>
+        </div>
+    </div>
+</body>
+</html>
